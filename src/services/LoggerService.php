@@ -1,4 +1,18 @@
 <?php
+/**
+ * 日志服务
+ *
+ * @package Imccc\Snail\Services
+ * @author  Imccc
+ * @version 0.0.1
+ * @status  beta
+ * @copyright Copyright (c) 2024 Imccc.
+ * @license Apache-2.0
+ * @last_modified_at 2024-04-07 03:48
+ * 
+ * @warning 本服务类不可以有销毁函数，否则将无法记录日志
+ */
+
 namespace Imccc\Snail\Services;
 
 use Exception;
@@ -11,6 +25,7 @@ class LoggerService
     private $config; // 配置服务
     private $logconf; // 日志配置
     private $container; // 容器
+    private $tableName = 'logs';
 
     public function __construct(Container $container)
     {
@@ -24,10 +39,14 @@ class LoggerService
 
     /**
      * 根据配置记录日志
+     * 
+     * @param string $message 日志消息
+     * @param string $prefix 日志前缀
      */
     public function log($message, $prefix = 'def')
     {
-        $pre = $this->logconf['logprefix'][$prefix] ?? '';
+        // 转成大写 并添加前缀
+        $pre = "__".strtoupper($prefix)."__";
         switch ($this->logconf['log_type']) {
             case 'file':
                 // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
@@ -51,13 +70,30 @@ class LoggerService
     }
 
     /**
+     * 清理日志信息
+     *
+     * @param string $day 保留天数
+     */
+    public function cleanLogs($day = 7)
+    {
+        switch ($this->logconf['log_type']) {
+            case 'file':
+                $this->cleanFileLogs($day);
+                break;
+            case 'database':
+                $this->cleanDatabaseLogs($day);
+                break;
+        }
+    }
+
+    /**
      * 记录SQL调试信息 专为SQLSERVER使用
      * @param string $message 日志内容
      * @param string $prefix 日志前缀
      */
     public function logSql($message, $prefix = 'sql')
     {
-        $pre = $this->logconf['logprefix'][$prefix] ?? '';
+        $pre = "__" . strtoupper($prefix) . "__";
         // SQL 调试信息,只能启示到文本中
         // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
         if ($this->logconf['on'][$prefix] ?? false) {
@@ -148,12 +184,14 @@ class LoggerService
      * @param string $type 日志类型
      * @param string $tableName 数据库表名
      */
-    private function logToDatabase($message, $type = '_DEF_', $tableName = 'logs')
+    private function logToDatabase($message, $type = 'def')
     {
         // 使用容器解析数据库服务
         $sqlService = $this->container->resolve('SqlService');
         $prefix = $sqlService->getPrefix();
-        $realTableName = $prefix . $tableName;
+        $realTableName = $prefix . $this->tableName;
+
+        $type = $this->logconf['logprefix'][$type] ?? '';
 
         // 准备插入语句
         $sql = "INSERT INTO {$realTableName} (times, message, type) VALUES (:times, :message, :type)";
@@ -171,6 +209,51 @@ class LoggerService
         } catch (Exception $e) {
             // 记录到服务器日志
             error_log("_ERROR_ : Failed to log to database: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 清理旧日志文件
+     *
+     * @param int $daysToKeep 保留日志的天数
+     */
+    public function cleanFileLogs($daysToKeep = 30)
+    {
+        $logDirectory = $this->logconf['log_file_path'];
+        if (!is_dir($logDirectory)) {
+            // 日志目录不存在
+            return;
+        }
+
+        $files = new \DirectoryIterator($logDirectory);
+        foreach ($files as $file) {
+            if ($file->isFile()) {
+                $fileAgeDays = (time() - $file->getMTime()) / 86400; // 文件修改时间到现在的天数
+                if ($fileAgeDays > $daysToKeep) {
+                    unlink($file->getPathname()); // 删除文件
+                }
+            }
+        }
+    }
+
+    /**
+     * 清理旧的数据库日志
+     *
+     * @param int $daysToKeep 保留日志的天数
+     */
+    public function cleanDatabaseLogs($daysToKeep = 7)
+    {
+        $sqlService = $this->container->resolve('SqlService');
+        $prefix = $sqlService->getPrefix();
+        $realTableName = $prefix . $this->tableName;
+
+        $sql = "DELETE FROM {$realTableName} WHERE DATEDIFF(NOW(), times) > :daysToKeep";
+
+        try {
+            $sqlService->execute($sql, [':daysToKeep' => $daysToKeep]);
+        } catch (Exception $e) {
+            // 记录到服务器日志
+            error_log("ERROR: Failed to clean up database logs: " . $e->getMessage());
         }
     }
 

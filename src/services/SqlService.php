@@ -3,9 +3,12 @@
  * 数据库连接类
  *
  * @package Imccc\Snail
- * @since 0.0.1
+ * @version 0.0.1
  * @author Imccc
  * @copyright Copyright (c) 2024 Imccc.
+ * @license MIT
+ * @link https://github.com/imcccphp/snail
+ *
  */
 
 namespace Imccc\Snail\Services;
@@ -745,6 +748,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
+            $this->log('Import SQL Error:' . $sql);
             $this->handleException($e, 'Import SQL Error:' . $sql);
         }
     }
@@ -774,6 +778,6 @@ class SqlService
 
     public function __destruct()
     {
-        $this->pdo = null; // Release connection when object is destroyed
+        $this->pdo = null; // 关闭数据库连接
     }
 }

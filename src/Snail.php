@@ -22,7 +22,7 @@ class Snail
     protected $conf; // snail配置
     protected $logconf; // 日志配置
     protected $logger; // 日志服务
-    protected $logprefix = ['debug', 'error'];
+    protected $logprefix = ['debug','info', 'error'];
     protected $container;
 
     public function __construct()

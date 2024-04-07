@@ -10,7 +10,7 @@ class SocketService
     protected $logconf;
     protected $container;
     protected $logger;
-    protected $logfile = '_SOCKET_';
+    protected $logprefix = ['socket', 'error'];
     protected $socket;
     protected $address = '0.0.0.0';
     protected $port = 8080;
@@ -35,7 +35,7 @@ class SocketService
 
         if (!$result) {
             if ($this->logconf['socket']) {
-                $this->logger->log("Socket 绑定失败：" . socket_strerror(socket_last_error()), $this->logfile);
+                $this->logger->log("Socket 绑定失败：" . socket_strerror(socket_last_error()), $this->logprefix[1]);
             }
         }
 
@@ -44,10 +44,11 @@ class SocketService
 
         if (!$result) {
             if ($this->logconf['socket']) {
-                $this->logger->log("Socket 监听失败：" . socket_strerror(socket_last_error()), $this->logfile);
+                $this->logger->log("Socket 监听失败：" . socket_strerror(socket_last_error()), $this->logprefix[1]);
             }
         }
 
+        $this->logger->log("服务端启动，监听地址：{$this->address}，端口：{$this->port}", $this->logprefix[0]);
         echo "服务端启动，监听地址：{$this->address}，端口：{$this->port}" . PHP_EOL;
 
         // 循环接受客户端连接
@@ -56,13 +57,12 @@ class SocketService
             $clientSocket = socket_accept($this->socket);
 
             if (!$clientSocket) {
-                if ($this->logconf['socket']) {
-                    $this->logger->log("接受客户端连接失败：" . socket_strerror(socket_last_error()), $this->logfile);
-                }
+                $this->logger->log("接受客户端连接失败：" . socket_strerror(socket_last_error()), $this->logprefix[1]);
                 echo "接受客户端连接失败：" . socket_strerror(socket_last_error()) . PHP_EOL;
                 continue;
             }
 
+            $this->logger->log("客户端连接成功", $this->logprefix[0]);
             echo "客户端连接成功" . PHP_EOL;
 
             // 开启一个子进程来处理客户端请求
