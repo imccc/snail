@@ -9,8 +9,7 @@
  * @copyright Copyright (c) 2024 Imccc.
  * @license Apache-2.0
  * @last_modified_at 2024-04-07 03:48
- * 
- * @warning 本服务类不可以有销毁函数，否则将无法记录日志
+ *
  */
 
 namespace Imccc\Snail\Services;
@@ -39,19 +38,19 @@ class LoggerService
 
     /**
      * 根据配置记录日志
-     * 
+     *
      * @param string $message 日志消息
      * @param string $prefix 日志前缀
      */
     public function log($message, $prefix = 'def')
     {
-        // 转成大写 并添加前缀
-        $pre = "__".strtoupper($prefix)."__";
+        // $pre = $this->logconf['logprefix'][$prefix] ?? '';
+        $pre = "__" . strtoupper($prefix) . "__";
         switch ($this->logconf['log_type']) {
             case 'file':
                 // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
                 if ($this->logconf['on'][$prefix] ?? false) {
-                    $this->enqueueLog("[$pre] $message", $prefix);
+                    $this->enqueueLog("[$pre] $message", $pre);
                 }
                 break;
             case 'server':
@@ -63,8 +62,13 @@ class LoggerService
             case 'database':
                 // 如果配置为记录到数据库且当前日志类型在配置中启用，则记录到数据库
                 if ($this->logconf['on'][$prefix] ?? false) {
-                    $this->logToDatabase("$message", $prefix);
+                    $this->logToDatabase("$message", $pre);
                 }
+                break;
+            default:
+                // 如果配置为其他类型，则直接写入服务器日志
+                $this->logToServer("[$pre] $message");
+                throw new Exception('Invalid log type, to see server logs');
                 break;
         }
     }
@@ -97,7 +101,7 @@ class LoggerService
         // SQL 调试信息,只能启示到文本中
         // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
         if ($this->logconf['on'][$prefix] ?? false) {
-            $this->enqueueLog("[$pre] $message", $prefix);
+            $this->enqueueLog("[$pre] $message", $pre);
         }
     }
 
@@ -109,8 +113,7 @@ class LoggerService
      */
     private function resolveFilename($type)
     {
-        $filenamePrefix = $this->logconf['logprefix'][$type] ?? '_DEF_';
-        return $this->logconf['log_file_path'] . '/' . $filenamePrefix . date('YmdH') . '.log';
+        return $this->logconf['log_file_path'] . '/' . $type . date('YmdH') . '.log';
     }
 
     /**
@@ -191,7 +194,7 @@ class LoggerService
         $prefix = $sqlService->getPrefix();
         $realTableName = $prefix . $this->tableName;
 
-        $type = $this->logconf['logprefix'][$type] ?? '';
+        $type = "__" . strtoupper($type) . "__";
 
         // 准备插入语句
         $sql = "INSERT INTO {$realTableName} (times, message, type) VALUES (:times, :message, :type)";
@@ -207,6 +210,7 @@ class LoggerService
         try {
             $sqlService->execute($sql, $params);
         } catch (Exception $e) {
+            throw new Exception("Failed to log to database: " . $e->getMessage());
             // 记录到服务器日志
             error_log("_ERROR_ : Failed to log to database: " . $e->getMessage());
         }
@@ -254,6 +258,7 @@ class LoggerService
         } catch (Exception $e) {
             // 记录到服务器日志
             error_log("ERROR: Failed to clean up database logs: " . $e->getMessage());
+            throw new Exception("Failed to clean up database logs: " . $e->getMessage());
         }
     }
 
