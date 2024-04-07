@@ -105,6 +105,10 @@ class i18nService
      */
     public function getTranslation(string $keyword): ?string
     {
-        return $this->translations[$keyword] ?? null;
+        if ($this->conf['trueon']) {
+            return $this->translations[$keyword] ?? null;
+        } else {
+            return $keyword;
+        }
     }
 }
