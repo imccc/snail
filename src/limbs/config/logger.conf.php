@@ -23,6 +23,6 @@ return [
         'http' => true,
     ],
     'log_file_path' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/logs', // 日志文件路径
-    'log_type' => 'database', // 日志类型，可选值：file, server, database
+    'log_type' => 'file', // 日志类型，可选值：file, server, database
     'batch_size' => 100, // 批量处理的大小,仅对file类型有效
 ];
