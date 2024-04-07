@@ -80,7 +80,7 @@ class Snail
         // 获取所有已经注册的服务
         $bindings = $this->container->getBindings();
         $alises = $this->container->getAliases();
-        $info = "-------------------------<br>";
+        $info = "<br><br>-------------------------<br>";
         // 遍历输出每个服务的信息
         foreach ($bindings as $serviceName => $binding) {
             $info .= "Service Name: $serviceName > ";
