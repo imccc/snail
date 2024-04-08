@@ -10,6 +10,7 @@
  * @license Apache-2.0
  * @last_modified_at 2024-04-07 03:48
  *
+ * @warning logger.conf.php 配置文件中，去掉了写入类型的前缀，改为自动前缀，但是在on中，如果不存在。则不会写入。需要要手动增加在on数组中
  */
 
 namespace Imccc\Snail\Services;
