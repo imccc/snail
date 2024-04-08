@@ -16,6 +16,7 @@ class Snail
 {
     const SNAIL = 'Snail';
     const SNAIL_VERSION = '0.0.1';
+    const PHP_VERSION = '7.2.5';
 
     protected $router;
     protected $config; // 配置服务
@@ -27,6 +28,9 @@ class Snail
 
     public function __construct()
     {
+        if (version_compare(PHP_VERSION, self::PHP_VERSION, '<')) {
+            die('PHP version must be greater than or equal to ' . self::PHP_VERSION);
+        }
         register_shutdown_function([$this, 'pushlog']);
         $this->initializeContainer();
         $this->run();
