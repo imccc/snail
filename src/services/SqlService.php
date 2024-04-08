@@ -748,7 +748,6 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            $this->log('Import SQL Error:' . $sql);
             $this->handleException($e, 'Import SQL Error:' . $sql);
         }
     }
