@@ -1,38 +1,54 @@
 <?php
 // 路由配置
-// 'key' => ['请求地址或者闭包方式', '命名空间', '方法@类名', '模式'],
+//情形一： 'key' => ['方法@类名', '请求方式/默认为get，可以为空','可选指定命名空间‘],
+//情况二： 'key' => [ '闭包函数', '请求方式/默认为get，可以为空'],
+
 return [
-    'web' => [
-        'user/:id/:action' => ['user/:id/:action', 'app\index\controller', 'user@Index', 'GET|POST'],
-
-        // http://domain.com/hello/sam
-        'hello/:any' => ['helle/:any', 'app\index\controller', 'hello@Index', 'get'],
-
-        // http://domain.com
-        '/' => ['index', 'app\index\controller', 'index@Index', 'get'], // 首页路由
-
-        'sendmail' => ['sendmail', 'app\index\controller', 'sendmail@Index', 'post|get'],
-
-        'test' => ['test', 'app\index\controller', 'test@Index', 'get'],
-
-        // http://domain.com/about
-        'about' => ['about', 'app\index\controller', 'about@Index'],
-        'snail' => ['snail', 'app\index\controller', 'snail@Index'],
-
-        // http://domain.com/welcome 直接输出
-        'welcome' => [function () {
-            echo "Welcome to use Snail Framework";
-        }, 'get|post'],
-
-        // http://domain.com/submit
-        'submit' => ['subbmit', 'app\index\controller', 'submit@Blog', 'post|get'],
+    'keyvalue' => true, //使用键对参数 user/abc/id/2,不使用键对参数 user/1/edit
+    'def' => [
+        'default_namespace' => 'app\index\controller',
+        'default_controller' => 'Index',
+        'default_action' => 'index',
     ],
-    'admin' => [
-        'admin/user/:id' => ['admin/user/:id', 'app\admin\controller', 'user@Index', 'GET|POST'],
-        'admin/user/:id/:action' => ['admin/user/:id/:action', 'app\admin\controller', 'user@Index', 'GET|POST'],
+    'namespacemap' => [
+        'web' => 'app\index\controller',
+        'admin' => 'app\admin\controller',
+        'api' => 'app\api\controller',
+        'home' => 'app\home\controller',
+        'blog' => 'app\blog\controller',
     ],
-    'api' => [
-        'api/user/:id' => ['api/user/:id', 'app\api\controller', 'user@Index', 'GET|POST'],
-        'api/user/:id/:action' => ['api/user/:id/:action', 'app\api\controller', 'user@Index', 'GET|POST'],
+    'routemap' => [
+        'web' => [
+            // http://domain.com/user/1/edit
+            'user/:id/:action' => ['user@Index', 'GET|POST'],
+
+            // http://domain.com/hello/abc
+            'hello/:any' => ['hello@Index', 'get','app\index\controller'],
+
+            // http://domain.com
+            '/' => ['index@Index', 'get'], // 首页路由
+
+            // http://domain.com/sendmail
+            'sendmail' => [ 'sendmail@Index', 'post|get'],
+
+            // http://domain.com/about
+            'admin' => [ 'about@Index'],
+
+            // http://domain.com/welcome 直接输出
+            'welcome' => [function () {
+                echo "Welcome to use Snail Framework";
+            }, 'get|post'],
+
+            // http://domain.com/submit
+            'submit' => [ 'submit@Blog', 'post|get'],
+        ],
+        'admin' => [
+            'admin/user/:id' => ['user@Index', 'GET|POST'],
+            'admin/user/:id/:action' => [ 'user@Index', 'GET|POST'],
+        ],
+        'api' => [
+            'api/user/:id' => ['user@Index', 'GET|POST'],
+            'api/user/:id/:action' => ['user@Index', 'GET|POST'],
+        ],
     ],
 ];
