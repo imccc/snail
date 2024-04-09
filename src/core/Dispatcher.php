@@ -9,7 +9,7 @@ class Dispatcher
     protected $middlewares = [];
     protected $container;
 
-    public function __construct(Container $container,$routes)
+    public function __construct(Container $container, $routes)
     {
         $this->routes = $routes;
         $this->container = $container;
@@ -43,38 +43,32 @@ class Dispatcher
             readfile($parsedRoute['file_path']);
             exit;
         }
-
         // 如果路由是闭包，则直接执行闭包并退出
-        if ($parsedRoute['is_closure']) {
-            $closure = $parsedRoute['closure'];
-            if (is_callable($closure)) {
-                $closure(); // 执行闭包
-                exit(); // 执行完闭包后退出
-            }
-        } elseif (in_array('404', $this->routes)) {
+        if (isset($parsedRoute['closure'])) {
+            ($parsedRoute['closure'])(); // 执行闭包
+            exit(); // 执行完闭包后退出
+        } elseif (isset($this->routes['404'])) {
             // 如果路由不存在，则返回 404
             header('HTTP/1.1 404 Not Found');
             exit('404 Not Found');
         } else {
-            // 如果路由不是闭包且不是 404，则继续执行中间件和路由处理器
-            $this->executeMiddlewares(function () {
-                $this->executeRouteHandler();
-            });
-            exit(); // 执行完路由处理器后退出
+            if (isset($parsedRoute['namespace']) && $parsedRoute !== '') {
+                // 如果路由不是闭包且不是 404，则继续执行中间件和路由处理器
+                $this->executeMiddlewares(function () {
+                    $this->executeRouteHandler();
+                });
+                exit(); // 执行完路由处理器后退出
+            }
         }
     }
 
     protected function executeMiddlewares($finalHandler)
     {
-        // 如果没有中间件，则直接执行最终处理器
-        if (empty($this->middlewares)) {
-            $finalHandler();
-            return;
-        }
+        // 逆序遍历中间件数组来构建执行链
+        $middlewares = array_reverse($this->middlewares);
 
-        // 构建中间件执行链
         $next = $finalHandler;
-        foreach ($this->middlewares as $middleware) {
+        foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next) {
                 return $middleware->handle($next);
             };
@@ -92,10 +86,11 @@ class Dispatcher
 
         // 构建控制器类名
         $controllerClass = $namespace . '\\' . $controller;
+        // echo $controllerClass;die;
 
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
-            throw new \RuntimeException('Controller class not found');
+            throw new \RuntimeException("$controllerClass Controller class not found.");
         }
 
         // 创建控制器对象，并传入路由参数数组

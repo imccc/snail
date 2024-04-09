@@ -47,16 +47,17 @@ class Router
     {
         $this->container = $container;
         $this->routeMap = $this->container->resolve('ConfigService')->get('route');
+
         $this->defaultNamespace = $this->routeMap['def']['default_namespace'] ?? '';
-        $this->routeMap = $this->routeMap['routemap'];
-        $this->namespaceMap = $this->routeMap['namespacemap'];
-        $this->useKeyValue = $this->routeMap['keyvalue'] ?? false;
         $this->defaultController = $this->routeMap['def']['default_controller'] ?? '';
         $this->defaultAction = $this->routeMap['def']['default_action'] ?? '';
-        $this->parsedRoute = $this->parseRoute($this->getUri());        
+
+        $this->namespaceMap = $this->routeMap['namespacemap'] ?? [];
+        $this->useKeyValue = $this->routeMap['keyvalue'] ?? false;
+
+        $this->parsedRoute = $this->parseRoute($this->getUri());
     }
 
-   
     /**
      * 获取处理后的URI
      * @return string 处理后的URI
@@ -75,8 +76,13 @@ class Router
      */
     public function parseRoute($url)
     {
-        foreach ($this->routeMap as $group => $routes) {
+        foreach ($this->routeMap['routemap'] as $group => $routes) {
             foreach ($routes as $route => $config) {
+                // 检查请求方法是否符合配置要求
+                if (!$this->checkRequestMethod($config)) {
+                    continue; // 如果不符合，则跳出当前循环，继续下一个路由配置
+                }
+
                 $pattern = $this->generatePattern($route);
                 if (preg_match($pattern, $url, $matches)) {
                     return $this->processMatch($config, $matches);
@@ -89,12 +95,31 @@ class Router
     }
 
     /**
+     * 检查请求方法是否符合配置要求
+     *
+     * @param array $config 路由配置数组
+     * @return bool 请求方法是否符合要求
+     */
+    private function checkRequestMethod($config)
+    {
+        // 获取配置中的请求方法，如果未指定则默认为 GET
+        $allowedMethods = isset($config[1]) ? explode('|', strtoupper($config[1])) : ['GET'];
+
+        // 获取当前请求方法
+        $requestMethod = $_SERVER['REQUEST_METHOD'];
+
+        // 检查当前请求方法是否在允许的方法列表中
+        return in_array($requestMethod, $this->methods);
+    }
+
+    /**
      * 生成路由匹配的正则表达式
      *
      * @param string $route 路由配置中的路由规则
      * @return string 生成的正则表达式
      */
-    private function generatePattern($route){
+    private function generatePattern($route)
+    {
         return '#^' . preg_replace_callback('/:(\w+)/', function ($matches) { // 构建路由正则表达式
             return isset($this->patterns[$matches[1]]) ? '(' . $this->patterns[$matches[1]] . ')' : '([^/]+)';
         }, $route) . '$#';
@@ -118,7 +143,9 @@ class Router
 
         // 如果匹配到的配置是闭包函数，则将闭包函数添加到结果数组中
         if (is_callable($config[0])) {
+            $result = [];
             $result['closure'] = $config[0];
+            return $result;
         } else {
             // 否则，解析方法、类名和命名空间，并将其添加到结果数组中
             $parts = explode('@', $config[0]);
