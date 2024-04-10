@@ -17,6 +17,11 @@ class Controller
     private $_view;
     private $_model;
     private $_method;
+    private $_params;
+    private $_action;
+    private $_controller;
+    private $_module;
+    private $_debuginfo = [];
 
     /**
      * 构造函数
@@ -25,12 +30,19 @@ class Controller
      */
     public function __construct($routes)
     {
-
+        $this->_debuginfo = [
+            'module' => $this->routes['module'],
+            'controller' => $this->routes['controller'],
+            'action' => $this->routes['action'],
+            'params' => $this->routes['params'],
+        ];
         $this->routes = $routes;
+        
         $this->container = Container::getInstance();
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
         $this->api = $this->container->resolve('ApiService');
+
         $this->_view = new View($this->container);
         $this->_model = new Model($this->container);
     }
@@ -128,7 +140,7 @@ class Controller
      * @param string $ps 点分隔的参数键名
      * @return mixed 参数值或者null
      */
-    public function input(string $ps = ''): mixed
+    public function input(string $ps = ''): ?mixed
     {
         if (empty($ps)) {
             return $this->routes;
@@ -192,6 +204,7 @@ class Controller
         }
         // 日志
         $this->logger->log('获取POST请求体\r\n' . $data, $this->logprefix[0]);
+        $this->debuginfo['post_data'] = $data;
         return $data;
     }
 

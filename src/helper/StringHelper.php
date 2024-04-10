@@ -41,6 +41,7 @@ class StringHelper
     {
         // 去除逗号
         $number = str_replace(",", "", $number);
+        $number = str_replace("-", "", $number);
         // 转换成数字
         $number = floatval($number);
 
