@@ -235,6 +235,7 @@ class Router
      */
     public function debug()
     {
+        echo "<h3>以下信息由 类: " . self::class . " 提供</h3>";
         echo '<pre> 解析后的数组：';
         print_r($this->getRouteInfo());
         echo '<br> 路由表信息：<br>';

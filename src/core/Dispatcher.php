@@ -15,6 +15,8 @@ class Dispatcher
     {
         $this->routes = $routes;
         $this->container = $container;
+        // 记录调试信息 本类名称
+        $this->debuginfo['info'] = self::class;
         $this->debuginfo['route'] = $routes;
         $this->debug = $this->container->resolve('ConfigService')->get('logger.on.debug');
         if ($this->debug || defined('DEBUG') == true) {
@@ -116,9 +118,10 @@ class Dispatcher
         }
     }
 
-    private function debug()
+    public function debug()
     {
         $debug = json_encode($this->debuginfo);
+        echo "<h3>以下信息由 类: " . self::class . " 提供</h3>";
         echo "<pre>";
         print_r($debug);
         echo "</pre>";
