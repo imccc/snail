@@ -40,9 +40,12 @@ class Router
         $this->parsedRoute = $this->parseRoute($this->getUri());
 
         // 脚本结束时执行debug,方便调试，开关在router.conf.php中配置
-        register_shutdown_function(function () {
-            $this->debug();
-        });
+        if ($this->routeMap['debug'] || defined('DEBUG') == true) {
+            register_shutdown_function(function () {
+                $this->debug();
+            });
+        }
+
     }
 
     /**

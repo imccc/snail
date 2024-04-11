@@ -8,28 +8,31 @@ class Dispatcher
     protected $routes;
     protected $middlewares = [];
     protected $container;
+    protected $debug;
+    protected $debuginfo = [];
 
     public function __construct(Container $container, $routes)
     {
         $this->routes = $routes;
         $this->container = $container;
+        $this->debuginfo['route'] = $routes;
+        $this->debug = $this->container->resolve('ConfigService')->get('logger.on.debug');
+        if ($this->debug || defined('DEBUG') == true) {
+            register_shutdown_function([$this, 'debug']);
+        }
     }
 
     public function addMiddleware(string $middlewareClass)
     {
         $middlewareInstance = $this->container->make($middlewareClass);
         $this->middlewares[] = $middlewareInstance;
+        $this->debuginfo['middleware'] = $middlewareClass;
         return $this; // 支持链式调用
     }
 
     public function dispatch()
     {
-        try {
-            $this->handleRequest();
-        } catch (\Exception $e) {
-            // 处理异常
-            $this->handleError($e);
-        }
+        $this->handleRequest();
     }
 
     protected function handleRequest()
@@ -41,13 +44,16 @@ class Dispatcher
             // 这是一个静态文件请求，直接返回文件内容
             header('Content-Type: ' . mime_content_type($parsedRoute['file_path']));
             readfile($parsedRoute['file_path']);
+            $this->debuginfo['file'] = $parsedRoute['file_path'];
             exit;
         }
         // 如果路由是闭包，则直接执行闭包并退出
         if (isset($parsedRoute['closure'])) {
             ($parsedRoute['closure'])(); // 执行闭包
+            $this->debuginfo['closure'] = $parsedRoute['closure'];
             exit(); // 执行完闭包后退出
         } elseif (isset($this->routes['404'])) {
+            $this->debuginfo['404'] = $parsedRoute['404'];
             // 如果路由不存在，则返回 404
             header('HTTP/1.1 404 Not Found');
             exit('404 Not Found');
@@ -66,7 +72,7 @@ class Dispatcher
     {
         // 逆序遍历中间件数组来构建执行链
         $middlewares = array_reverse($this->middlewares);
-
+        $this->debuginfo['middleware'] = $middlewares;
         $next = $finalHandler;
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next) {
@@ -83,11 +89,10 @@ class Dispatcher
         $namespace = $this->routes['namespace'];
         $controller = $this->routes['controller'];
         $action = $this->routes['action'];
-
         // 构建控制器类名
         $controllerClass = $namespace . '\\' . $controller;
         // echo $controllerClass;die;
-
+        $this->debuginfo['controllerClass'] = $controllerClass;
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
             throw new \RuntimeException("$controllerClass Controller class not found.");
@@ -97,31 +102,25 @@ class Dispatcher
         $controllerObj = new $controllerClass($this->routes);
 
         // 检查控制器方法是否存在
+        $this->debuginfo['action'] = $action;
         if (!method_exists($controllerObj, $action)) {
             throw new \RuntimeException('Action method not found');
         }
 
         // 调用控制器方法
         $result = call_user_func([$controllerObj, $action]);
-
+        $this->debuginfo['result'] = $result;
         // 输出结果
         if (!empty($result)) {
             echo $result;
         }
     }
 
-    protected function handleError($exception)
+    private function debug()
     {
-        // 设置 HTTP 状态码为 500
-        header('HTTP/1.1 500 Internal Server Error');
-
-        // 输出详细的错误信息
-        echo 'Internal Server Error: ' . $exception->getMessage() . '<br>';
-        echo 'File: ' . $exception->getFile() . '<br>';
-        echo 'Line: ' . $exception->getLine() . '<br>';
-        echo 'Trace: <pre>' . $exception->getTraceAsString() . '</pre>';
-
-        // 退出脚本执行
-        exit();
+        $debug = json_encode($this->debuginfo);
+        echo "<pre>";
+        print_r($debug);
+        echo "</pre>";
     }
 }
