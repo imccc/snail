@@ -88,7 +88,7 @@ class Snail
         // 遍历输出每个服务的信息
         foreach ($bindings as $serviceName => $binding) {
             $info .= "Service Name: $serviceName > ";
-            $info .= "Aliases: " . $alises[$serviceName] . "<br>" ?? '' . "<br>";
+            $info .= "Aliases: " . $alises[$serviceName] ?? '' . "<br>" ?? '' . "<br>";
             // 检查具体实现类是否为闭包
             if ($binding['concrete'] instanceof Closure) {
                 $info .= "Concrete: Closure<br>";

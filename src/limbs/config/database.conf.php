@@ -2,6 +2,7 @@
 
 return [
     'db' => 'mysql',
+    'longconnect' => true, // 是否启用长连接
     'deleted_at' => 'deleted_at', // 软删除字段名称
     'soft_deletes' => true, // 是否启用软删除
     'dsn' => [

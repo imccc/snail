@@ -67,8 +67,15 @@ class SqlService
         $dsnConfig = $this->config['dsn'][$driver];
         $this->prefix = $dsnConfig['prefix'];
         $dsn = $this->buildDsn($driver, $dsnConfig);
+
+        // 根据配置决定是否启用长连接
+        $options = $dsnConfig['options'];
+        if (isset($this->config['longcontact']) && $this->config['longcontact']) {
+            $options[PDO::ATTR_PERSISTENT] = true;
+        }
+
         try {
-            $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $dsnConfig['options'] + [PDO::ATTR_PERSISTENT => true]);
+            $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $options);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             $this->log('Connected to database');
