@@ -24,6 +24,11 @@ class Dispatcher
         }
     }
 
+    /**
+     * 添加中间件
+     * @param string $middlewareClass 中间件类名
+     * @return $this
+     */
     public function addMiddleware(string $middlewareClass)
     {
         $middlewareInstance = $this->container->make($middlewareClass);
@@ -32,11 +37,17 @@ class Dispatcher
         return $this; // 支持链式调用
     }
 
+    /**
+     * 分发请求
+     */
     public function dispatch()
     {
         $this->handleRequest();
     }
 
+    /**
+     * 处理请求
+     */
     protected function handleRequest()
     {
         // 获取路由信息
@@ -70,6 +81,10 @@ class Dispatcher
         }
     }
 
+    /**
+     * 执行中间件和路由处理器
+     * @param callable $finalHandler 最后一个中间件的回调函数
+     */
     protected function executeMiddlewares($finalHandler)
     {
         // 逆序遍历中间件数组来构建执行链
@@ -86,6 +101,9 @@ class Dispatcher
         $next();
     }
 
+    /**
+     * 执行路由处理器
+     */
     protected function executeRouteHandler()
     {
         $namespace = $this->routes['namespace'];
@@ -118,12 +136,14 @@ class Dispatcher
         }
     }
 
+    /**
+     * 调试信息
+     */
     public function debug()
     {
-        $debug = json_encode($this->debuginfo);
-        echo "<h3>以下信息由 类: " . self::class . " 提供</h3>";
+        echo "<h3>以下信息由 类: " . self::class . date("Y-m-d H:i:s") . " 提供</h3>";
         echo "<pre>";
-        print_r($debug);
+        print_r($this->debuginfo);
         echo "</pre>";
     }
 }
