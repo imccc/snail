@@ -38,6 +38,11 @@ class Router
         $this->defaultAction = $this->routeMap['def']['default_action'] ?? 'index';
 
         $this->parsedRoute = $this->parseRoute($this->getUri());
+
+        // 脚本结束时执行debug,方便调试，开关在router.conf.php中配置
+        register_shutdown_function(function () {
+            $this->debug();
+        });
     }
 
     /**
@@ -220,5 +225,17 @@ class Router
     public function isKeyValueMode(): bool
     {
         return $this->routeMap['keyvalue'] ?? false;
+    }
+
+    /**
+     * 执行debug信息
+     */
+    public function debug()
+    {
+        echo '<pre> 解析后的数组：';
+        print_r($this->getRouteInfo());
+        echo '<br> 路由表信息：<br>';
+        print_r($this->routeMap);
+        echo '</pre>';
     }
 }
