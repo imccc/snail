@@ -141,7 +141,7 @@ class Dispatcher
      */
     public function debug()
     {
-        echo "<h3>以下信息由 类: " . self::class . date("Y-m-d H:i:s") . " 提供</h3>";
+        echo "<h3>以下信息由 类: " . self::class . " 提供<small>" . date("Y-m-d H:i:s") . "</small></h3>";
         echo "<pre>";
         print_r($this->debuginfo);
         echo "</pre>";
