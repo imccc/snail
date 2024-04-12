@@ -149,7 +149,7 @@ class SqlService
     protected function handleException(PDOException $e, $opt): void
     {
         // 这里可以添加异常处理逻辑，比如记录日志等
-        $this->log('SQL Error: ' . $opt . $e->getMessage());
+        $this->logger->log('SQL Error: ' . $opt . $e->getMessage(),$this->logprefix[1]);
         // throw $e; // 或者重新抛出异常
         throw new Exception($opt . $e->getMessage());
     }
