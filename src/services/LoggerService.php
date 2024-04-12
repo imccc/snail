@@ -287,12 +287,12 @@ class LoggerService
     private function createTable($table)
     {
         $sqlService = $this->container->resolve('SqlService'); // 解析 SqlService 对象
-        $createTableSql = "CREATE TABLE {$table} (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        times DATETIME NOT NULL,
-        message TEXT NOT NULL,
-        type VARCHAR(255) NOT NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        $createTableSql = "CREATE TABLE $table (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            times DATETIME NOT NULL,
+            message TEXT NOT NULL,
+            type VARCHAR(255) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
         try {
             $sqlService->execute($createTableSql);

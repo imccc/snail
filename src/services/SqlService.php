@@ -70,7 +70,7 @@ class SqlService
 
         // 根据配置决定是否启用长连接
         $options = $dsnConfig['options'];
-        if (isset($this->config['longcontact']) && $this->config['longcontact']) {
+        if (isset($this->config['longconnect']) && $this->config['longconnect']) {
             $options[PDO::ATTR_PERSISTENT] = true;
         }
 
@@ -793,7 +793,7 @@ class SqlService
     public function __destruct()
     {
         // 如果使用了长连接则不关闭
-        if (!$this->config['longcontact']) {
+        if (!$this->config['longconnect']) {
             $this->pdo = null; // 关闭数据库连接
         }
     }
