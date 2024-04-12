@@ -1,29 +1,33 @@
 <?php
 
 return [
-    'debug' => true,
     'on' => [
+        'debug' => false, //总开关，如果为false则关闭所有
+
         'def' => true,
+        // 分级日志
         'log' => true,
         'info' => true,
-        'error' => true,
         'warning' => true,
-        'debug' => true,
-        'dispatch' => true,
+        'error' => true,
+        // 模块日志
+        'http' => true,
         'route' => true,
+        'dispatch' => true,
         'middleware' => true,
-        'config' => true,
-        'sql' => true,
-        'sqlerr' => true,
+        'controller' => true,
         'view' => true,
         'model' => true,
-        'controller' => true,
+        'database' => true,
+        // 服务日志
+        'sql' => true,
+        'sqlerr' => true,
+        'config' => true,
         'container' => true,
+        'service' => true,
         'socket' => true,
         'request' => true,
         'response' => true,
-        'database' => true,
-        'http' => true,
     ],
     'log_file_path' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/logs', // 日志文件路径
     'log_type' => 'file', // 日志类型，可选值：file, server, database

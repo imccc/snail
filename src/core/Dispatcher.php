@@ -17,7 +17,7 @@ class Dispatcher
         $this->container = $container;
         // 记录调试信息 本类名称
         $this->debuginfo['route'] = $routes;
-        if (DEBUG['dispatch']) {
+        if (DEBUG['dispatch'] && DEBUG['debug']) {
             register_shutdown_function([$this, 'debug']);
         }
     }

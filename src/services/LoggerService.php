@@ -45,7 +45,6 @@ class LoggerService
      */
     public function log($message, $prefix = 'def')
     {
-        // $pre = $this->logconf['logprefix'][$prefix] ?? '';
         $pre = "__" . strtoupper($prefix) . "__";
         switch ($this->logconf['log_type']) {
             case 'file':

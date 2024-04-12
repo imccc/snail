@@ -121,7 +121,7 @@ class Snail
             $debug = $this->getServices();
             $this->logger->log('Services:' . $debug, $this->logprefix[0]);
         }
-        if (DEBUG['debug']) {
+        if (DEBUG['service'] && DEBUG['debug']) {
             $this->debug();
         }
     }
