@@ -16,10 +16,8 @@ class Dispatcher
         $this->routes = $routes;
         $this->container = $container;
         // 记录调试信息 本类名称
-        $this->debuginfo['info'] = self::class;
         $this->debuginfo['route'] = $routes;
-        $this->debug = $this->container->resolve('ConfigService')->get('logger.on.debug');
-        if ($this->debug || defined('DEBUG') == true) {
+        if (defined('DEBUG') == true) {
             register_shutdown_function([$this, 'debug']);
         }
     }
@@ -141,7 +139,7 @@ class Dispatcher
      */
     public function debug()
     {
-        echo "<h3>以下信息由 类: " . self::class . " 提供<small>" . date("Y-m-d H:i:s") . "</small></h3>";
+        echo "<h3>以下信息由 类: " . self::class . " 提供 <small>@ " . date("Y-m-d H:i:s") . "</small></h3>";
         echo "<pre>";
         print_r($this->debuginfo);
         echo "</pre>";

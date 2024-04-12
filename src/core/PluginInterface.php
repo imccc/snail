@@ -49,4 +49,16 @@ interface PluginInterface
      * @return array
      */
     public function getDependencies(): array;
+
+    /**
+     * 获取插件配置
+     *
+     * @return array
+     */
+    public function getConfig(): array;
+
+    /**
+     * 日志
+     */
+    public function log($msg, $prefix = 'info'): void;
 }

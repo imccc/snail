@@ -40,7 +40,7 @@ class Router
         $this->parsedRoute = $this->parseRoute($this->getUri());
 
         // 脚本结束时执行debug,方便调试，开关在router.conf.php中配置
-        if ($this->routeMap['debug'] || defined('DEBUG') == true) {
+        if (defined('DEBUG') == true) {
             register_shutdown_function(function () {
                 $this->debug();
             });
@@ -235,7 +235,7 @@ class Router
      */
     public function debug()
     {
-        echo "<h3>以下信息由 类: " . self::class . " 提供<small>" . date("Y-m-d H:i:s") . "</small></h3>";
+        echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
         echo '<pre> 解析后的数组：';
         print_r($this->getRouteInfo());
         echo '<br> 路由表信息：<br>';

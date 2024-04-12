@@ -6,6 +6,7 @@ namespace Imccc\Snail;
 defined('CONFIG_PATH') || define('CONFIG_PATH', dirname(__DIR__) . '/src/limbs/config');
 defined('CFG_EXT') || define('CFG_EXT', '.conf.php');
 defined('START_TIME') || define('START_TIME', microtime(true));
+defined('DEBUG') || define('DEBUG', false);
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
