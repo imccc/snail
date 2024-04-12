@@ -39,8 +39,8 @@ class Router
 
         $this->parsedRoute = $this->parseRoute($this->getUri());
 
-        // 脚本结束时执行debug,方便调试，开关在router.conf.php中配置
-        if (defined('DEBUG') == true) {
+        // 脚本结束时执行debug,方便调试，开关在router.conf.php中的on节点配置
+        if (DEBUG['route']) {
             register_shutdown_function(function () {
                 $this->debug();
             });

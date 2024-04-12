@@ -6,7 +6,6 @@ namespace Imccc\Snail;
 defined('CONFIG_PATH') || define('CONFIG_PATH', dirname(__DIR__) . '/src/limbs/config');
 defined('CFG_EXT') || define('CFG_EXT', '.conf.php');
 defined('START_TIME') || define('START_TIME', microtime(true));
-defined('DEBUG') || define('DEBUG', false);
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
@@ -24,7 +23,7 @@ class Snail
     protected $conf; // snail配置
     protected $logconf; // 日志配置
     protected $logger; // 日志服务
-    protected $logprefix = ['debug','info', 'error'];
+    protected $logprefix = ['debug', 'info', 'error'];
     protected $container;
 
     public function __construct()
@@ -32,7 +31,6 @@ class Snail
         if (version_compare(PHP_VERSION, self::PHP_VERSION, '<')) {
             die('PHP version must be greater than or equal to ' . self::PHP_VERSION);
         }
-        register_shutdown_function([$this, 'pushlog']);
         $this->initializeContainer();
         $this->run();
     }
@@ -75,6 +73,7 @@ class Snail
         $this->logconf = $this->config->get('logger.on');
 
         // 系统配置
+        define('DEBUG', $this->logconf);
     }
 
     /**
@@ -102,9 +101,15 @@ class Snail
         return $info;
     }
 
-    public function pushlog()
+    /**
+     * 执行debug信息
+     */
+    public function debug()
     {
-        $this->logger->log('Snail Run Success. Use Times:' . (microtime(true) - START_TIME) * 1000 . " ms",$this->logprefix[1]);
+        echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        echo '<pre>';
+        print_r($this->getServices());
+        echo '</pre>';
     }
 
     /**
@@ -112,12 +117,13 @@ class Snail
      */
     public function __destruct()
     {
-        if ($this->logconf['debug'] && $this->logconf['log']) {
+        if (DEBUG['log']) {
             $debug = $this->getServices();
             $this->logger->log('Services:' . $debug, $this->logprefix[0]);
-            echo $debug;
         }
-
+        if (DEBUG['debug']) {
+            $this->debug();
+        }
     }
 
 }
