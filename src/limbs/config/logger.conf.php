@@ -2,11 +2,11 @@
 
 return [
     'on' => [
-        'debug' => false, //总开关，如果为false则关闭所有
-
-        'def' => true,
+        // 总开关
+        'debug' => false, //调试总开关，如果为false则关闭所有
+        'log' => true, // 日志总开关，如果为false则关闭所有
         // 分级日志
-        'log' => true,
+        'def' => true,
         'info' => true,
         'warning' => true,
         'error' => true,
@@ -28,8 +28,10 @@ return [
         'socket' => true,
         'request' => true,
         'response' => true,
+        // 其它自定义调试信息开关，可自行增加
     ],
     'log_file_path' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/logs', // 日志文件路径
-    'log_type' => 'file', // 日志类型，可选值：file, server, database
     'batch_size' => 100, // 批量处理的大小,仅对file类型有效
+    'log_type' => 'file', // 日志类型，可选值：file, server, database
+    'log_db_table' => 'logs', // 数据库表名 ,不考虑前缀，和数据库配置通用。
 ];

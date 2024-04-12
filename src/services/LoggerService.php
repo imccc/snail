@@ -25,7 +25,7 @@ class LoggerService
     private $config; // 配置服务
     private $logconf; // 日志配置
     private $container; // 容器
-    private $tableName = 'logs';
+    private $tableName;
 
     public function __construct(Container $container)
     {
@@ -33,6 +33,7 @@ class LoggerService
         // 解析配置服务并获取日志配置信息
         $this->config = $this->container->resolve('ConfigService');
         $this->logconf = $this->config->get('logger');
+        $this->tableName = $this->logconf['log_db_table'];
         // 注册一个脚本结束时的回调，用于处理日志队列中剩余的日志
         register_shutdown_function([$this, 'flushLogs']);
     }
