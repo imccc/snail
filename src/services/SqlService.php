@@ -125,6 +125,14 @@ class SqlService
     }
 
     /**
+     * 构建表名
+     */
+    public function setTable($table)
+    {
+        return $this->prefix . $table;
+    }
+
+    /**
      * 处理异常
      *
      * @param PDOException $e 异常对象
@@ -759,11 +767,11 @@ class SqlService
         }
     }
 
-/**
- * 递归删除目录
- *
- * @param string $directory 目录路径
- */
+    /**
+     * 递归删除目录
+     *
+     * @param string $directory 目录路径
+     */
     private function deleteDirectory($directory)
     {
         if (!file_exists($directory)) {
@@ -784,6 +792,9 @@ class SqlService
 
     public function __destruct()
     {
-        $this->pdo = null; // 关闭数据库连接
+        // 如果使用了长连接则不关闭
+        if (!$this->config['longcontact']) {
+            $this->pdo = null; // 关闭数据库连接
+        }
     }
 }

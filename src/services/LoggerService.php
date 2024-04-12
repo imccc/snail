@@ -195,6 +195,11 @@ class LoggerService
         $prefix = $sqlService->getPrefix();
         $realTableName = $prefix . $this->tableName;
 
+        // 确保日志数据库表存在
+        if (!$this->checkTableExists($realTableName)) {
+            $this->createTable($realTableName);
+        }
+
         $type = "__" . strtoupper($type) . "__";
 
         // 准备插入语句
@@ -260,6 +265,41 @@ class LoggerService
             // 记录到服务器日志
             error_log("ERROR: Failed to clean up database logs: " . $e->getMessage());
             throw new Exception("Failed to clean up database logs: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 检查日志表是否存在
+     *
+     * @return bool 返回 true 如果表存在，否则返回 false
+     */
+    private function checkTableExists($table)
+    {
+        $sqlService = $this->container->resolve('SqlService'); // 解析 SqlService 对象
+        $checkTableExistsSql = "SHOW TABLES LIKE '{$table}'";
+        $tableExists = $sqlService->query($checkTableExistsSql);
+        return !empty($tableExists);
+    }
+
+/**
+ * 创建日志表
+ */
+    private function createTable($table)
+    {
+        $sqlService = $this->container->resolve('SqlService'); // 解析 SqlService 对象
+        $createTableSql = "CREATE TABLE {$table} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        times DATETIME NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(255) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+        try {
+            $sqlService->execute($createTableSql);
+        } catch (Exception $e) {
+            // 记录到服务器日志
+            error_log("ERROR: Failed to create log table: " . $e->getMessage());
+            throw new Exception("Failed to create log table: " . $e->getMessage());
         }
     }
 
