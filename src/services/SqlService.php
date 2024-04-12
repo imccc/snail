@@ -92,16 +92,19 @@ class SqlService
      */
     private function buildDsn($driver, $dsnConfig)
     {
+        $dsn = '';
         switch ($driver) {
             case 'mysql':
-                return "mysql:host={$dsnConfig['host']};dbname={$dsnConfig['dbname']};charset={$dsnConfig['charset']};port={$dsnConfig['port']}";
+                $dsn = "mysql:host={$dsnConfig['host']};dbname={$dsnConfig['dbname']};charset={$dsnConfig['charset']};port={$dsnConfig['port']}";
             case 'sqlsrv':
-                return "sqlsrv:Server={$dsnConfig['host']},{$dsnConfig['port']};Database={$dsnConfig['dbname']};charset={$dsnConfig['charset']}";
+                $dsn = "sqlsrv:Server={$dsnConfig['host']},{$dsnConfig['port']};Database={$dsnConfig['dbname']};charset={$dsnConfig['charset']}";
             case 'oci':
-                return "oci:dbname={$dsnConfig['dbname']}";
+                $dsn = "oci:dbname={$dsnConfig['dbname']}";
             default:
                 throw new Exception("Unsupported database driver: $driver");
         }
+        $this->log($dsn);
+        return $dsn;
     }
 
     /**
@@ -143,7 +146,7 @@ class SqlService
     protected function handleException(PDOException $e, $opt): void
     {
         // 这里可以添加异常处理逻辑，比如记录日志等
-        $this->log('SQL Error: ' . $opt . $e->getMessage(), $this->logprefix[1]);
+        $this->log('SQL Error: ' . $opt . $e->getMessage());
         // throw $e; // 或者重新抛出异常
         throw new Exception($opt . $e->getMessage());
     }
