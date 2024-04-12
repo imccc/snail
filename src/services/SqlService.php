@@ -96,10 +96,13 @@ class SqlService
         switch ($driver) {
             case 'mysql':
                 $dsn = "mysql:host={$dsnConfig['host']};dbname={$dsnConfig['dbname']};charset={$dsnConfig['charset']};port={$dsnConfig['port']}";
+                break;
             case 'sqlsrv':
                 $dsn = "sqlsrv:Server={$dsnConfig['host']},{$dsnConfig['port']};Database={$dsnConfig['dbname']};charset={$dsnConfig['charset']}";
+                break;
             case 'oci':
                 $dsn = "oci:dbname={$dsnConfig['dbname']}";
+                break;
             default:
                 throw new Exception("Unsupported database driver: $driver");
         }
