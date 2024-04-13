@@ -72,7 +72,7 @@ class Snail
         // 日志配置
         $this->logconf = $this->config->get('logger.on');
 
-        // 系统配置
+        // 系统配置 用define主要是为了全局使用，不然在应用中直接加载就可以了
         define('DEBUG', $this->logconf);
     }
 
@@ -117,7 +117,7 @@ class Snail
      */
     public function __destruct()
     {
-        if (DEBUG['log']) {
+        if (DEBUG['log'] && DEBUG['debug']) {
             $debug = $this->getServices();
             $this->logger->log('Services:' . $debug, $this->logprefix[0]);
         }

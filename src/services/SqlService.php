@@ -47,16 +47,6 @@ class SqlService
     }
 
     /**
-     * 常规日志
-     *
-     * @param string $msg 日志消息
-     */
-    public function log($msg)
-    {
-        $this->logger->logSql($msg, $this->logprefix[0]);
-    }
-
-    /**
      * 连接到数据库
      *
      * @return PDO PDO对象
@@ -73,7 +63,7 @@ class SqlService
         if (isset($this->config['longconnect']) && $this->config['longconnect']) {
             $options[PDO::ATTR_PERSISTENT] = true;
         }
-
+        
         try {
             $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $options);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -106,7 +96,7 @@ class SqlService
             default:
                 throw new Exception("Unsupported database driver: $driver");
         }
-        $this->log($dsn);
+        $this->log('DSN: ' . $dsn);
         return $dsn;
     }
 
@@ -132,26 +122,14 @@ class SqlService
 
     /**
      * 构建表名
+     *
+     * @param string $table 表名
+     * @return string 构建后的表名
+     * 主要是给model使用
      */
     public function setTable($table)
     {
         return $this->prefix . $table;
-    }
-
-    /**
-     * 处理异常
-     *
-     * @param PDOException $e 异常对象
-     * @param string $opt 操作类型
-     * @return void
-     * @throws Exception 如果处理异常出错，则抛出异常
-     */
-    protected function handleException(PDOException $e, $opt): void
-    {
-        // 这里可以添加异常处理逻辑，比如记录日志等
-        $this->logger->log('SQL Error: ' . $opt . $e->getMessage(),$this->logprefix[1]);
-        // throw $e; // 或者重新抛出异常
-        throw new Exception($opt . $e->getMessage());
     }
 
     /**
@@ -754,13 +732,13 @@ class SqlService
         }
     }
 
-/**
- * 导入单个 SQL 文件
- *
- * @param string $filePath SQL 文件路径
- * @return bool 是否成功
- * @throws Exception 如果导入 SQL 失败，则抛出异常
- */
+    /**
+     * 导入单个 SQL 文件
+     *
+     * @param string $filePath SQL 文件路径
+     * @return bool 是否成功
+     * @throws Exception 如果导入 SQL 失败，则抛出异常
+     */
     private function importSingleSqlFile($filePath)
     {
         $sql = file_get_contents($filePath);
@@ -794,6 +772,32 @@ class SqlService
             }
         }
         rmdir($directory);
+    }
+
+    /**
+     * 处理异常
+     *
+     * @param PDOException $e 异常对象
+     * @param string $opt 操作类型
+     * @return void
+     * @throws Exception 如果处理异常出错，则抛出异常
+     */
+    protected function handleException(PDOException $e, $opt): void
+    {
+        // 这里可以添加异常处理逻辑，比如记录日志等
+        $this->log('SQL Error: ' . $opt . $e->getMessage(), $this->logprefix[1]);
+        // throw $e; // 或者重新抛出异常
+        throw new Exception($opt . $e->getMessage());
+    }
+
+    /**
+     * 常规日志
+     *
+     * @param string $msg 日志消息
+     */
+    private function log($msg)
+    {
+        $this->logger->logSql($msg, $this->logprefix[0]);
     }
 
     public function __destruct()

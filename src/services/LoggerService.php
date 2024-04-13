@@ -8,9 +8,10 @@
  * @status  beta
  * @copyright Copyright (c) 2024 Imccc.
  * @license Apache-2.0
- * @last_modified_at 2024-04-07 03:48
+ * @last_modified_at 2024-04-12 23:08
  *
- * @warning logger.conf.php 配置文件中，去掉了写入类型的前缀，改为自动前缀，但是在on中，如果不存在。则不会写入。需要要手动增加在on数组中
+ * @warning logger.conf.php 配置文件中，去掉了写入类型的前缀，改为自动前缀，
+ * 但是在on中，如果不存在。则不会写入。需要要手动增加在on数组中，当前已修得sql表不存在的问题
  */
 
 namespace Imccc\Snail\Services;
@@ -92,14 +93,13 @@ class LoggerService
     }
 
     /**
-     * 记录SQL调试信息 专为SQLSERVER使用
+     * 记录SQL调试信息 专为SQL使用 ，调试信息,只能记录到文本类型中
      * @param string $message 日志内容
      * @param string $prefix 日志前缀
      */
     public function logSql($message, $prefix = 'sql')
     {
         $pre = "__" . strtoupper($prefix) . "__";
-        // SQL 调试信息,只能启示到文本中
         // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
         if ($this->logconf['on'][$prefix] ?? false) {
             $this->enqueueLog("[$pre] $message", $pre);
@@ -276,26 +276,25 @@ class LoggerService
     private function checkTableExists($table)
     {
         $sqlService = $this->container->resolve('SqlService'); // 解析 SqlService 对象
-        $checkTableExistsSql = "SHOW TABLES LIKE '{$table}'";
+        $checkTableExistsSql = "SHOW TABLES LIKE '$table'"; // link SQL一定要是单引号
         $tableExists = $sqlService->query($checkTableExistsSql);
         return !empty($tableExists);
     }
 
-/**
- * 创建日志表
- */
+    /**
+     * 创建日志表
+     */
     private function createTable($table)
     {
         $sqlService = $this->container->resolve('SqlService'); // 解析 SqlService 对象
-        $createTableSql = "CREATE TABLE $table (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            times DATETIME NOT NULL,
-            message TEXT NOT NULL,
-            type VARCHAR(255) NOT NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
+        $columns = [
+            'id' => 'INT AUTO_INCREMENT PRIMARY KEY',
+            'times' => 'DATETIME',
+            'message' => 'TEXT',
+            'type' => 'VARCHAR(255)'
+        ];
         try {
-            $sqlService->execute($createTableSql);
+            $sqlService->createTable($table,$columns);
         } catch (Exception $e) {
             // 记录到服务器日志
             error_log("ERROR: Failed to create log table: " . $e->getMessage());
