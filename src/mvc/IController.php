@@ -32,7 +32,7 @@ interface IController
      * @param string $info 调试信息
      * @return void
      */
-    public function debug(string $info): void;
+    public function debug(): void;
 
     /**
      * 将数据分配到视图。
@@ -51,12 +51,7 @@ interface IController
      */
     public function input(string $param);
 
-    /**
-     * 获取POST数据。
-     *
-     * @return array
-     */
-    public function getPost();
+   
 
     /**
      * 验证用户权限。
