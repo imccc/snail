@@ -9,11 +9,11 @@ defined('START_TIME') || define('START_TIME', microtime(true));
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
-use Imccc\Snail\Core\HandlerException;
 use Imccc\Snail\Core\Router;
 
 class Snail
 {
+    use ExceptionHandlerTrait;
     const SNAIL = 'Snail';
     const SNAIL_VERSION = '0.0.1';
     const PHP_VERSION = '7.2.5';
@@ -41,7 +41,7 @@ class Snail
     public function run()
     {
         // 注册全局异常处理函数
-        set_error_handler([HandlerException::class, 'handleException']);
+        set_error_handler([ExceptionHandlerTrait::class, 'handleException']);
 
         //初始化路由
         $d = new Router($this->container);

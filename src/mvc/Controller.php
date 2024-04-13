@@ -179,7 +179,7 @@ class Controller implements IController
      * @param mixed $input 输入数据
      * @return mixed 过滤后的数据
      */
-    protected function sanitizeInput($input)
+    public function sanitizeInput($input)
     {
         // 如果输入数据是数组，则递归对数组元素进行过滤
         if (is_array($input)) {
