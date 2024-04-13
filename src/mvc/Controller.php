@@ -29,7 +29,7 @@ class Controller implements IController
         $this->routes = $routes;
 
         $this->_debuginfo = [
-            'module' => $this->routes['module'],
+            'namespace' => $this->routes['namespace'],
             'controller' => $this->routes['controller'],
             'action' => $this->routes['action'],
             'params' => $this->routes['params'],
@@ -39,6 +39,11 @@ class Controller implements IController
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
         $this->conf = $this->config->get('logger.on');
+
+        if (DEBUG['controller'] && DEBUG['debug']) {
+            register_shutdown_function([$this, 'debug']);
+        }
+
     }
 
     /**
@@ -207,7 +212,7 @@ class Controller implements IController
     {
         echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
         echo '<pre>';
-        print_r($this->getServices());
+        print_r($this->_debuginfo);
         echo '</pre>';
     }
 
@@ -220,17 +225,4 @@ class Controller implements IController
         return true;
     }
 
-    /**
-     * 销毁
-     */
-    public function __destruct()
-    {
-        if (DEBUG['log'] && DEBUG['debug']) {
-            $debug = $this->getServices();
-            $this->logger->log('Services:' . $debug, $this->logprefix[0]);
-        }
-        if (DEBUG['controller'] && DEBUG['debug']) {
-            $this->debug();
-        }
-    }
 }

@@ -3,9 +3,10 @@
 namespace Imccc\Snail\Mvc;
 
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Mvc\IModel;
 use PDOException;
 
-class Model
+class Model implements IModel
 {
     protected $container;
     protected $sqlService;

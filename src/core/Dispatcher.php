@@ -2,6 +2,7 @@
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Core\HandlerException;
 
 class Dispatcher
 {
@@ -113,6 +114,7 @@ class Dispatcher
         $this->debuginfo['controllerClass'] = $controllerClass;
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
+
             throw new \RuntimeException("$controllerClass Controller class not found.");
         }
 
