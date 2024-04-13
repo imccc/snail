@@ -2,7 +2,7 @@
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Core\HandlerException;
+use Imccc\Snail\Core\ExceptionHandlerTrait;
 
 class Dispatcher
 {
@@ -114,8 +114,7 @@ class Dispatcher
         $this->debuginfo['controllerClass'] = $controllerClass;
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
-
-            throw new \RuntimeException("$controllerClass Controller class not found.");
+            ExceptionHandlerTrait::handleException("$controllerClass Controller class not found.");
         }
 
         // 创建控制器对象，并传入路由参数数组
@@ -124,7 +123,7 @@ class Dispatcher
         // 检查控制器方法是否存在
         $this->debuginfo['action'] = $action;
         if (!method_exists($controllerObj, $action)) {
-            throw new \RuntimeException('Action method not found');
+            ExceptionHandlerTrait::handleException("$action Action method not found in $controllerClass Controller.");
         }
 
         // 调用控制器方法
