@@ -198,7 +198,7 @@ class Controller implements IController
         return $headers;
     }
 
-      /**
+    /**
      * 添加调试信息。
      *
      * @return void
@@ -211,7 +211,7 @@ class Controller implements IController
         echo '</pre>';
     }
 
-      /**
+    /**
      * 销毁
      */
     public function __destruct()
