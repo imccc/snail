@@ -9,8 +9,8 @@ defined('START_TIME') || define('START_TIME', microtime(true));
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
-use Imccc\Snail\Core\Router;
 use Imccc\Snail\Core\ExceptionHandlerTrait;
+use Imccc\Snail\Core\Router;
 
 class Snail
 {
@@ -74,6 +74,12 @@ class Snail
 
         // 系统配置 用define主要是为了全局使用，不然在应用中直接加载就可以了
         define('DEBUG', $this->logconf);
+
+        if (DEBIG['report']) {
+            set_errorerror_reporting(E_ALL); //报告所有错误
+        } else {
+            error_reporting(0); //关闭所有错误报告
+        }
     }
 
     /**

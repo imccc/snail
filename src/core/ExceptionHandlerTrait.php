@@ -62,25 +62,23 @@ trait ExceptionHandlerTrait
     // 显示详细错误信息
     protected static function showDetailedError(Throwable $exception): void
     {
+        $errorCode = self::extractErrorCode($exception);
+
         // 错误类型映射
         $errorTypeMap = [
-            E_ERROR => 'ERROR', E_WARNING => 'WARNING', E_PARSE => 'PARSE',
-            E_NOTICE => 'NOTICE', E_CORE_ERROR => 'CORE_ERROR', E_CORE_WARNING => 'CORE_WARNING', E_COMPILE_ERROR => 'COMPILE_ERROR',
-            E_COMPILE_WARNING => 'COMPILE_WARNING', E_USER_ERROR => 'USER_ERROR', E_USER_WARNING => 'USER_WARNING',
-            E_USER_NOTICE => 'USER_NOTICE', E_STRICT => 'STRICT', E_RECOVERABLE_ERROR => 'RECOVERABLE_ERROR',
-            E_DEPRECATED => 'DEPRECATED', E_USER_DEPRECATED => 'USER_DEPRECATED',
+            '0' => 'EXCEPTION', '1' => 'ERROR', '2' => 'WARNING', '4' => 'PARSE',
+            '8' => 'NOTICE', '16' => 'CORE_ERROR', '32' => 'CORE_WARNING', '64' => 'COMPILE_ERROR',
+            '128' => 'COMPILE_WARNING', '256' => 'USER_ERROR', '512' => 'USER_WARNING',
+            '1024' => 'USER_NOTICE', '2048' => 'STRICT', '4096' => 'RECOVERABLE_ERROR',
+            '8192' => 'DEPRECATED', '16384' => 'USER_DEPRECATED',
         ];
 
-        // 获取错误码对应的错误类型，如果未定义则为UNKNOWN
-        $errorCode = self::extractErrorCode($exception);
-        $errorType = $errorTypeMap[$errorCode] ?? 'UNKNOWN';
-
         // 显示错误类型和堆栈跟踪
-        echo '<p>Error Type: ' . $errorType . '</p>';
+        echo '<p>Error Type: ' . $errorTypeMap[$errorCode] . '</p>';
         echo '<p>Stack Trace:</p>';
         echo '<pre style="color:blue">' . self::formatStackTrace($exception->getTrace()) . '</pre>';
-        echo '<p>Original Stack Trace:</p>';
-        echo '<p style="color:gray">' . $exception->getTraceAsString() . '</p>';
+        // echo '<p>Original Stack Trace:</p>';
+        // echo '<p style="color:gray">' . $exception->getTraceAsString() . '</p>';
     }
 
     // 提取错误码

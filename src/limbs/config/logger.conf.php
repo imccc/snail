@@ -5,6 +5,7 @@ return [
         // 总开关
         'debug' => false, //调试总开关，如果为false则关闭所有
         'log' => true, // 日志总开关，如果为false则关闭所有
+        'report' => true, // 错误报告总开关，如果为false则关闭所有错误报告
         // 分级日志
         'def' => true,
         'info' => true,
