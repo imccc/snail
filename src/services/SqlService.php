@@ -63,11 +63,9 @@ class SqlService
         if (isset($this->config['longconnect']) && $this->config['longconnect']) {
             $options[PDO::ATTR_PERSISTENT] = true;
         }
-        
+
         try {
             $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $options);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             $this->log('Connected to database');
         } catch (PDOException $e) {
             $this->log('Database Connection Error: ' . $e->getMessage());

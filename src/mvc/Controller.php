@@ -1,113 +1,169 @@
 <?php
 namespace Imccc\Snail\Mvc;
 
-use Imccc\Snail\Core\Api;
 use Imccc\Snail\Core\Container;
-use RuntimeException;
+use Imccc\Snail\Core\IController;
 
-class Controller
+class Controller implements IController
 {
     protected $api;
-    protected $config; // 配置信息
-    protected $routes; // 用于存储路由信息
+    protected $config;
+    protected $conf;
+    protected $routes;
     protected $container;
     protected $logger;
-    protected $logprefix = ['controller', 'error'];
+    protected $logprefix = ['controller', 'error', 'debug'];
+    protected $_debuginfo;
     protected $_data = [];
     private $_view;
     private $_model;
-    private $_method;
-    private $_params;
+    private $_tpl;
+    private $_input;
+    private $_post;
+    private $_permission;
     private $_action;
-    private $_controller;
-    private $_module;
-    private $_debuginfo = [];
+    private $_api;
 
-    /**
-     * 构造函数
-     *
-     * @param array $routes 路由数组
-     */
     public function __construct($routes)
     {
+        $this->routes = $routes;
+
         $this->_debuginfo = [
             'module' => $this->routes['module'],
             'controller' => $this->routes['controller'],
             'action' => $this->routes['action'],
             'params' => $this->routes['params'],
         ];
-        $this->routes = $routes;
-        
+
         $this->container = Container::getInstance();
-        $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
-        $this->api = $this->container->resolve('ApiService');
-
-        $this->_view = new View($this->container);
-        $this->_model = new Model($this->container);
+        $this->config = $this->container->resolve('ConfigService');
+        $this->conf = $this->config->get('logger.on');
     }
 
     /**
-     * 注册服务
-     *
-     * @param string $name 服务名称
-     * @param mixed $service 服务对象
+     * 生成API方法
+     * @return void
      */
-    public function registerService(string $name, $service): void
+    public function api()
     {
-        $this->container->bind($name, $service);
+        if (!$this->_api) {
+            $this->_api = new Api($this->container);
+        }
+        return $this->_api;
     }
 
     /**
-     * 分配数据给视图
+     * 获取与控制器关联的模型实例。
      *
-     * @param string|array $key 参数键名或参数数组
-     * @param mixed $value 参数值（仅在第一个参数为键名时有效）
+     * @return mixeds
      */
-    public function assign($key, $value = null): void
+    public function getModel()
+    {
+        if (!$this->_model) {
+            $this->_model = new Model($this->container);
+        }
+        return $this->_model;
+
+    }
+
+    /**
+     * 获取与控制器关联的视图实例。
+     *
+     * @return mixed
+     */
+    public function getView()
+    {
+        if (!$this->_view) {
+            $this->_view = new View($this->container);
+        }
+        return $this->_view;
+
+    }
+
+    /**
+     * 显示视图
+     *
+     * @param string $tpl 模版信息，可以为空
+     * @return void
+     */
+    public function display($tpl = '')
+    {
+        if (!empty($tpl)) {
+            $this->_tpl = $tpl;
+        }
+        // 根据视图模板和数据渲染视图，并返回渲染结果
+        return $this->_view->render($this->_tpl, $this->_data);
+    }
+
+    /**
+     * 将数据分配到视图。
+     *
+     * @param string $key 数据键
+     * @param mixed $value 数据值
+     * @return void
+     */
+    public function assign(string $key, $value): void
     {
         $this->_view->assign($key, $value);
     }
 
     /**
-     * 动态展示视图，不生成缓存
+     * 处理输入参数。
      *
-     * @param string $tpl 视图文件路径
-     * @return string 视图内容
+     * @param string|null $param 参数名称，为空时返回所有输入参数
+     * @return mixed
      */
-    public function display(string $tpl = null): string
+    public function input(string $param = null)
     {
-        $this->_view->setData($this->_data);
-        return $this->_view->render($tpl);
-    }
+        // 获取所有输入参数
+        $input = array_merge($_GET, $_POST, $_FILES, $_COOKIE);
 
-    /**
-     * 使用模版渲染视图,生成静态缓存
-     */
-    public function cache($tpl = null)
-    {
-        $this->_view->cache($tpl);
-        return $this;
-    }
+        // 添加请求头信息到输入参数中
+        $input['headers'] = $this->getallheaders();
 
-    /**
-     * 输出API数据
-     */
-    public function api($data = null)
-    {
-        $this->_api = new Api($this->container);
-        $this->_api->show($data);
-        return $this;
-    }
+        // 添加请求体数据到输入参数中
+        $rawData = file_get_contents('php://input');
 
-    /**
-     * 设置请求方法
-     *
-     * @param string $method 请求方法
-     */
-    public function setRequestMethod(string $method): void
-    {
-        $this->_method = strtoupper($method);
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        switch (true) {
+            case strpos($contentType, 'application/json') !== false:
+                $input['body'] = json_decode($rawData, true);
+                break;
+            case strpos($contentType, 'application/x-www-form-urlencoded') !== false:
+                parse_str($rawData, $input['body']);
+                break;
+            case strpos($contentType, 'application/xml') !== false:
+                $data = simplexml_load_string($rawData);
+                if ($data === false) {
+                    $this->logger->log('XML 解析错误', $this->logprefix[1]);
+                    throw new RuntimeException('XML 解析错误');
+                }
+                $input['body'] = (array) $data;
+                break;
+            default:
+                $input['body'] = [];
+        }
+
+        // 如果未指定参数名称，则返回所有输入参数
+        if ($param === null) {
+            return $input;
+        }
+
+        // 按点分隔的参数名称
+        $keys = explode('.', $param);
+
+        // 逐层查找参数值
+        $value = $input;
+        foreach ($keys as $key) {
+            if (isset($value[$key])) {
+                $value = $value[$key];
+            } else {
+                return null; // 参数不存在时返回 null
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -121,91 +177,6 @@ class Controller
         $this->_method = $this->setRequestMethod($_SERVER['REQUEST_METHOD']) ?? ''; // 获取请求方法
         $allowedMethods = is_array($allowedMethods) ? $allowedMethods : explode(',', $allowedMethods);
         return in_array($this->_method, array_map('strtoupper', $allowedMethods));
-    }
-
-    /**
-     * 创建模型
-     *
-     * @param string $model 模型类名
-     * @return Model 模型对象
-     */
-    public function setModel(string $model): Model
-    {
-        return $this->_model->setModel($model);
-    }
-
-    /**
-     * 根据点分隔的键名读取请求参数
-     *
-     * @param string $ps 点分隔的参数键名
-     * @return mixed 参数值或者null
-     */
-    public function input(string $ps = ''): ?mixed
-    {
-        if (empty($ps)) {
-            return $this->routes;
-        }
-
-        $keys = explode('.', $ps);
-        $value = $this->routes;
-
-        // 按点分隔的键名逐层查找
-        foreach ($keys as $key) {
-            if (isset($value[$key])) {
-                $value = $value[$key];
-            } else {
-                return null; // 没找到指定的键名时返回null
-            }
-        }
-
-        $this->logger->log("获取参数： $ps  值: $value", $this->logprefix[0]);
-        return $value;
-    }
-
-    /**
-     * 获取POST请求体中的数据
-     *
-     * 根据Content-Type处理不同格式的请求体
-     *
-     * @return mixed 解析后的数据
-     * @throws RuntimeException 解析错误时抛出异常
-     */
-    public function getPost(): mixed
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return [];
-        }
-
-        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-        $rawData = file_get_contents('php://input');
-
-        switch (true) {
-            case strpos($contentType, 'application/json') !== false:
-                $data = json_decode($rawData, true);
-                break;
-            case strpos($contentType, 'application/x-www-form-urlencoded') !== false:
-                parse_str($rawData, $data);
-                break;
-            case strpos($contentType, 'application/xml') !== false:
-                $data = simplexml_load_string($rawData);
-                if ($data === false) {
-                    $this->logger->log('XML 解析错误', $this->logprefix[1]);
-                    throw new RuntimeException('XML 解析错误');
-                }
-                $data = (array) $data;
-                break;
-            default:
-                $data = [];
-        }
-
-        if ($data === null) {
-            $this->logger->log('请求体解析错误', $this->logprefix[1]);
-            throw new RuntimeException('请求体解析错误');
-        }
-        // 日志
-        $this->logger->log('获取POST请求体\r\n' . $data, $this->logprefix[0]);
-        $this->debuginfo['post_data'] = $data;
-        return $data;
     }
 
     /**
@@ -225,5 +196,32 @@ class Controller
         }
         $this->logger->log('获取所有HTTP请求头信息\r\n' . $headers, $this->logprefix[0]);
         return $headers;
+    }
+
+      /**
+     * 添加调试信息。
+     *
+     * @return void
+     */
+    public function debug(): void
+    {
+        echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        echo '<pre>';
+        print_r($this->getServices());
+        echo '</pre>';
+    }
+
+      /**
+     * 销毁
+     */
+    public function __destruct()
+    {
+        if (DEBUG['log'] && DEBUG['debug']) {
+            $debug = $this->getServices();
+            $this->logger->log('Services:' . $debug, $this->logprefix[0]);
+        }
+        if (DEBUG['controller'] && DEBUG['debug']) {
+            $this->debug();
+        }
     }
 }
