@@ -13,6 +13,7 @@ namespace Imccc\Snail\Core;
 use Closure;
 use Exception;
 use ReflectionClass;
+use Imccc\Snail\Core\ExceptionHandlerTrait;
 
 class Container
 {
@@ -60,7 +61,7 @@ class Container
     {
         // 确保提供的具体实现类类型有效
         if (!is_string($concrete) && !$concrete instanceof Closure && !is_object($concrete)) {
-            throw new Exception("Invalid concrete type provided for [$abstract].");
+            ExceptionHandlerTrait::handleException("Invalid concrete type provided for [$abstract].");
         }
 
         // 存储绑定信息
@@ -109,7 +110,7 @@ class Container
             $this->attemptAutoRegister($abstract);
             // 如果仍然未注册，则抛出异常
             if (!isset($this->bindings[$abstract])) {
-                throw new Exception("Service '$abstract' not found.");
+                ExceptionHandlerTrait::handleException("Service '$abstract' not found.");
             }
 
         }
@@ -140,7 +141,7 @@ class Container
                 $this->alias(basename($abstract), $abstract);
             } else {
                 // 如果实体类不存在，则抛出异常
-                throw new Exception("Automatic registration failed for service: $abstract. Class $concreteClass does not exist.");
+                ExceptionHandlerTrait::handleException("Automatic registration failed for service: $abstract. Interface file exists but class $concreteClass does not exist.");
             }
         } elseif (file_exists($serviceFile)) {
             // 如果不存在接口文件但存在实体类文件，则直接将服务文件视为实体类注册
@@ -151,7 +152,7 @@ class Container
             $this->alias(basename($abstract), $abstract);
         } else {
             // 如果都不存在，则抛出异常
-            throw new Exception("Automatic registration failed for service: $abstract. Neither interface nor service class found.");
+            ExceptionHandlerTrait::handleException("Automatic registration failed for service: $abstract. Neither interface nor service class found.");
         }
 
     }
@@ -167,7 +168,7 @@ class Container
     {
         // 检查绑定是否存在
         if (!isset($this->bindings[$abstract])) {
-            throw new Exception("Service '$abstract' not found.");
+            ExceptionHandlerTrait::handleException("Service '$abstract' not found.");
         }
 
         // 获取绑定信息
@@ -219,7 +220,7 @@ class Container
 
         // 检查是否可实例化
         if (!$reflector->isInstantiable()) {
-            throw new Exception("Target [$concrete] is not instantiable.");
+            ExceptionHandlerTrait::handleException("Target [$concrete] is not instantiable.");
         }
 
         // 获取构造函数参数
@@ -267,7 +268,7 @@ class Container
                 $dependencies[] = $parameter->getDefaultValue();
             } else {
                 // 否则无法解析依赖
-                throw new Exception("Unable to resolve dependency '{$parameter->getName()}'.");
+                ExceptionHandlerTrait::handleException("Unable to resolve dependency '{$parameter->getName()}'.");
             }
         }
 
@@ -284,7 +285,7 @@ class Container
     public function for(string $abstract): self
     {
         if ($this->lastBound !== $abstract) {
-            throw new Exception("The last bound service is not '$abstract'.");
+            ExceptionHandlerTrait::handleException("The last bound service is not '$abstract'.");
         }
 
         return $this;

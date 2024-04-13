@@ -38,7 +38,7 @@ trait ExceptionHandlerTrait
         echo '<div style="padding: 10px;">';
 
         // 根据调试模式显示详细错误信息或简单提示
-        if (DEBUG ?? false) {
+        if (DEBUG['debug'] ?? false) {
             self::showDetailedError($exception);
         } else {
             echo '<h1>Oops, something went wrong!</h1>';

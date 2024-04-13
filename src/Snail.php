@@ -10,10 +10,10 @@ defined('START_TIME') || define('START_TIME', microtime(true));
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
 use Imccc\Snail\Core\Router;
+use Imccc\Snail\Core\ExceptionHandlerTrait;
 
 class Snail
 {
-    use ExceptionHandlerTrait;
     const SNAIL = 'Snail';
     const SNAIL_VERSION = '0.0.1';
     const PHP_VERSION = '7.2.5';
