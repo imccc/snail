@@ -2,7 +2,7 @@
 namespace Imccc\Snail\Mvc;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Core\IController;
+use Imccc\Snail\Mvc\IController;
 
 class Controller implements IController
 {
