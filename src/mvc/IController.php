@@ -51,7 +51,13 @@ interface IController
      */
     public function input(string $param);
 
-   
+    /**
+     * 对输入参数进行清理和验证。
+     *
+     * @param mixed $input 输入参数
+     * @return mixed
+     */
+    public function sanitizeInput($input);
 
     /**
      * 验证用户权限。

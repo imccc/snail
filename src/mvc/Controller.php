@@ -3,6 +3,8 @@ namespace Imccc\Snail\Mvc;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Mvc\IController;
+use Imccc\Snail\Mvc\Model;
+use Imccc\Snail\Mvc\View;
 
 class Controller implements IController
 {
@@ -53,7 +55,7 @@ class Controller implements IController
     public function api()
     {
         if (!$this->_api) {
-            $this->_api = new Api($this->container);
+            $this->_api = $this->container->resolve('ApiService');
         }
         return $this->_api;
     }
@@ -121,8 +123,8 @@ class Controller implements IController
      */
     public function input(string $param = null)
     {
-        // 获取所有输入参数
-        $input = array_merge($_GET, $_POST, $_FILES, $_COOKIE);
+        // 获取所有输入参数并进行过滤
+        $input = $this->sanitizeInput(array_merge($_GET, $_POST, $_FILES, $_COOKIE, $_SESSION));
 
         // 添加请求头信息到输入参数中
         $input['headers'] = $this->getallheaders();
@@ -172,12 +174,35 @@ class Controller implements IController
     }
 
     /**
+     * 综合过滤输入数据
+     *
+     * @param mixed $input 输入数据
+     * @return mixed 过滤后的数据
+     */
+    protected function sanitizeInput($input)
+    {
+        // 如果输入数据是数组，则递归对数组元素进行过滤
+        if (is_array($input)) {
+            return array_map([$this, 'sanitizeInput'], $input);
+        }
+
+        // 如果输入数据是字符串，则进行 HTML 转义和去除多余空白字符处理
+        if (is_string($input)) {
+            $input = trim($input); // 去除首尾空白字符
+            $input = htmlspecialchars($input, ENT_QUOTES, 'UTF-8'); // HTML 转义
+        }
+
+        // 返回过滤后的数据
+        return $input;
+    }
+
+    /**
      * 限制请求方法
      *
      * @param array|string $allowedMethods 允许的请求方法数组或以逗号分隔的字符串
      * @return bool 返回是否请求方法在允许的范围内
      */
-    public function inspect($allowedMethods): bool
+    protected function inspect($allowedMethods): bool
     {
         $this->_method = $this->setRequestMethod($_SERVER['REQUEST_METHOD']) ?? ''; // 获取请求方法
         $allowedMethods = is_array($allowedMethods) ? $allowedMethods : explode(',', $allowedMethods);
@@ -189,7 +214,7 @@ class Controller implements IController
      *
      * @return array 包含所有请求头信息的关联数组
      */
-    public function getallheaders(): array
+    protected function getallheaders(): array
     {
         $headers = [];
         // 遍历$_SERVER数组，提取HTTP头信息
@@ -199,7 +224,7 @@ class Controller implements IController
                 $headers[$headerName] = $value;
             }
         }
-        $this->logger->log('获取所有HTTP请求头信息\r\n' . $headers, $this->logprefix[0]);
+        $this->_debuginfo['headers'] = $headers;
         return $headers;
     }
 
