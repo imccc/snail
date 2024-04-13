@@ -212,6 +212,15 @@ class Controller implements IController
     }
 
     /**
+     * 检查权限
+     * @param string $action 要执行的操作
+     */
+    public function checkPermission(string $action): bool
+    {
+        return true;
+    }
+
+    /**
      * 销毁
      */
     public function __destruct()
