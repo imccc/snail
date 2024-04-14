@@ -32,6 +32,11 @@ class View implements ViewInterface
         $this->templateTags = $this->tplconf['tags'];
         $this->_deftpl = $this->tplconf['default'];
         $this->_ext = $this->tplconf['ext'];
+
+        if (DEBUG['view'] && DEBUG['debug']) {
+            register_shutdown_function([$this, 'debug']);
+        }
+
     }
 
     /**
@@ -214,4 +219,19 @@ class View implements ViewInterface
     {
         ExceptionHandlerTrait::handleException($e);
     }
+
+    /**
+     * 添加调试信息。
+     *
+     * @return void
+     */
+    public function debug(): void
+    {
+        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        $info .= '<pre>';
+        $info .= print_r($this->tplconf, true);
+        $info .= '</pre>';
+        ExceptionHandlerTrait::showDebug($info);
+    }
+
 }
