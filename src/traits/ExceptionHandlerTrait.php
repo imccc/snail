@@ -22,7 +22,8 @@ trait ExceptionHandlerTrait
         if ($exceptionOrErrorCode instanceof Throwable) {
             $exception = $exceptionOrErrorCode;
         } else {
-            $exception = new ErrorException("Error: " . $exceptionOrErrorCode);
+            $errorMessage = is_string($exceptionOrErrorCode) ? $exceptionOrErrorCode : "Unknown error";
+            $exception = new ErrorException("Error: " . $errorMessage);
         }
 
         // 显示错误信息
@@ -62,7 +63,7 @@ trait ExceptionHandlerTrait
         echo '</div></div>';
     }
 
-      // 获取错误信息样式
+    // 获取错误信息样式
     protected static function getErrorStyle(): string
     {
         return 'color: dark-grey; border: 1px dashed red; margin: 30px;';
@@ -165,7 +166,7 @@ trait ExceptionHandlerTrait
         return self::$errorCount;
     }
 
-      // 获取错误计数
+    // 获取错误计数
     public static function getDebugIndex(): int
     {
         return self::$debugIndex;

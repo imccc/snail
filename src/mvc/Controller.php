@@ -98,11 +98,12 @@ class Controller implements ControllerInterface
      */
     public function display($tpl = '')
     {
+        $this->getView();
         $this->assign(['data' => $this->_data, 'title' => 'Snail PHP']);
         if (!empty($tpl)) {
             $this->_tpl = $this->_tplpath . "\\" . $tpl;
         }
-        // 根据视图模板和数据渲染视图，并返回渲染结果   
+        // 根据视图模板和数据渲染视图，并返回渲染结果
         return $this->_view->display($this->_tpl);
     }
 
@@ -113,7 +114,7 @@ class Controller implements ControllerInterface
      * @param mixed $value 数据值
      * @return void
      */
-    public function assign($key, $value = ''): void
+    public function assign($key, $value = null): void
     {
         $this->_view->assign($key, $value);
     }
