@@ -75,6 +75,7 @@ class View implements ViewInterface
      */
     public function cache($tpl = null)
     {
+        $fullpath = $tpl . $this->_ext;
         $this->logger->log('缓存视图：' . $tpl, $this->logprefix[0]);
         $this->_cache = $this->renderTemplate($tpl);
         return $this;
@@ -87,12 +88,12 @@ class View implements ViewInterface
      */
     public function render($template, $datas = [])
     {
+        $fullpath = $tpl . $this->_ext;
+
         if (!empty($datas)) {
             $this->_data = array_merge($this->_data, $datas);
         }
         $this->logger->log('渲染模板：' . $template, $this->logprefix[0]);
-        // 解析模板文件路径
-        $templatePath = $this->resolveTemplatePath($template);
 
         // 渲染模板
         return $this->renderTemplate($templatePath, $datas);
@@ -117,12 +118,13 @@ class View implements ViewInterface
      * 渲染模板
      * @param string $template
      */
-    private function renderTemplate($template)
+    private function renderTemplate($tpl)
     {
-        $templateFile = $this->templatePath . $template . '.php';
-        if (file_exists($templateFile)) {
+        $fullpath = $tpl . $this->_ext;
+
+        if (file_exists($fullpath)) {
             // 读取模板文件内容
-            $templateContent = file_get_contents($templateFile);
+            $templateContent = file_get_contents($fullpath);
 
             // 解析模板标签
             $parsedTemplate = $this->parseTemplate($templateContent, $this->templateTags);
