@@ -9,7 +9,7 @@ defined('START_TIME') || define('START_TIME', microtime(true));
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
-use Imccc\Snail\Core\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 use Imccc\Snail\Core\Router;
 
 class Snail
