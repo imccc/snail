@@ -2,7 +2,7 @@
 return [
     'engine' => 'snail', // 引擎名称 snail twig
     'cache' => false, // 是否开启缓存
-    'path' => '', // 模板路径,不指定则默认在当前目录下,dirname($_SERVER['DOCUMENT_ROOT']) . '/app/views/tpl'
+    'path' => 'views/', // 模板路径,一般为action/views/,或者action/tpl/,action不需要写
     'default' => 'index',
     'ext' => '.tpl',
     'tags' => [

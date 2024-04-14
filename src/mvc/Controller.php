@@ -38,7 +38,6 @@ class Controller implements ControllerInterface
             'action' => $this->routes['action'],
             'params' => $this->routes['params'],
         ];
-        $this->_tplpath = $this->routes['namespace'] . DIRECTORY_SEPARATOR . $this->routes['controller'] . DIRECTORY_SEPARATOR . $this->routes['action'];
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
@@ -122,9 +121,10 @@ class Controller implements ControllerInterface
         $namespacePath = implode(DIRECTORY_SEPARATOR, $namespaceParts);
         $controllerName = $this->routes['controller'];
         $methodName = $this->routes['action'];
+        $tpldir = $this->config->get('template.path');
 
         // 返回模板路径，例如：Imccc/Snail/Controller/Index/index.tpl
-        $fullpata = $namespacePath . DIRECTORY_SEPARATOR . $controllerName . DIRECTORY_SEPARATOR . $methodName;
+        $fullpata = $namespacePath . DIRECTORY_SEPARATOR . $controllerName . DIRECTORY_SEPARATOR . $methodName . DIRECTOY_SEPARATOR . $tpldir;
         $this->_debuginfo['tplpath'] = $fullpata;
         return $fullpata;
     }
