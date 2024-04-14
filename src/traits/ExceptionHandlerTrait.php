@@ -1,6 +1,6 @@
 <?php
 
-namespace Imccc\Snail\Core;
+namespace Imccc\Snail\Traits;
 
 use ErrorException;
 use SplFileObject;
@@ -28,6 +28,19 @@ trait ExceptionHandlerTrait
         self::showError($exception);
         // 记录错误日志
         self::logError($exception);
+    }
+
+    // 显示调试信息
+    public static function showDebug(String $exception): void
+    {
+        // 根据调试模式显示详细错误信息或简单提示
+        if (DEBUG['debug'] ?? false) {
+            echo '<div style="' . self::getStyle() . '">';
+            echo '<h3 style="' . self::getTitleStyle() . '"> Snail Debug <small> - ' . $_SERVER['HTTP_HOST'] . '</small><span style="float:right;">#' . self::getErrorCount() . '</span></h3>';
+            echo '<div style="padding: 10px;">';
+            echo $exception;
+            echo '</div></div>';
+        }
     }
 
     // 显示错误信息

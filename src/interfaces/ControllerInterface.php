@@ -1,8 +1,8 @@
 <?php
 
-namespace Imccc\Snail\Mvc;
+namespace Imccc\Snail\Interfaces;
 
-interface IController
+interface ControllerInterface
 {
     /**
      * 获取与控制器关联的模型实例。

@@ -31,6 +31,7 @@ class Snail
         if (version_compare(PHP_VERSION, self::PHP_VERSION, '<')) {
             die('PHP version must be greater than or equal to ' . self::PHP_VERSION);
         }
+        session_start();
         $this->initializeContainer();
         $this->run();
     }
@@ -75,8 +76,8 @@ class Snail
         // 系统配置 用define主要是为了全局使用，不然在应用中直接加载就可以了
         define('DEBUG', $this->logconf);
 
-        if (DEBIG['report']) {
-            set_errorerror_reporting(E_ALL); //报告所有错误
+        if (DEBUG['report']) {
+            error_reporting(E_ALL); //报告所有错误
         } else {
             error_reporting(0); //关闭所有错误报告
         }

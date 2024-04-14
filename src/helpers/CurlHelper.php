@@ -6,7 +6,7 @@
  * @since   2024-03-31
  * @version 1.0
  */
-namespace Imccc\Snail\Helper;
+namespace Imccc\Snail\Helpers;
 
 class CurlHelper
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Imccc\Snail\Mvc;
+namespace Imccc\Snail\Interfases;
 
-interface IModel
+interface ModelInterface
 {
     /**
      * 设置软删除

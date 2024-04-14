@@ -2,11 +2,11 @@
 namespace Imccc\Snail\Mvc;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Mvc\IController;
+use Imccc\Snail\Interfaces\ControllerInterface;
 use Imccc\Snail\Mvc\Model;
 use Imccc\Snail\Mvc\View;
 
-class Controller implements IController
+class Controller implements ControllerInterface
 {
     protected $api;
     protected $config;
@@ -124,7 +124,7 @@ class Controller implements IController
     public function input(string $param = null)
     {
         // 获取所有输入参数并进行过滤
-        $input = $this->sanitizeInput(array_merge($_GET, $_POST, $_FILES, $_COOKIE, $_SESSION));
+        $input = $this->sanitizeInput(array_merge($this->routes, $_POST, $_FILES, $_COOKIE, $_SESSION));
 
         // 添加请求头信息到输入参数中
         $input['headers'] = $this->getallheaders();

@@ -1,5 +1,5 @@
 <?php
-namespace Imccc\Snail\Helper;
+namespace Imccc\Snail\Helpers;
 
 /**
  * 时间类

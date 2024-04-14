@@ -3,9 +3,9 @@
 namespace Imccc\Snail\Mvc;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Mvc\IView;
+use Imccc\Snail\Interfaces\ViewInterface;
 
-class View implements IView
+class View implements ViewInterface
 {
     protected $container;
     protected $config;

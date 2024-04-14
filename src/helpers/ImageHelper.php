@@ -1,6 +1,6 @@
 <?php
 
-namespace Imccc\Snail\Helper;
+namespace Imccc\Snail\Helpers;
 
 class ImageHelper
 {

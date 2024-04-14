@@ -3,7 +3,7 @@
 namespace Imccc\Snail\Plugins;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Core\PluginInterface;
+use Imccc\Snail\Interfaces\PluginInterface;
 
 class AnotherPlugin implements PluginInterface
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Imccc\Snail\Mvc;
+namespace Imccc\Snail\Interfaces;
 
-interface IView
+interface ViewInterface
 {
     /**
      * 分配数据给视图

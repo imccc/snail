@@ -2,7 +2,7 @@
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Core\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class Dispatcher
 {
@@ -140,9 +140,11 @@ class Dispatcher
      */
     public function debug()
     {
-        echo "<h3>以下信息由 类: " . self::class . " 提供 <small>@ " . date("Y-m-d H:i:s") . "</small></h3>";
-        echo "<pre>";
-        print_r($this->debuginfo);
-        echo "</pre>";
+        $info = "<h3>以下信息由 类: " . self::class . " 提供 <small>@ " . date("Y-m-d H:i:s") . "</small></h3>";
+        $info .= "<pre>";
+        $info .= print_r($this->debuginfo, true);
+        $info .= "</pre>";
+
+        ExcpeptionHandlerTrait::showDebug($info);
     }
 }

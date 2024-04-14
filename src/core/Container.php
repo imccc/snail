@@ -13,7 +13,7 @@ namespace Imccc\Snail\Core;
 use Closure;
 use Exception;
 use ReflectionClass;
-use Imccc\Snail\Core\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class Container
 {

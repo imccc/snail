@@ -1,6 +1,6 @@
 <?php
 
-namespace Imccc\Snail\Core;
+namespace Imccc\Snail\Interfaces;
 
 interface PluginInterface
 {

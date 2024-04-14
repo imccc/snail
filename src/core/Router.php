@@ -3,6 +3,7 @@
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class Router
 {
@@ -235,11 +236,13 @@ class Router
      */
     public function debug()
     {
-        echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        echo '<pre> 解析后的数组：';
-        print_r($this->getRouteInfo());
-        echo '<br> 路由表信息：<br>';
-        print_r($this->routeMap);
-        echo '</pre>';
+        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        $info .= '<pre> 解析后的数组：';
+        $info .= print_r($this->getRouteInfo(), true);
+        $info .= '<br> 路由表信息：<br>';
+        $info .= print_r($this->routeMap, true);
+        $info .= '</pre>';
+
+        ExceptionHandlerTrait::showDebug($info);
     }
 }
