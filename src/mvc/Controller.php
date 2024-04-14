@@ -110,7 +110,7 @@ class Controller implements ControllerInterface
      * @param mixed $value 数据值
      * @return void
      */
-    public function assign(string $key, $value): void
+    public function assign($key, $value=''): void
     {
         $this->_view->assign($key, $value);
     }
