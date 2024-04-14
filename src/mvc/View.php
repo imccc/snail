@@ -64,7 +64,7 @@ class View implements ViewInterface
      */
     public function display($tpl = null)
     {
-        $fullpath = $tpl.($tpl ? '.' : '') . $this->_ext;
+        $fullpath = $tpl . $this->_ext;
         $this->logger->log('渲染视图：' . $tpl, $this->logprefix[0]);
         return $this->renderTemplate($fullpath);
     }

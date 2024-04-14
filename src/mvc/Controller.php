@@ -124,7 +124,7 @@ class Controller implements ControllerInterface
         $tpldir = $this->config->get('template.path');
 
         // 返回模板路径，例如：Imccc/Snail/Controller/Index/index.tpl
-        $fullpata = $namespacePath . DIRECTORY_SEPARATOR . $controllerName . DIRECTORY_SEPARATOR . $methodName . DIRECTOY_SEPARATOR . $tpldir;
+        $fullpata = $namespacePath . DIRECTORY_SEPARATOR . $controllerName . DIRECTORY_SEPARATOR . $methodName . DIRECTORY_SEPARATOR . $tpldir;
         $this->_debuginfo['tplpath'] = $fullpata;
         return $fullpata;
     }

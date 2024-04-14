@@ -2,7 +2,7 @@
 return [
     'engine' => 'snail', // 引擎名称 snail twig
     'cache' => false, // 是否开启缓存
-    'path' => 'views/', // 模板路径,一般为action/views/,或者action/tpl/,action不需要写
+    'path' => 'views', // 模板路径,一般为action/views/,或者action/tpl/,action不需要写
     'default' => 'index',
     'ext' => '.tpl',
     'tags' => [
