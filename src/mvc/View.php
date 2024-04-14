@@ -131,7 +131,7 @@ class View implements ViewInterface
             return $content;
         } else {
             $this->logger->log('模板文件不存在：' . $template, $this->logprefix[1]);
-            throw new HandlerException('模板文件不存在', 500);
+            $this->handleException('模板文件不存在');
         }
     }
 
@@ -185,5 +185,11 @@ class View implements ViewInterface
         $this->logger->log('解析模板标签：' . $template, $this->logprefix[0]);
         return $template;
     }
-
+    /**
+     * 异常处理函数
+     */
+    protected function handleException(Exception $e): void
+    {
+        ExcteptionHandlerTrait::handleException($e);
+    }
 }

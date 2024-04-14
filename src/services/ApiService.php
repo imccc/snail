@@ -38,7 +38,7 @@ class ApiService
                 echo $callback . '(' . json_encode($data) . ');';
                 break;
             default:
-                throw new RuntimeException('Unsupported output format.');
+                $this->handleException('Unsupported output format.');
         }
     }
 
@@ -80,6 +80,15 @@ class ApiService
                 $xml->addChild("$key", null)->addCData("$value");
             }
         }
+    }
+
+    /**
+     * 异常处理
+     * @param RuntimeException $e
+     */
+    protected function handleException(RuntimeException $e): void
+    {
+        ExcteptionHandlerTrait::handleException($e);
     }
 
 }

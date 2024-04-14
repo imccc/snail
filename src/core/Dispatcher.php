@@ -114,7 +114,7 @@ class Dispatcher
         $this->debuginfo['controllerClass'] = $controllerClass;
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
-            ExceptionHandlerTrait::handleException("$controllerClass Controller class not found.");
+            $this->handleException("$controllerClass Controller class not found.");
         }
 
         // 创建控制器对象，并传入路由参数数组
@@ -123,7 +123,7 @@ class Dispatcher
         // 检查控制器方法是否存在
         $this->debuginfo['action'] = $action;
         if (!method_exists($controllerObj, $action)) {
-            ExceptionHandlerTrait::handleException("$action Action method not found in $controllerClass Controller.");
+            $this->handleException("$action Action method not found in $controllerClass Controller.");
         }
 
         // 调用控制器方法
@@ -134,6 +134,15 @@ class Dispatcher
             echo $result;
         }
     }
+
+    /**
+     * 信息
+     */
+    protected function handleException(Exception $e): void
+    {
+        ExcpetionHandlerTrait::handleException($e);
+    }
+    
 
     /**
      * 调试信息

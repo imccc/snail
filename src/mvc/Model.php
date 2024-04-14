@@ -160,10 +160,7 @@ class Model implements ModelInterface
 
     protected function handleException(PDOException $e): void
     {
-        // 这里可以添加异常处理逻辑，比如记录日志等
-        $this->logger->log('SQL Error: ' . $e->getMessage());
-        // throw $e; // 或者重新抛出异常
-        throw $e;
+       ExcteptionHandlerTrait::handleException($e);
     }
 
     protected function reset(): void

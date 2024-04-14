@@ -232,6 +232,16 @@ class Router
     }
 
     /**
+     * 捕获异常
+     *
+     * @param Exception $e 异常对象
+     * @return void
+     */
+    protected function handlerException(Exception $e):void {
+        ExceptionHandlerTrait::handleException($e);
+    }
+
+    /**
      * 执行debug信息
      */
     public function debug()

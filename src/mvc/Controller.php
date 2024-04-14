@@ -144,7 +144,7 @@ class Controller implements ControllerInterface
                 $data = simplexml_load_string($rawData);
                 if ($data === false) {
                     $this->logger->log('XML 解析错误', $this->logprefix[1]);
-                    throw new RuntimeException('XML 解析错误');
+                    $this->handleException('XML 解析错误');
                 }
                 $input['body'] = (array) $data;
                 break;
@@ -235,10 +235,19 @@ class Controller implements ControllerInterface
      */
     public function debug(): void
     {
-        echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        echo '<pre>';
-        print_r($this->_debuginfo);
-        echo '</pre>';
+        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        $info .= '<pre>';
+        $info .= print_r($this->_debuginfo, true);
+        $info .= '</pre>';
+        ExceptionHandlerTrait::showDebug($info);
+    }
+
+    /**
+     * 异常处理函数
+     */
+    protected function handleException(Exception $e): void
+    {
+        ExcteptionHandlerTrait::handleException($e);
     }
 
     /**
