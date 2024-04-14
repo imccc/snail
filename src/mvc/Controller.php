@@ -116,18 +116,16 @@ class Controller implements ControllerInterface
      */
     public function preParseTpl()
     {
-        // 将命名空间转换为目录路径，例如：Imccc\Snail\Controller -> Imccc/Snail/Controller
-        $namespaceParts = explode('\\', $this->routes['namespace']);
-        $namespacePath = implode(DIRECTORY_SEPARATOR, $namespaceParts);
+        $pathFormat =  $this->config->get('template.path');
         $controllerName = $this->routes['controller'];
         $methodName = $this->routes['action'];
-        $tpldir = $this->config->get('template.path');
 
-        // 返回模板路径，例如：Imccc/Snail/Controller/Index/index.tpl
-        $fullpata = $namespacePath . DIRECTORY_SEPARATOR . $controllerName . DIRECTORY_SEPARATOR . $methodName . DIRECTORY_SEPARATOR . $tpldir;
-        $this->_debuginfo['tplpath'] = $fullpata;
-        return $fullpata;
+        $path = str_replace(['{$group}', '{$action}'], [$controllerName, $methodName], $pathFormat);
+
+        $this->_debuginfo['tplpath'] = $path;
+        return $path;
     }
+
     /**
      * 将数据分配到视图。
      *
