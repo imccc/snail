@@ -37,7 +37,7 @@ trait ExceptionHandlerTrait
         self::$debugIndex++;
         // 根据调试模式显示详细错误信息或简单提示
         if (DEBUG['debug'] ?? false) {
-            echo '<div style="' . self::getStyle() . '">';
+            echo '<div style="' . self::getDebugStyle() . '">';
             echo '<h3 style="' . self::getTitleStyle() . '"> Snail Debug <small> - ' . $_SERVER['HTTP_HOST'] . '</small><span style="float:right;">#' . self::getDebugIndex() . '</span></h3>';
             echo '<div style="padding: 10px;">';
             echo $exception;
@@ -69,9 +69,9 @@ trait ExceptionHandlerTrait
     }
 
     // 获取信息息样式
-    protected static function getStyle(): string
+    protected static function getDebugStyle(): string
     {
-        return 'color: black; border: 1px dashed green; margin: 30px;';
+        return 'color: black; border: 1px dashed green; margin: 30px; background-color: #666;';
     }
 
     // 获取错误标题样式
