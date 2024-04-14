@@ -117,7 +117,7 @@ class Snail
         $info .= '<pre>';
         $info .= print_r($this->getServices(), true);
         $info .= '</pre>';
-        ExcpetionHandlerTrait::showDebug($info);
+        ExceptionHandlerTrait::showDebug($info);
     }
 
     /**

@@ -10,6 +10,7 @@ trait ExceptionHandlerTrait
 {
     // 错误计数器
     private static $errorCount = 0;
+    private static $debugIndex = 0;
 
     // 处理异常的方法
     public static function handleException($exceptionOrErrorCode): void
@@ -33,10 +34,11 @@ trait ExceptionHandlerTrait
     // 显示调试信息
     public static function showDebug(String $exception): void
     {
+        self::$debugIndex++;
         // 根据调试模式显示详细错误信息或简单提示
         if (DEBUG['debug'] ?? false) {
             echo '<div style="' . self::getStyle() . '">';
-            echo '<h3 style="' . self::getTitleStyle() . '"> Snail Debug <small> - ' . $_SERVER['HTTP_HOST'] . '</small><span style="float:right;">#' . self::getErrorCount() . '</span></h3>';
+            echo '<h3 style="' . self::getTitleStyle() . '"> Snail Debug <small> - ' . $_SERVER['HTTP_HOST'] . '</small><span style="float:right;">#' . self::getDebugIndex() . '</span></h3>';
             echo '<div style="padding: 10px;">';
             echo $exception;
             echo '</div></div>';
@@ -161,6 +163,12 @@ trait ExceptionHandlerTrait
     public static function getErrorCount(): int
     {
         return self::$errorCount;
+    }
+
+      // 获取错误计数
+    public static function getDebugIndex(): int
+    {
+        return self::$debugIndex;
     }
 
     // 记录错误日志
