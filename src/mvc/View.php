@@ -16,6 +16,7 @@ class View implements ViewInterface
     protected $tplconf;
     protected $templatePath;
     protected $templateTags;
+    private $_debuginfo=[];
     protected $_deftpl;
     protected $_ext;
     protected $_data = []; // 将 _datas 改为 _data
@@ -116,6 +117,7 @@ class View implements ViewInterface
         // 构建完整的模板文件路径
         $absolutePath = $this->templatePath . DIRECTORY_SEPARATOR . $tpl . $this->_ext;
 
+        $this->_debuginfo['absolutePath'] = $absolutePath;
         // 返回完整的模板文件路径
         return $absolutePath;
     }
@@ -229,7 +231,7 @@ class View implements ViewInterface
     {
         $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
         $info .= '<pre>';
-        $info .= print_r($this->tplconf, true);
+        $info .= print_r($this->_debuginfo, true);
         $info .= '</pre>';
         ExceptionHandlerTrait::showDebug($info);
     }

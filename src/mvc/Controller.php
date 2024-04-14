@@ -39,6 +39,7 @@ class Controller implements ControllerInterface
             'params' => $this->routes['params'],
         ];
         $this->_tplpath = $this->routes['namespace'] . "\\" . $this->routes['controller'] . "\\" . $this->routes['action'];
+        $this->_debuginfo['tplpath'] = $this->_tplpath;
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
