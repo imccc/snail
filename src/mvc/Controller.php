@@ -99,19 +99,35 @@ class Controller implements ControllerInterface
      */
     public function display($tpl = '')
     {
-        $this->_debuginfo['tplpath'] = $this->_tplpath;
-
         $this->getView();
         $this->assign(['data' => $this->_data, 'title' => 'Snail PHP']);
+        $fulltpl = $this->preParseTpl();
         if (!empty($tpl)) {
-            $this->_tpl = $this->_tplpath . DIRECTORY_SEPARATOR . $tpl;
-        }else{
-            $this->_tpl = $this->_tplpath . DIRECTORY_SEPARATOR . $this->routes['action'];
+            $this->_tpl = $fulltpl . DIRECTORY_SEPARATOR . $tpl;
+        } else {
+            $this->_tpl = $fulltpl . DIRECTORY_SEPARATOR . $this->routes['action'];
         }
         // 根据视图模板和数据渲染视图，并返回渲染结果
         return $this->_view->display($this->_tpl);
     }
 
+    /**0
+     * 预先解析视图模板位置
+     * @return void
+     */
+    public function preParseTpl()
+    {
+        // 将命名空间转换为目录路径，例如：Imccc\Snail\Controller -> Imccc/Snail/Controller
+        $namespaceParts = explode('\\', $this->routes['namespace']);
+        $namespacePath = implode(DIRECTORY_SEPARATOR, $namespaceParts);
+        $controllerName = $this->routes['controller'];
+        $methodName = $this->routes['action'];
+
+        // 返回模板路径，例如：Imccc/Snail/Controller/Index/index.tpl
+        $fullpata = $namespacePath . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . $controllerName . DIRECTORY_SEPARATOR . $methodName;
+        $this->_debuginfo['tplpath'] = $fullpata;
+        return $fullpata;
+    }
     /**
      * 将数据分配到视图。
      *

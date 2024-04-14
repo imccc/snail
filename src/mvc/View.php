@@ -64,12 +64,9 @@ class View implements ViewInterface
      */
     public function display($tpl = null)
     {
-        if (empty($tpl)) {
-            $tpl = $this->_deftpl;
-        }
-        $fulltpl = $this->resolveTemplatePath($tpl);
+        $fullpath = $tpl.($tpl ? '.' : '') . $this->_ext;
         $this->logger->log('渲染视图：' . $tpl, $this->logprefix[0]);
-        return $this->renderTemplate($fulltpl);
+        return $this->renderTemplate($fullpath);
     }
 
     /**
@@ -109,17 +106,7 @@ class View implements ViewInterface
      */
     private function resolveTemplatePath($tpl = null)
     {
-        // 如果 $tpl 参数为空，则使用默认模板文件名
-        if (empty($tpl)) {
-            $tpl = $this->_deftpl;
-        }
-
-        // 构建完整的模板文件路径
-        $absolutePath = $this->templatePath . DIRECTORY_SEPARATOR . $tpl . $this->_ext;
-
-        $this->_debuginfo['absolutePath'] = $absolutePath;
-        // 返回完整的模板文件路径
-        return $absolutePath;
+      
     }
 
     /**
