@@ -67,7 +67,7 @@ class View implements ViewInterface
     public function display($tpl = null)
     {
         $fullpath = $tpl . $this->_ext;
-        $this->_data['title'] = SNAIL . ' - ' . NAIL_VERSION;
+        $this->_data['title'] = SNAIL . ' - ' . SNAIL_VERSION;
         $this->engine->render($fullpath, $this->_data);
         // echo $this->renderTemplate($fullpath);
     }
