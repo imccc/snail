@@ -16,11 +16,12 @@ class View implements ViewInterface
     protected $tplconf;
     protected $templatePath;
     protected $templateTags;
-    private $_debuginfo=[];
+    private $_debuginfo = [];
     protected $_deftpl;
     protected $_ext;
     protected $_data = []; // 将 _datas 改为 _data
     protected $_cache;
+    protected $_engine;
 
     public function __construct(Container $container)
     {
@@ -34,6 +35,7 @@ class View implements ViewInterface
         $this->_deftpl = $this->tplconf['default'];
         $this->_ext = $this->tplconf['ext'];
 
+        $this->engine = $container->resolve('TemplateService');
         if (DEBUG['view'] && DEBUG['debug']) {
             register_shutdown_function([$this, 'debug']);
         }
@@ -65,63 +67,17 @@ class View implements ViewInterface
     public function display($tpl = null)
     {
         $fullpath = $tpl . $this->_ext;
-        $this->logger->log('渲染视图：' . $tpl, $this->logprefix[0]);
-        return $this->renderTemplate($fullpath);
-    }
-
-    /**
-     * 缓存视图
-     * @param string $tpl
-     */
-    public function cache($tpl = null)
-    {
-        $fullpath = $tpl . $this->_ext;
-        $this->logger->log('缓存视图：' . $tpl, $this->logprefix[0]);
-        $this->_cache = $this->renderTemplate($tpl);
-        return $this;
-    }
-
-    /**
-     * 渲染模板
-     * @param string $template
-     * @param array $datas
-     */
-    public function render($template, $datas = [])
-    {
-        $fullpath = $tpl . $this->_ext;
-
-        if (!empty($datas)) {
-            $this->_data = array_merge($this->_data, $datas);
-        }
-        $this->logger->log('渲染模板：' . $template, $this->logprefix[0]);
-
-        // 渲染模板
-        return $this->renderTemplate($templatePath, $datas);
-    }
-
-    /**
-     * 解析模板文件路径，将相对路径转换为绝对路径
-     *
-     * @param string $template 相对路径的模板文件
-     * @return string 绝对路径的模板文件
-     */
-    private function resolveTemplatePath($tpl = null)
-    {
-      
+        $this->engine->display($fullpath, $this->_data);
+        // echo $this->renderTemplate($fullpath);
     }
 
     /**
      * 渲染模板
      * @param string $template
      */
-    /**
-     * 渲染模板
-     * @param string $template
-     */
-    private function renderTemplate($tpl)
+    private function renderTemplate($fullpath)
     {
-        $fullpath = $tpl . $this->_ext;
-
+        $this->_debuginfo['fullpath'] = $fullpath;
         if (file_exists($fullpath)) {
             // 读取模板文件内容
             $templateContent = file_get_contents($fullpath);
@@ -143,11 +99,11 @@ class View implements ViewInterface
 
             // 获取缓冲区内容并清空缓冲区
             $content = ob_get_clean();
-            $this->logger->log('渲染模板：' . $template, $this->logprefix[0]);
             // 返回渲染后的内容
             return $content;
         } else {
             $info = '模板文件不存在：' . $fullpath;
+            $this->logger->log($info, $this->logprefix[1]);
             $this->handleException(new Exception($info));
         }
 
@@ -177,32 +133,34 @@ class View implements ViewInterface
      */
     public function parseTemplate($template, $tags)
     {
+        // 处理 include 文件
+        $template = preg_replace_callback(
+            '/{{\s*include_file (.+?)\s*}}/',
+            function ($matches) {
+                // 获取 include 文件的相对路径
+                $relativePath = trim($matches[1]);
+
+                // 获取当前模板文件所在目录
+                $currentDirectory = dirname($_SERVER['SCRIPT_FILENAME']);
+
+                // 解析相对路径为绝对路径
+                $absolutePath = $currentDirectory . DIRECTORY_SEPARATOR . $relativePath;
+
+                // 返回解析后的 include 标签
+                return '<?php include "' . $absolutePath . '"; ?>';
+            },
+            $template
+        );
+
+        // 替换普通模板标签
         foreach ($tags as $tag => $replacement) {
-            if ($tag === 'include_file %%') {
-                // 匹配 include_file %% 标签
-                $pattern = '/' . str_replace('%%', '(.+)', preg_quote($tag, '/')) . '/';
-                $template = preg_replace_callback($pattern, function ($matches) {
-                    // 获取 include 文件的相对路径
-                    $relativePath = trim($matches[1]);
-
-                    // 获取当前模板文件所在目录
-                    $currentDirectory = dirname($_SERVER['SCRIPT_FILENAME']);
-
-                    // 解析相对路径为绝对路径
-                    $absolutePath = $currentDirectory . DIRECTORY_SEPARATOR . $relativePath;
-
-                    // 返回解析后的 include 标签
-                    return '<?php include "' . $absolutePath . '";?>';
-                }, $template);
-            } else {
-                // 对其他标签进行正常替换
-                $pattern = '/' . str_replace('%%', '(.+)', preg_quote($tag, '/')) . '/';
-                $template = preg_replace($pattern, $replacement, $template);
-            }
+            $template = preg_replace('/{{\s*' . preg_quote($tag, '/') . '\s*}}/', '<?php echo ' . $replacement . '; ?>', $template);
         }
+
         $this->logger->log('解析模板标签：' . $template, $this->logprefix[0]);
         return $template;
     }
+
     /**
      * 异常处理函数
      */
