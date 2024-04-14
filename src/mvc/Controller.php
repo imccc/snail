@@ -85,9 +85,10 @@ class Controller implements ControllerInterface
     {
         if (!$this->_view) {
             $this->_view = new View($this->container);
+            return $this->_view;
+        } else {
+            return $this->_view;
         }
-        return $this->_view;
-
     }
 
     /**
@@ -251,7 +252,7 @@ class Controller implements ControllerInterface
      */
     protected function handleException(Exception $e): void
     {
-        ExcteptionHandlerTrait::handleException($e);
+        ExceptionHandlerTrait::handleException($e);
     }
 
     /**

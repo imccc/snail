@@ -5,7 +5,7 @@ return [
     'path' => '', // 模板路径,不指定则默认在当前目录下,dirname($_SERVER['DOCUMENT_ROOT']) . '/app/views/tpl'
     'default' => 'index',
     'ext' => '.tpl',
-    'tag' => [
+    'tags' => [
         "if %%" => '<?php if(\1):?>', //if标签
         "else" => '<?php else:?>', //else标签
         "else if %%" => '<?php elseif(\1):?>', //else if标签
