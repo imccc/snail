@@ -5,6 +5,7 @@ use Imccc\Snail\Core\Container;
 use Imccc\Snail\Interfaces\ControllerInterface;
 use Imccc\Snail\Mvc\Model;
 use Imccc\Snail\Mvc\View;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class Controller implements ControllerInterface
 {
