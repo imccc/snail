@@ -9,8 +9,8 @@ defined('START_TIME') || define('START_TIME', microtime(true));
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
 use Imccc\Snail\Core\Router;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class Snail
 {
@@ -113,10 +113,11 @@ class Snail
      */
     public function debug()
     {
-        echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        echo '<pre>';
-        print_r($this->getServices());
-        echo '</pre>';
+        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        $info .= '<pre>';
+        $info .= print_r($this->getServices(), true);
+        $info .= '</pre>';
+        ExcpetionHandlerTrait::showDebug($info);
     }
 
     /**

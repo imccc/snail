@@ -46,7 +46,7 @@ trait ExceptionHandlerTrait
     // 显示错误信息
     public static function showError(Throwable $exception): void
     {
-        echo '<div style="' . self::getStyle() . '">';
+        echo '<div style="' . self::getErrorStyle() . '">';
         echo '<h3 style="' . self::getTitleStyle() . '"> Snail Debug <small> - ' . $_SERVER['HTTP_HOST'] . '</small><span style="float:right;">#' . self::getErrorCount() . '</span></h3>';
         echo '<div style="padding: 10px;">';
 
@@ -60,10 +60,16 @@ trait ExceptionHandlerTrait
         echo '</div></div>';
     }
 
-    // 获取错误信息样式
+      // 获取错误信息样式
+    protected static function getErrorStyle(): string
+    {
+        return 'color: dark-grey; border: 1px dashed red; margin: 30px;';
+    }
+
+    // 获取信息息样式
     protected static function getStyle(): string
     {
-        return 'color: black; border: 1px dashed red; margin: 30px;';
+        return 'color: black; border: 1px dashed green; margin: 30px;';
     }
 
     // 获取错误标题样式

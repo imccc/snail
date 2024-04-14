@@ -140,9 +140,8 @@ class Dispatcher
      */
     protected function handleException(Exception $e): void
     {
-        ExcpetionHandlerTrait::handleException($e);
+        ExceptionHandlerTrait::handleException($e);
     }
-    
 
     /**
      * 调试信息
@@ -154,6 +153,6 @@ class Dispatcher
         $info .= print_r($this->debuginfo, true);
         $info .= "</pre>";
 
-        ExcpeptionHandlerTrait::showDebug($info);
+        ExceptionHandlerTrait::showDebug($info);
     }
 }
