@@ -71,7 +71,7 @@ trait ExceptionHandlerTrait
     // 获取信息息样式
     protected static function getDebugStyle(): string
     {
-        return 'color: black; border: 1px dashed green; margin: 30px; background-color: #666;';
+        return 'color: #66ff00; border: 1px dashed green; margin: 30px; background-color: #111; font-size:0,75rem;';
     }
 
     // 获取错误标题样式

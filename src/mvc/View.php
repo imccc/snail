@@ -2,8 +2,10 @@
 
 namespace Imccc\Snail\Mvc;
 
+use Exception;
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Interfaces\ViewInterface;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class View implements ViewInterface
 {
@@ -11,8 +13,11 @@ class View implements ViewInterface
     protected $config;
     protected $logger;
     protected $logprefix = ['view', 'error'];
+    protected $tplconf;
     protected $templatePath;
     protected $templateTags;
+    protected $_deftpl;
+    protected $_ext;
     protected $_data = []; // 将 _datas 改为 _data
     protected $_cache;
 
@@ -22,8 +27,11 @@ class View implements ViewInterface
         $this->config = $container->resolve('ConfigService');
         $this->logger = $container->resolve('LoggerService');
 
-        $this->templatePath = $this->config->get('template.path');
-        $this->templateTags = $this->config->get('template.tags');
+        $this->tplconf = $this->config->get('template');
+        $this->templatePath = $this->tplconf['path'];
+        $this->templateTags = $this->tplconf['tags'];
+        $this->_deftpl = $this->tplconf['default'];
+        $this->_ext = $this->tplconf['ext'];
     }
 
     /**
@@ -50,8 +58,12 @@ class View implements ViewInterface
      */
     public function display($tpl = null)
     {
+        if (empty($tpl)) {
+            $tpl = $this->_deftpl;
+        }
+        $fulltpl = $this->resolveTemplatePath($tpl);
         $this->logger->log('渲染视图：' . $tpl, $this->logprefix[0]);
-        return $this->renderTemplate($tpl);
+        return $this->renderTemplate($fulltpl);
     }
 
     /**
@@ -89,18 +101,24 @@ class View implements ViewInterface
      * @param string $template 相对路径的模板文件
      * @return string 绝对路径的模板文件
      */
-    private function resolveTemplatePath($template)
+    private function resolveTemplatePath($tpl = null)
     {
-        // 获取当前模板文件所在目录
-        $currentDirectory = dirname($_SERVER['SCRIPT_FILENAME']);
+        // 如果 $tpl 参数为空，则使用默认模板文件名
+        if (empty($tpl)) {
+            $tpl = $this->_deftpl;
+        }
 
-        // 构建绝对路径
-        $absolutePath = $currentDirectory . DIRECTORY_SEPARATOR . $template;
+        // 构建完整的模板文件路径
+        $absolutePath = $this->templatePath . DIRECTORY_SEPARATOR . $tpl . $this->_ext;
 
-        // 返回绝对路径
+        // 返回完整的模板文件路径
         return $absolutePath;
     }
 
+    /**
+     * 渲染模板
+     * @param string $template
+     */
     /**
      * 渲染模板
      * @param string $template
@@ -118,11 +136,14 @@ class View implements ViewInterface
             // 使用一个关联数组来保存模板数据
             $templateData = $this->_data;
 
+            // 将模板数据导入当前符号表，以便在模板中直接访问
+            extract($templateData);
+
             // 开启输出缓冲
             ob_start();
 
-            // 将模板内容作为 PHP 代码执行
-            eval(' ?>' . $parsedTemplate . '<?php ');
+            // 包含模板文件
+            include $templateFile;
 
             // 获取缓冲区内容并清空缓冲区
             $content = ob_get_clean();
@@ -130,9 +151,10 @@ class View implements ViewInterface
             // 返回渲染后的内容
             return $content;
         } else {
-            $this->logger->log('模板文件不存在：' . $template, $this->logprefix[1]);
-            $this->handleException('模板文件不存在');
+            $info = '模板文件不存在：' . $templateFile;
+            $this->handleException(new Exception($info));
         }
+
     }
 
     /**
@@ -190,6 +212,6 @@ class View implements ViewInterface
      */
     protected function handleException(Exception $e): void
     {
-        ExcteptionHandlerTrait::handleException($e);
+        ExceptionHandlerTrait::handleException($e);
     }
 }
