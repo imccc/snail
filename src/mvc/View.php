@@ -139,7 +139,7 @@ class View implements ViewInterface
             ob_start();
 
             // 包含模板文件
-            include $templateFile;
+            include $fullpath;
 
             // 获取缓冲区内容并清空缓冲区
             $content = ob_get_clean();
@@ -147,7 +147,7 @@ class View implements ViewInterface
             // 返回渲染后的内容
             return $content;
         } else {
-            $info = '模板文件不存在：' . $templateFile;
+            $info = '模板文件不存在：' . $fullpath;
             $this->handleException(new Exception($info));
         }
 
