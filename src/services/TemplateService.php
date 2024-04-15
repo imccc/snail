@@ -5,6 +5,7 @@ namespace Imccc\Snail\Services;
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Services\Engines\SnailEngine;
 use Imccc\Snail\Services\Engines\TwigEngine;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class TemplateService
 {
