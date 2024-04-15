@@ -20,14 +20,12 @@ class TemplateService
         $this->container = $container;
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
-        $this->engine = $this->config->get('template.engine') ?? 'snail';
-        $this->setEngine($this->engine);
+        $this->engine = $this->coxnfig->get('template.engine') ?? 'snail';
     }
 
     public function setEngine($engine)
     {
         switch ($engine) {
-
             case 'twig':
                 $this->engine = new TwigEngine($this->container);
                 break;
@@ -45,8 +43,9 @@ class TemplateService
      * @param array $data 渲染模板时所需的数据
      * @return void
      */
-    public function display( $tpl,  $data = [])
+    public function display($tpl,  $data = [])
     {
+        $this->setEngine($this->engine);
         $this->_debuginfo['Template']['tplpata'] = $tpl;
         $content = $this->engine->render($tpl, $data);
         $this->logger->log('Snail Template Display Success', $this->logprefix[0]);
