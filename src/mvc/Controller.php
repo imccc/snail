@@ -100,12 +100,7 @@ class Controller implements ControllerInterface
     {
         $this->getView();
         $this->assign(['data' => $this->_data, 'title' => 'Snail PHP']);
-        $fulltpl = $this->preParseTpl();
-        if (!empty($tpl)) {
-            $this->_tpl = $fulltpl . DIRECTORY_SEPARATOR . $tpl;
-        } else {
-            $this->_tpl = $fulltpl . DIRECTORY_SEPARATOR . $this->routes['action'];
-        }
+        $fulltpl = $this->preParseTpl($tpl);
         // 根据视图模板和数据渲染视图，并返回渲染结果
         return $this->_view->display($this->_tpl);
     }
@@ -114,12 +109,14 @@ class Controller implements ControllerInterface
      * 预先解析视图模板位置
      * @return void
      */
-    public function preParseTpl()
+    public function preParseTpl($tpl)
     {
-        $pathFormat =  $this->config->get('template.path');
+        $pathFormat = $this->config->get('template.path');
         $controllerName = $this->routes['controller'];
         $methodName = $this->routes['action'];
-
+        if (!empty($tpl)) {
+            $methodName = $tpl;
+        }
         $path = str_replace(['{$group}', '{$action}'], [$controllerName, $methodName], $pathFormat);
 
         $this->_debuginfo['tplpath'] = $path;

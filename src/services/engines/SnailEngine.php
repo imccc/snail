@@ -33,7 +33,8 @@ class SnailEngine
     public function render($tpl, $data = [])
     {
         // 构建模板文件路径
-        $tplPath = $this->templateConfig['path'] . $tpl;
+        // $tplPath = $this->templateConfig['path'] . $tpl;
+        $tplPath = $tpl;
 
         // 判断是否启用缓存
         if ($this->templateConfig['cache']) {

@@ -19,7 +19,7 @@ class TemplateService
         $this->container = $container;
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
-        $this->engine = $this->config->get('template.engine');
+        $this->engine = $this->config->get('template.engine') ?? 'snail';
         $this->setEngine($this->engine);
     }
 
