@@ -49,7 +49,7 @@ class TemplateService
 
         $content = $this->engine->render($tpl, $data);
         $this->logger->log('Snail Template Display Success', $this->logprefix[0]);
-        echo $content;
+        return $content;
     }
 
     /**

@@ -113,13 +113,13 @@ class Controller implements ControllerInterface
     {
         $pathFormat = $this->config->get('template.path');
         $controllerName = $this->routes['controller'];
-        $methodName = $this->routes['action'];
         if (!empty($tpl)) {
             $methodName = $tpl;
+        } else {
+            $methodName = $this->routes['action'];
         }
         $path = str_replace(['{$group}', '{$action}'], [$controllerName, $methodName], $pathFormat);
-
-        $this->_debuginfo['tplpath'] = $path;
+        $this->_debuginfo['preParseTpl'] = $path;
         return $path;
     }
 

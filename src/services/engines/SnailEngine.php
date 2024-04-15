@@ -3,6 +3,7 @@
 namespace Imccc\Snail\Services\Engines;
 
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class SnailEngine
 {
@@ -12,6 +13,7 @@ class SnailEngine
     protected $content;
     protected $logger;
     protected $logprefix = ['template', 'error'];
+    protected $_debuginfo = [];
     protected $templateConfig;
 
     public function __construct(Container $container)
@@ -21,6 +23,10 @@ class SnailEngine
         $this->cache = $container->resolve('CacheService');
         $this->logger = $container->resolve('LoggerService');
         $this->templateConfig = $this->config->get('template');
+
+        if (DEBUG['debug'] && DEBUG['engine']) {
+            register_shutdown_function([$this, 'debug']);
+        }
     }
 
     /**
@@ -35,6 +41,7 @@ class SnailEngine
         // 构建模板文件路径
         // $tplPath = $this->templateConfig['path'] . $tpl;
         $tplPath = $tpl;
+        $this->_debuginfo['SnailEngine']['render']['tplPath'] = $tplPath;
 
         // 判断是否启用缓存
         if ($this->templateConfig['cache']) {
@@ -95,6 +102,7 @@ class SnailEngine
     {
         if (!file_exists($tplPath)) {
             // 记录模板文件不存在错误日志
+            $this->_debuginfo['SnailEngine']['loadTemplate']['tplPath'] = $tplPath;
             $this->logger->log('Snail Template File Not Found', $this->logprefix[1]);
             throw new \RuntimeException("Template file not found: $tplPath");
         }
@@ -274,6 +282,20 @@ class SnailEngine
         }, $content);
 
         return $content;
+    }
+
+    /**
+     * 添加调试信息。
+     *
+     * @return void
+     */
+    public function debug(): void
+    {
+        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        $info .= '<pre>';
+        $info .= print_r($this->_debuginfo, true);
+        $info .= '</pre>';
+        ExceptionHandlerTrait::showDebug($info);
     }
 
 }

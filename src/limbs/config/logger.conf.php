@@ -29,6 +29,7 @@ return [
         'socket' => true,
         'request' => true,
         'response' => true,
+        'engine' => true,
         // 其它自定义调试信息开关，可自行增加
     ],
     'log_file_path' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/logs', // 日志文件路径

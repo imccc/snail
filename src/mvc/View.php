@@ -32,8 +32,8 @@ class View implements ViewInterface
         $this->tplconf = $this->config->get('template');
         $this->templatePath = $this->tplconf['path'];
         $this->templateTags = $this->tplconf['tags'];
-        $this->_deftpl = $this->tplconf['default'];
-        $this->_ext = $this->tplconf['ext'];
+        $this->_deftpl = $this->tplconf['default'] ?? 'index';
+        $this->_ext = $this->tplconf['ext'] ?? '.tpl';
 
         $this->engine = $container->resolve('TemplateService');
         if (DEBUG['view'] && DEBUG['debug']) {
