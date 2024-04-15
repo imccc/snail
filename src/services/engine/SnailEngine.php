@@ -30,7 +30,7 @@ class SnailEngine
      * @param array $data 渲染模板时所需的数据
      * @return string 渲染后的模板内容
      */
-    public function render(string $tpl, array $data = []): string
+    public function render($tpl, $data = [])
     {
         // 构建模板文件路径
         $tplPath = $this->templateConfig['path'] . $tpl;

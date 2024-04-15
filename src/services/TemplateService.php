@@ -20,6 +20,7 @@ class TemplateService
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
         $this->engine = $this->config->get('template.engine');
+        $this->setEngine($this->engine);
     }
 
     public function setEngine($engine)
@@ -43,8 +44,9 @@ class TemplateService
      * @param array $data 渲染模板时所需的数据
      * @return void
      */
-    public function display(string $tpl, array $data = [])
+    public function display( $tpl,  $data = [])
     {
+
         $content = $this->engine->render($tpl, $data);
         $this->logger->log('Snail Template Display Success', $this->logprefix[0]);
         echo $content;
