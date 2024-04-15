@@ -21,6 +21,10 @@ class TemplateService
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
         $this->engine = $this->config->get('template.engine') ?? 'snail';
+
+        if (DEBUG['debug'] && DEBUG['template']){
+            register_shutdown_function([$this,'debug']);
+        }
     }
 
     public function setEngine($engine)
@@ -75,6 +79,20 @@ class TemplateService
     {
         $this->engine->cache($tpl, $data);
         $this->logger->log('Snail Template Cache Success', $this->logprefix[0]);
+    }
+
+      /**
+     * 添加调试信息。
+     *
+     * @return void
+     */
+    public function debug(): void
+    {
+        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+        $info .= '<pre>';
+        $info .= print_r($this->_debuginfo, true);
+        $info .= '</pre>';
+        ExceptionHandlerTrait::showDebug($info);
     }
 
 }
