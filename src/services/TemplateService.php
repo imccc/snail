@@ -12,6 +12,7 @@ class TemplateService
     protected $logger;
     protected $container;
     protected $logprefix = ['template', 'error'];
+    protected $_debuginfo=[];
     protected $engine;
 
     public function __construct(Container $container)
@@ -46,7 +47,7 @@ class TemplateService
      */
     public function display( $tpl,  $data = [])
     {
-
+        $this->_debuginfo['Template']['tplpata'] = $tpl;
         $content = $this->engine->render($tpl, $data);
         $this->logger->log('Snail Template Display Success', $this->logprefix[0]);
         return $content;
