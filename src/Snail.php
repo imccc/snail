@@ -6,6 +6,9 @@ namespace Imccc\Snail;
 defined('CONFIG_PATH') || define('CONFIG_PATH', dirname(__DIR__) . '/src/limbs/config');
 defined('CFG_EXT') || define('CFG_EXT', '.conf.php');
 defined('START_TIME') || define('START_TIME', microtime(true));
+define('SNAIL', 'Snail');
+define('SNAIL_VERSION', '0.0.1');
+define('USE_PHP_VERSION', '7.2.5');
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
@@ -14,10 +17,6 @@ use Imccc\Snail\Traits\ExceptionHandlerTrait;
 
 class Snail
 {
-    const SNAIL = 'Snail';
-    const SNAIL_VERSION = '0.0.1';
-    const PHP_VERSION = '7.2.5';
-
     protected $router;
     protected $config; // 配置服务
     protected $conf; // snail配置
@@ -28,8 +27,8 @@ class Snail
 
     public function __construct()
     {
-        if (version_compare(PHP_VERSION, self::PHP_VERSION, '<')) {
-            die('PHP version must be greater than or equal to ' . self::PHP_VERSION);
+        if (version_compare(PHP_VERSION, USE_PHP_VERSION, '<')) {
+            die('PHP version must be greater than or equal to ' . USE_PHP_VERSION);
         }
         session_start();
         $this->initializeContainer();

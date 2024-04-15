@@ -43,7 +43,7 @@ class TemplateService
      * @param array $data 渲染模板时所需的数据
      * @return void
      */
-    public function display($tpl, $data = [])
+    public function display(string $tpl, array $data = [])
     {
         $content = $this->engine->render($tpl, $data);
         $this->logger->log('Snail Template Display Success', $this->logprefix[0]);
