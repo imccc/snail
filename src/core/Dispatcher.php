@@ -10,16 +10,20 @@ class Dispatcher
     protected $middlewares = [];
     protected $container;
     protected $debug;
-    protected $debuginfo = [];
+    protected $_debuginfo = [];
+
+    use ExceptionHandlerTrait;
 
     public function __construct(Container $container, $routes)
     {
         $this->routes = $routes;
         $this->container = $container;
         // 记录调试信息 本类名称
-        $this->debuginfo['route'] = $routes;
+        $this->_debuginfo['route'] = $routes;
         if (DEBUG['dispatch'] && DEBUG['debug']) {
-            register_shutdown_function([$this, 'debug']);
+            register_shutdown_function([$this, function () {
+                ExceptionHandlerTrait::showDebugInfo($this->_debuginfo, self::class);
+            }]);
         }
     }
 
@@ -32,7 +36,7 @@ class Dispatcher
     {
         $middlewareInstance = $this->container->make($middlewareClass);
         $this->middlewares[] = $middlewareInstance;
-        $this->debuginfo['middleware'] = $middlewareClass;
+        $this->_debuginfo[self::class]['middleware'] = $middlewareClass;
         return $this; // 支持链式调用
     }
 
@@ -56,16 +60,16 @@ class Dispatcher
             // 这是一个静态文件请求，直接返回文件内容
             header('Content-Type: ' . mime_content_type($parsedRoute['file_path']));
             readfile($parsedRoute['file_path']);
-            $this->debuginfo['file'] = $parsedRoute['file_path'];
+            $this->_debuginfo[self::class]['file'] = $parsedRoute['file_path'];
             exit;
         }
         // 如果路由是闭包，则直接执行闭包并退出
         if (isset($parsedRoute['closure'])) {
             ($parsedRoute['closure'])(); // 执行闭包
-            $this->debuginfo['closure'] = $parsedRoute['closure'];
+            $this->_debuginfo[self::class]['closure'] = $parsedRoute['closure'];
             exit(); // 执行完闭包后退出
         } elseif (isset($this->routes['404'])) {
-            $this->debuginfo['404'] = $parsedRoute['404'];
+            $this->_debuginfo[self::class]['404'] = $parsedRoute['404'];
             // 如果路由不存在，则返回 404
             header('HTTP/1.1 404 Not Found');
             exit('404 Not Found');
@@ -88,7 +92,7 @@ class Dispatcher
     {
         // 逆序遍历中间件数组来构建执行链
         $middlewares = array_reverse($this->middlewares);
-        $this->debuginfo['middleware'] = $middlewares;
+        $this->_debuginfo[self::class]['middleware'] = $middlewares;
         $next = $finalHandler;
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next) {
@@ -111,7 +115,7 @@ class Dispatcher
         // 构建控制器类名
         $controllerClass = $namespace . '\\' . $controller;
         // echo $controllerClass;die;
-        $this->debuginfo['controllerClass'] = $controllerClass;
+        $this->_debuginfo[self::class]['controllerClass'] = $controllerClass;
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
             $this->handleException("$controllerClass Controller class not found.");
@@ -121,14 +125,14 @@ class Dispatcher
         $controllerObj = new $controllerClass($this->routes);
 
         // 检查控制器方法是否存在
-        $this->debuginfo['action'] = $action;
+        $this->_debuginfo[self::class]['action'] = $action;
         if (!method_exists($controllerObj, $action)) {
             $this->handleException("$action Action method not found in $controllerClass Controller.");
         }
 
         // 调用控制器方法
         $result = call_user_func([$controllerObj, $action]);
-        $this->debuginfo['result'] = $result;
+        $this->_debuginfo[self::class]['result'] = $result;
         // 输出结果
         if (!empty($result)) {
             echo $result;
@@ -143,16 +147,4 @@ class Dispatcher
         ExceptionHandlerTrait::handleException($e);
     }
 
-    /**
-     * 调试信息
-     */
-    public function debug()
-    {
-        $info = "<h3>以下信息由 类: " . self::class . " 提供 <small>@ " . date("Y-m-d H:i:s") . "</small></h3>";
-        $info .= "<pre>";
-        $info .= print_r($this->debuginfo, true);
-        $info .= "</pre>";
-
-        ExceptionHandlerTrait::showDebug($info);
-    }
 }

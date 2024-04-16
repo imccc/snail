@@ -23,7 +23,9 @@ class Router
     protected $defaultController; // 默认控制器
     protected $defaultAction; // 默认动作
     protected $parsedRoute; // 解析后的路由信息
+    protected $_debuginfo=[];
 
+    use ExceptionHandlerTrait;
     /**
      * 构造函数，初始化路由配置和默认值
      *
@@ -43,7 +45,7 @@ class Router
         // 脚本结束时执行debug,方便调试，开关在router.conf.php中的on节点配置
         if (DEBUG['route'] && DEBUG['debug']) {
             register_shutdown_function(function () {
-                $this->debug();
+                ExceptionHandlerTrait::showDebugInfo($this->_debuginfo, self::class);
             });
         }
 
@@ -58,6 +60,7 @@ class Router
     {
         $uri = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL) ?? '/';
         $uri = trim(parse_url($uri, PHP_URL_PATH), '/');
+        $this->_debuginfo[self::class]['uri'] = $uri;
         return $this->removeUrlSuffix($uri) ?: '/';
     }
 
@@ -239,20 +242,5 @@ class Router
      */
     protected function handlerException(Exception $e):void {
         ExceptionHandlerTrait::handleException($e);
-    }
-
-    /**
-     * 执行debug信息
-     */
-    public function debug()
-    {
-        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        $info .= '<pre> 解析后的数组：';
-        $info .= print_r($this->getRouteInfo(), true);
-        $info .= '<br> 路由表信息：<br>';
-        $info .= print_r($this->routeMap, true);
-        $info .= '</pre>';
-
-        ExceptionHandlerTrait::showDebug($info);
     }
 }

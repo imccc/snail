@@ -11,6 +11,18 @@ trait ExceptionHandlerTrait
     // 错误计数器
     private static $errorCount = 0;
     private static $debugIndex = 0;
+    protected static $style = [
+        'error' => 'background-color: #ffdddd; color: #000; padding: 10px; margin: 10px; border: 1px solid #ff0000;',
+        'debug' => 'background-color: #ddddff; color: #000; padding: 10px; margin: 10px; border: 1px solid #0000ff;',
+        'info' => 'background-color: #ddffdd;color: #000; padding: 10px; margin: 10px',
+        'title' => 'background-color: #dddddd; color: #000; padding: 10px; margin: 10px;',
+    ];
+    public static $tpl = [
+        'debug' => '<div style="{{$debugstyle}}"> <h3 style="{{$titlestyle}}"> Snail Debug <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
+        'error' => '<div style="{{$errorstyle}}"> <h3 style="{{$titlestyle}}"> Snail Debug <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
+        'detail' => '<p>Error Type: {{$code}}</p><p>Strack Trace: {{$trace}}</p><pre style="background-color: #eee;">{{$err}}</pre>',
+        'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
+    ];
 
     // 处理异常的方法
     public static function handleException($exceptionOrErrorCode): void
@@ -32,53 +44,45 @@ trait ExceptionHandlerTrait
         self::logError($exception);
     }
 
-    // 显示调试信息
+    /**
+     * 显示调试信息
+     * @param String $exception
+     */
+    public static function showDebugInfo(String $infoStr, String $className): void
+    {
+        if (DEBUG['debug'] ?? false) {
+            $info = "<h3>以下信息由 类: " . $className . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
+            $info .= '<pre>';
+            $info .= print_r($infoStr, true);
+            $info .= '</pre>';
+            static::showDebug($info);
+        }
+    }
+
+    /**
+     * 显示调试信息
+     */
     public static function showDebug(String $exception): void
     {
         self::$debugIndex++;
         // 根据调试模式显示详细错误信息或简单提示
-        if (DEBUG['debug'] ?? false) {
-            echo '<div style="' . self::getDebugStyle() . '">';
-            echo '<h3 style="' . self::getTitleStyle() . '"> Snail Debug <small> - ' . $_SERVER['HTTP_HOST'] . '</small><span style="float:right;">#' . self::getDebugIndex() . '</span></h3>';
-            echo '<div style="padding: 10px;">';
-            echo $exception;
-            echo '</div></div>';
-        }
+        $str = str_replace(['{{$debugstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$style['debug'], self::$style['title'], self::getDebugIndex(), $exception], self::$tpl['debug']);
+        echo $str;
     }
 
-    // 显示错误信息
+    /**
+     * 显示错误信息
+     */
     public static function showError(Throwable $exception): void
     {
-        echo '<div style="' . self::getErrorStyle() . '">';
-        echo '<h3 style="' . self::getTitleStyle() . '"> Snail Debug <small> - ' . $_SERVER['HTTP_HOST'] . '</small><span style="float:right;">#' . self::getErrorCount() . '</span></h3>';
-        echo '<div style="padding: 10px;">';
-
-        // 根据调试模式显示详细错误信息或简单提示
         if (DEBUG['debug'] ?? false) {
-            self::showDetailedError($exception);
+            self::$debugIndex++;
+            // 根据调试模式显示详细错误信息或简单提示
+            $str = str_replace(['{{$debugstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$style['error'], self::$style['title'], self::getDebugIndex(), $self::showDetailedError($exception)], self::$tpl['error']);
         } else {
-            echo '<h1>Oops, something went wrong!</h1>';
-            echo '<p>Please contact the administrator for assistance.</p>';
+            $str = self::$tpl['simple'];
         }
-        echo '</div></div>';
-    }
-
-    // 获取错误信息样式
-    protected static function getErrorStyle(): string
-    {
-        return 'color: dark-grey; border: 1px dashed red; margin: 30px;';
-    }
-
-    // 获取信息息样式
-    protected static function getDebugStyle(): string
-    {
-        return 'color: #66ff00; border: 1px dashed green; margin: 30px; background-color: #111; font-size:0,75rem;';
-    }
-
-    // 获取错误标题样式
-    protected static function getTitleStyle(): string
-    {
-        return 'color: red; background-color: #eee; margin:0;padding: 10px;';
+        echo $str;
     }
 
     // 显示详细错误信息
@@ -95,12 +99,8 @@ trait ExceptionHandlerTrait
             '8192' => 'DEPRECATED', '16384' => 'USER_DEPRECATED',
         ];
 
-        // 显示错误类型和堆栈跟踪
-        echo '<p>Error Type: ' . $errorTypeMap[$errorCode] . '</p>';
-        echo '<p>Stack Trace:</p>';
-        echo '<pre style="color:blue">' . self::formatStackTrace($exception->getTrace()) . '</pre>';
-        // echo '<p>Original Stack Trace:</p>';
-        // echo '<p style="color:gray">' . $exception->getTraceAsString() . '</p>';
+        $str = str_replace(['{{$code}}', '{{$trace}}', '{{$err}}'], [$errorTypeMap[$errorCode], $exception->getTraceAsString(), self::formatStackTrace($exception->getTrace())], self::$tpl['detail']);
+        echo $str;
     }
 
     // 提取错误码
@@ -153,10 +153,8 @@ trait ExceptionHandlerTrait
         if (!file_exists($filePath)) {
             return null;
         }
-
         $file = new SplFileObject($filePath);
         $file->seek($lineNumber - 1);
-
         return $file->valid() ? $file->current() : null;
     }
 

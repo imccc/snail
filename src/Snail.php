@@ -33,6 +33,12 @@ class Snail
         session_start();
         $this->initializeContainer();
         $this->run();
+
+        if (DEBUG['debug']) {
+            register_shutdown_function([$this, function () {
+                ExceptionHandlerTrait::showDebugInfo($this->_debuginfo, self::class);
+            }]);
+        }
     }
 
     /**
@@ -104,33 +110,7 @@ class Snail
             $info .= "Shared: " . ($binding['shared'] ? 'Yes' : 'No') . "<br>";
             $info .= "-------------------------<br>";
         }
-        return $info;
-    }
-
-    /**
-     * 执行debug信息
-     */
-    public function debug()
-    {
-        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        $info .= '<pre>';
-        $info .= print_r($this->getServices(), true);
-        $info .= '</pre>';
-        ExceptionHandlerTrait::showDebug($info);
-    }
-
-    /**
-     * 销毁
-     */
-    public function __destruct()
-    {
-        if (DEBUG['log'] && DEBUG['debug']) {
-            $debug = $this->getServices();
-            $this->logger->log('Services:' . $debug, $this->logprefix[0]);
-        }
-        if (DEBUG['service'] && DEBUG['debug']) {
-            $this->debug();
-        }
+        $this->_debuginfo[self::class]['bindings'] = $info;
     }
 
 }
