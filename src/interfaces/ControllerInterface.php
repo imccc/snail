@@ -27,14 +27,6 @@ interface ControllerInterface
     public function display($tpl = '');
 
     /**
-     * 添加调试信息。
-     *
-     * @param string $info 调试信息
-     * @return void
-     */
-    public function debug(): void;
-
-    /**
      * 将数据分配到视图。
      *
      * @param string $key 数据键

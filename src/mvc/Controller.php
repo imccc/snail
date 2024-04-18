@@ -12,7 +12,6 @@ class Controller implements ControllerInterface
 {
     protected $api;
     protected $config;
-    protected $conf;
     protected $routes;
     protected $container;
     protected $logger;
@@ -42,7 +41,6 @@ class Controller implements ControllerInterface
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
-        $this->conf = $this->config->get('logger.on');
 
         if (DEBUG['controller'] && DEBUG['debug']) {
             register_shutdown_function([self::class, 'debug']);
