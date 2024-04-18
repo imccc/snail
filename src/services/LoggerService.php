@@ -34,6 +34,9 @@ class LoggerService
 
     public function __construct(Container $container)
     {
+        // 注册全局异常处理函数
+        set_error_handler([self::class, 'handleException']);
+
         $this->container = $container;
         // 解析配置服务并获取日志配置信息
         $this->config = $this->container->resolve('ConfigService');

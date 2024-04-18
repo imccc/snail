@@ -23,6 +23,9 @@ class SocketService
 
     public function __construct(Container $container)
     {
+        // 注册全局异常处理函数
+        set_error_handler([self::class, 'handleException']);
+
         $this->container = $container;
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');

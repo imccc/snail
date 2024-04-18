@@ -40,6 +40,9 @@ class SqlService
      */
     public function __construct(Container $container)
     {
+        // 注册全局异常处理函数
+        set_error_handler([self::class, 'handleException']);
+
         $this->container = $container;
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService')->get('database');
@@ -69,7 +72,7 @@ class SqlService
             $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $options);
             self::bindDebugInfo('dsn', $dsn);
         } catch (PDOException $e) {
-            self::handleException($e,"Connect to database failed!");
+            self::handleException($e, "Connect to database failed!");
         }
     }
 
@@ -147,7 +150,7 @@ class SqlService
             $this->join = ''; // 重置连接条件
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            self::handleException($e,'Params: ' . json_encode($params));
+            self::handleException($e, 'Params: ' . json_encode($params));
         }
     }
 
@@ -175,7 +178,7 @@ class SqlService
             $stmt->execute($params);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            self::handleException($e , 'SQL Select Error:' . $sql);
+            self::handleException($e, 'SQL Select Error:' . $sql);
         }
     }
 
@@ -199,7 +202,7 @@ class SqlService
             $stmt->execute(array_values($data));
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'Insert Error:' . $sql);
+            self::handleException($e, 'Insert Error:' . $sql);
         }
     }
 
@@ -228,7 +231,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'Update Error:' . $sql);
+            self::handleException($e, 'Update Error:' . $sql);
         }
     }
 
@@ -250,7 +253,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'Delete Error:' . $sql);
+            self::handleException($e, 'Delete Error:' . $sql);
         }
     }
 
@@ -270,7 +273,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'Execution Error:' . $sql);
+            self::handleException($e, 'Execution Error:' . $sql);
         }
     }
 
@@ -290,7 +293,7 @@ class SqlService
             $stmt->execute($params);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            self::handleException($e , 'Fetch Error:' . $sql);
+            self::handleException($e, 'Fetch Error:' . $sql);
         }
     }
 
@@ -311,7 +314,7 @@ class SqlService
             $this->result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'FetchAll Error:' . $sql);
+            self::handleException($e, 'FetchAll Error:' . $sql);
         }
     }
 
@@ -446,7 +449,7 @@ class SqlService
             try {
                 $stmt->bindValue($paramName, $value, $paramType);
             } catch (PDOException $e) {
-                self::handleException($e , 'Parameter Binding Error:' . $sql);
+                self::handleException($e, 'Parameter Binding Error:' . $sql);
             }
         }
     }
@@ -498,7 +501,7 @@ class SqlService
             }
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'Batch Insert  Error:' . $sql);
+            self::handleException($e, 'Batch Insert  Error:' . $sql);
         }
     }
 
@@ -534,7 +537,7 @@ class SqlService
             }
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'Batch Update  Error:' . $sql);
+            self::handleException($e, 'Batch Update  Error:' . $sql);
         }
     }
 
@@ -556,7 +559,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e , 'Batch Delete  Error:' . $sql);
+            self::handleException($e, 'Batch Delete  Error:' . $sql);
         }
     }
 
@@ -771,8 +774,6 @@ class SqlService
         }
         rmdir($directory);
     }
-
-   
 
     /**
      * 常规日志

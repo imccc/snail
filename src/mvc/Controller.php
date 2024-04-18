@@ -31,6 +31,9 @@ class Controller implements ControllerInterface
 
     public function __construct($routes)
     {
+        // 注册全局异常处理函数
+        set_error_handler([self::class, 'handleException']);
+
         $this->routes = $routes;
 
         self::bindDebugInfo('original', $this->routes);

@@ -16,10 +16,12 @@ class Dispatcher
 
     public function __construct(Container $container, $routes)
     {
+        // 注册全局异常处理函数
+        set_error_handler([self::class, 'handleException']);
+
         $this->routes = $routes;
         $this->container = $container;
-        // 注册全局异常处理函数
-        set_error_handler('handleException');
+        
         // 记录调试信息 本类名称
         self::bindDebugInfo('route', $routes);
         if (DEBUG['dispatch'] && DEBUG['debug']) {

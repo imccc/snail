@@ -33,6 +33,9 @@ class Snail
             self::handleException('PHP version must be greater than or equal to ' . USE_PHP_VERSION);
             die();
         }
+        // 注册全局异常处理函数
+        set_error_handler([self::class, 'handleException']);
+
         session_start();
         $this->initializeContainer();
         $this->run();
@@ -47,9 +50,6 @@ class Snail
      */
     public function run()
     {
-        // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
-
         //初始化路由
         $d = new Router($this->container);
 
@@ -111,7 +111,7 @@ class Snail
             $info .= "Shared: " . ($binding['shared'] ? 'Yes' : 'No') . "<br>";
             $info .= "-------------------------<br>";
         }
-        self::bindDebugInfo('bindings',$info);
+        self::bindDebugInfo('bindings', $info);
     }
 
 }

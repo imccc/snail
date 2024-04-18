@@ -22,6 +22,9 @@ class Model implements ModelInterface
 
     public function __construct(Container $container)
     {
+        // 注册全局异常处理函数
+        set_error_handler([self::class, 'handleException']);
+
         $this->container = $container;
         $this->sqlService = $container->resolve('SqlService');
         $this->logger = $container->resolve('LoggerService');

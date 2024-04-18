@@ -1,8 +1,9 @@
 <?php
 namespace Imccc\Snail\Traits;
-// use ErrorException;
-// use SplFileObject;
-// use Throwable;
+
+use ErrorException;
+use SplFileObject;
+use Throwable;
 
 trait HandleExceptionTrait
 {
@@ -15,7 +16,7 @@ trait HandleExceptionTrait
     public static $handleTpl = [
         'error' => '<div style="{{$errorstyle}}"> <h3 style="{{$titlestyle}}"> Snail Error <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
-        'detail' => '<p>Error Type: {{$code}}</p><p>Strack Trace: {{$trace}}</p><pre style="background-color: #eee;">{{$err}}</pre>',
+        'detail' => '<p>Strack Trace: {{$trace}}</p><pre style="background-color: #eee;">{{$err}}</pre>',
     ];
 
     // 处理异常的方法
@@ -57,7 +58,7 @@ trait HandleExceptionTrait
 
     public static function showDetailedError($exception)
     {
-        $str = str_replace(['{{$code}}', '{{$trace}}', '{{$err}}'], [$errorTypeMap[$errorCode], $exception->getTraceAsString(), self::formatStackTrace($exception->getTrace())], self::$handleTpl['detail']);
+        $str = str_replace(['{{$trace}}', '{{$err}}'], [$exception->getTraceAsString(), self::formatStackTrace($exception->getTrace())], self::$handleTpl['detail']);
         echo $str;
     }
 
