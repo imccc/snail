@@ -6,6 +6,7 @@ use Imccc\Snail\Core\Container;
 use Imccc\Snail\Services\Engines\SnailEngine;
 use Imccc\Snail\Services\Engines\TwigEngine;
 use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class TemplateService
 {
@@ -15,7 +16,7 @@ class TemplateService
     protected $logprefix = ['template', 'error'];
     protected $engine;
 
-    use DebugTrait;
+    use DebugTrait,HandleExceptionTrait;
     public function __construct(Container $container)
     {
         // 注册全局异常处理函数

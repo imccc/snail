@@ -3,10 +3,12 @@
 namespace Imccc\Snail\Services\Engines;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class SnailEngine
 {
+    use DebugTrait, HandleExceptionTrait;
     protected $container;
     protected $config;
     protected $cache;
@@ -18,6 +20,7 @@ class SnailEngine
 
     public function __construct(Container $container)
     {
+        set_error_handler([self::class, 'handleException']);
         $this->container = $container;
         $this->config = $container->resolve('ConfigService');
         $this->cache = $container->resolve('CacheService');
@@ -284,18 +287,6 @@ class SnailEngine
         return $content;
     }
 
-    /**
-     * 添加调试信息。
-     *
-     * @return void
-     */
-    public function debug(): void
-    {
-        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        $info .= '<pre>';
-        $info .= print_r($this->_debuginfo, true);
-        $info .= '</pre>';
-        ExceptionHandlerTrait::showDebug($info);
-    }
+  
 
 }
