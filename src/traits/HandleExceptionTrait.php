@@ -32,13 +32,15 @@ trait HandleExceptionTrait
             $errorMessage = is_string($exceptionOrErrorCode) ? $exceptionOrErrorCode : "Unknown error";
             $exception = new ErrorException("Error: " . $errorMessage);
         }
-        if (!empty($string)) {
-            echo " -=[ $string ]=- ";
-        }
+
         // 显示错误信息
         self::showError($exception);
         // 记录错误日志
         self::logError($exception);
+        // if (!empty($string)) {
+        //     echo " -=[ $string ]=- ";
+        // }
+
     }
 
     /**
@@ -47,9 +49,8 @@ trait HandleExceptionTrait
     public static function showError(Throwable $exception): void
     {
         if (DEBUG['debug'] ?? false) {
-            self::$debugIndex++;
             // 根据调试模式显示详细错误信息或简单提示
-            $str = str_replace(['{{$errorstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$handleStyle['error'], self::$handleStyle['title'], self::getDebugIndex(), self::showDetailedError($exception)], self::$handleTpl['error']);
+            $str = str_replace(['{{$errorstyle}}', '{{$titlestyle}}',  '{{$info}}'], [self::$handleStyle['error'], self::$handleStyle['title'],  self::showDetailedError($exception)], self::$handleTpl['error']);
         } else {
             $str = self::$handleTpl['simple'];
         }
