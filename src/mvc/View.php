@@ -36,7 +36,7 @@ class View implements ViewInterface
 
         $this->engine = $container->resolve('TemplateService');
         if (DEBUG['view'] && DEBUG['debug']) {
-            register_shutdown_function([self, 'debug']);
+            register_shutdown_function([self::class, 'debug']);
         }
     }
 

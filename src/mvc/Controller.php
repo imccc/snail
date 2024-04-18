@@ -41,7 +41,7 @@ class Controller implements ControllerInterface
         $this->conf = $this->config->get('logger.on');
 
         if (DEBUG['controller'] && DEBUG['debug']) {
-            register_shutdown_function([self, 'debug']);
+            register_shutdown_function([self::class, 'debug']);
         }
 
     }

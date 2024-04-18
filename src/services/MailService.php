@@ -64,7 +64,7 @@ class MailService
         $this->responseTimeout = $this->config['responseTimeout'];
 
         if (defined('DEBUG') && DEBUG['debug'] && DEBUG['mail'] ?? false) {
-            register_shutdown_function([self, 'debug']);
+            register_shutdown_function([self::class, 'debug']);
         }
     }
 

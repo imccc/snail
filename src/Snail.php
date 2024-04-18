@@ -38,7 +38,7 @@ class Snail
         $this->run();
 
         if (DEBUG['debug']) {
-            register_shutdown_function([self, 'debug']);
+            register_shutdown_function([self::class, 'debug']);
         }
     }
 

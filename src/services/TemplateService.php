@@ -24,7 +24,7 @@ class TemplateService
         $this->engine = $this->config->get('template.engine') ?? 'snail';
 
         if (DEBUG['debug'] && DEBUG['template']) {
-            register_shutdown_function([self, 'debug']);
+            register_shutdown_function([self::class, 'debug']);
         }
     }
 

@@ -41,7 +41,7 @@ class LoggerService
         $this->tableName = $this->logconf['log_db_table'];
         // 注册一个脚本结束时的回调，用于处理日志队列中剩余的日志
         register_shutdown_function([$this, 'flushLogs']);
-        register_shutdown_function([self, 'debug']);
+        register_shutdown_function([self::class, 'debug']);
     }
 
     /**
