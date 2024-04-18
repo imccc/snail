@@ -49,7 +49,7 @@ trait HandleExceptionTrait
         if (DEBUG['debug'] ?? false) {
             self::$debugIndex++;
             // 根据调试模式显示详细错误信息或简单提示
-            $str = str_replace(['{{$errorstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$handleStyle['error'], self::$handleStyle['title'], self::getDebugIndex(), self::showDetailedError($exception)], self::$handletpl['error']);
+            $str = str_replace(['{{$errorstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$handleStyle['error'], self::$handleStyle['title'], self::getDebugIndex(), self::showDetailedError($exception)], self::$handleTpl['error']);
         } else {
             $str = self::$handleTpl['simple'];
         }
