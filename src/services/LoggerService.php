@@ -18,6 +18,8 @@ namespace Imccc\Snail\Services;
 
 use Exception;
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class LoggerService
 {
@@ -28,6 +30,8 @@ class LoggerService
     private $container; // 容器
     private $tableName;
 
+    use HandleExceptionTrait, DebugTrait;
+
     public function __construct(Container $container)
     {
         $this->container = $container;
@@ -37,6 +41,7 @@ class LoggerService
         $this->tableName = $this->logconf['log_db_table'];
         // 注册一个脚本结束时的回调，用于处理日志队列中剩余的日志
         register_shutdown_function([$this, 'flushLogs']);
+        register_shutdown_function([self, 'debug']);
     }
 
     /**
@@ -70,7 +75,7 @@ class LoggerService
             default:
                 // 如果配置为其他类型，则直接写入服务器日志
                 $this->logToServer("[$pre] $message");
-                throw new Exception('Invalid log type, to see server logs');
+                self::handleException('Invalid log type, to see server logs');
                 break;
         }
     }
@@ -216,9 +221,7 @@ class LoggerService
         try {
             $sqlService->execute($sql, $params);
         } catch (Exception $e) {
-            throw new Exception("Failed to log to database: " . $e->getMessage());
-            // 记录到服务器日志
-            error_log("_ERROR_ : Failed to log to database: " . $e->getMessage());
+            self::handleException("Failed to log to database: " . $e->getMessage());
         }
     }
 
@@ -263,8 +266,7 @@ class LoggerService
             $sqlService->execute($sql, [':daysToKeep' => $daysToKeep]);
         } catch (Exception $e) {
             // 记录到服务器日志
-            error_log("ERROR: Failed to clean up database logs: " . $e->getMessage());
-            throw new Exception("Failed to clean up database logs: " . $e->getMessage());
+            self::handleException("Failed to clean up database logs: " . $e->getMessage());
         }
     }
 
@@ -291,14 +293,13 @@ class LoggerService
             'id' => 'INT AUTO_INCREMENT PRIMARY KEY',
             'times' => 'DATETIME',
             'message' => 'TEXT',
-            'type' => 'VARCHAR(255)'
+            'type' => 'VARCHAR(255)',
         ];
         try {
-            $sqlService->createTable($table,$columns);
+            $sqlService->createTable($table, $columns);
         } catch (Exception $e) {
             // 记录到服务器日志
-            error_log("ERROR: Failed to create log table: " . $e->getMessage());
-            throw new Exception("Failed to create log table: " . $e->getMessage());
+            self::handleException("Failed to create log table: " . $e->getMessage());
         }
     }
 

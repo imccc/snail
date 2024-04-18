@@ -15,18 +15,20 @@ namespace Imccc\Snail\Services;
 
 use Exception;
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 use PDO;
 use PDOException;
 use PDOStatement;
 
 class SqlService
 {
+    use DebugTrait, HandleExceptionTrait;
     private $pdo;
     private $container;
     protected $config;
     protected $logger;
     private $logprefix = ['sql', 'sqlerr'];
-    private $logconf;
     private $join = '';
     private $prefix;
     private $softDeleteField;
@@ -41,7 +43,6 @@ class SqlService
         $this->container = $container;
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService')->get('database');
-        $this->logconf = $this->container->resolve('ConfigService')->get('logger.on');
         $this->softDeleteField = $this->config['deleted_at'];
         $this->connect();
     }
@@ -66,10 +67,9 @@ class SqlService
 
         try {
             $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $options);
-            $this->log('Connected to database');
+            self::bindDebugInfo('dsn', $dsn);
         } catch (PDOException $e) {
-            $this->log('Database Connection Error: ' . $e->getMessage());
-            throw new Exception('Database Connection Error: ' . $e->getMessage());
+            self::handleException($e,"Connect to database failed!");
         }
     }
 
@@ -92,9 +92,9 @@ class SqlService
                 $dsn = "oci:dbname={$dsnConfig['dbname']}";
                 break;
             default:
-                throw new Exception("Unsupported database driver: $driver");
+                self::handleException(new Exception("Unsupported database driver: $driver"));
         }
-        $this->log('DSN: ' . $dsn);
+        self::bindDebugInfo('dsn', $dsn);
         return $dsn;
     }
 
@@ -147,7 +147,7 @@ class SqlService
             $this->join = ''; // 重置连接条件
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            $this->handleException($e, 'Query Error');
+            self::handleException($e,'Params: ' . json_encode($params));
         }
     }
 
@@ -175,7 +175,7 @@ class SqlService
             $stmt->execute($params);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            $this->handleException($e, 'SQL Select Error:' . $sql);
+            self::handleException($e , 'SQL Select Error:' . $sql);
         }
     }
 
@@ -199,7 +199,7 @@ class SqlService
             $stmt->execute(array_values($data));
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Insert Error:' . $sql);
+            self::handleException($e , 'Insert Error:' . $sql);
         }
     }
 
@@ -228,7 +228,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Update Error:' . $sql);
+            self::handleException($e , 'Update Error:' . $sql);
         }
     }
 
@@ -250,7 +250,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Delete Error:' . $sql);
+            self::handleException($e , 'Delete Error:' . $sql);
         }
     }
 
@@ -270,7 +270,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Execution Error:' . $sql);
+            self::handleException($e , 'Execution Error:' . $sql);
         }
     }
 
@@ -290,7 +290,7 @@ class SqlService
             $stmt->execute($params);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            $this->handleException($e, 'Fetch Error:' . $sql);
+            self::handleException($e , 'Fetch Error:' . $sql);
         }
     }
 
@@ -311,7 +311,7 @@ class SqlService
             $this->result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'FetchAll Error:' . $sql);
+            self::handleException($e , 'FetchAll Error:' . $sql);
         }
     }
 
@@ -446,7 +446,7 @@ class SqlService
             try {
                 $stmt->bindValue($paramName, $value, $paramType);
             } catch (PDOException $e) {
-                $this->handleException($e, 'Parameter Binding Error:' . $sql);
+                self::handleException($e , 'Parameter Binding Error:' . $sql);
             }
         }
     }
@@ -498,7 +498,7 @@ class SqlService
             }
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Batch Insert  Error:' . $sql);
+            self::handleException($e , 'Batch Insert  Error:' . $sql);
         }
     }
 
@@ -534,7 +534,7 @@ class SqlService
             }
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Batch Update  Error:' . $sql);
+            self::handleException($e , 'Batch Update  Error:' . $sql);
         }
     }
 
@@ -556,7 +556,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Batch Delete  Error:' . $sql);
+            self::handleException($e , 'Batch Delete  Error:' . $sql);
         }
     }
 
@@ -582,7 +582,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Create Table  Error:' . $sql);
+            self::handleException($e, 'Create Table  Error:' . $sql);
         }
     }
 
@@ -601,7 +601,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Truncate Table  Error:' . $sql);
+            self::handleException($e, 'Truncate Table  Error:' . $sql);
         }
     }
 
@@ -620,7 +620,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Drop Table  Error:' . $sql);
+            self::handleException($e, 'Drop Table  Error:' . $sql);
         }
     }
 
@@ -645,7 +645,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Alter Table  Error:' . $sql);
+            self::handleException($e, 'Alter Table  Error:' . $sql);
         }
     }
 
@@ -683,7 +683,7 @@ class SqlService
             file_put_contents($filePath, $output);
             return true;
         } catch (Exception $e) {
-            $this->handleException($e, 'Export SQL  Error:' . $sql);
+            self::handleException($e, 'Export SQL  Error:' . $sql);
         }
     }
 
@@ -720,13 +720,13 @@ class SqlService
                 $this->deleteDirectory($tempDir);
                 return true;
             } else {
-                $this->handleException($e, 'Failed to open the ZIP file');
+                self::handleException($e, 'Failed to open the ZIP file');
             }
         } elseif ($extension === 'sql') {
             // 如果是 SQL 文件，则直接导入
             return $this->importSingleSqlFile($filePath);
         } else {
-            $this->handleException($e, 'Unsupported file format:' . $filePath);
+            self::handleException($e, 'Unsupported file format:' . $filePath);
         }
     }
 
@@ -745,7 +745,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            $this->handleException($e, 'Import SQL Error:' . $sql);
+            self::handleException($e, 'Import SQL Error:' . $sql);
         }
     }
 
@@ -772,21 +772,7 @@ class SqlService
         rmdir($directory);
     }
 
-    /**
-     * 处理异常
-     *
-     * @param PDOException $e 异常对象
-     * @param string $opt 操作类型
-     * @return void
-     * @throws Exception 如果处理异常出错，则抛出异常
-     */
-    protected function handleException(PDOException $e, $opt): void
-    {
-        // 这里可以添加异常处理逻辑，比如记录日志等
-        $this->log('SQL Error: ' . $opt . $e->getMessage(), $this->logprefix[1]);
-        // throw $e; // 或者重新抛出异常
-        throw new Exception($opt . $e->getMessage());
-    }
+   
 
     /**
      * 常规日志

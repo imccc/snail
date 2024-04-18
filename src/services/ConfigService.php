@@ -11,9 +11,12 @@
 namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\DebugTrait;
 
 class ConfigService
 {
+    use DebugTrait;
+
     private $container; // 容器
 
     protected $debuginfo = [];
@@ -23,10 +26,8 @@ class ConfigService
         $this->container = $container;
 
         // 脚本结束时执行debug,方便调试，开关在index.php或者snail.php配置
-        if (defined('DEBUG') == true) {
-            register_shutdown_function(function () {
-                $this->debug();
-            });
+        if (DEBUG['config'] && DEBUG['debug']) {
+            register_shutdown_function([self, 'debug']);
         }
 
     }
@@ -46,13 +47,13 @@ class ConfigService
         // 检查app目录下的配置文件是否存在，存在则返回配置信息，否则返回框架默认配置
         if (file_exists($acf)) {
             return include $acf;
-            $this->debuginfo[$configfile] = $acf;
+            self::bindDebugInfo($configfile, $acf);
         } elseif (file_exists($cf)) {
             return include $cf;
-            $this->debuginfo[$configfile] = $cf;
+            self::bindDebugInfo($configfile, $cf);
         } else {
             return [];
-            $this->debuginfo[$configfile] = 'No Config File';
+            self::bindDebugInfo($configfile, "$configfile NotExist");
         }
     }
 
@@ -71,7 +72,7 @@ class ConfigService
         $pm = explode(CS, $key);
         $f = $pm[0];
         $cfg = $this->load($f);
-        $this->debuginfo[$key] = $cfg;
+        self::bindDebugInfo($key, $cfg);
         // 没有{CS}分割符直接返回全部配置
         if (false === strpos($key, CS)) {
             return $cfg;
@@ -142,14 +143,4 @@ class ConfigService
         file_put_contents($acf, "<?php \n return " . var_export($cfg, true) . ";");
     }
 
-     /**
-     * 执行debug信息
-     */
-    public function debug()
-    {
-        echo "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        echo '<pre>';
-        print_r($this->debuginfo);
-        echo '</pre>';
-    }
 }

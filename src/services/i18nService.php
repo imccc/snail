@@ -4,6 +4,8 @@ namespace Imccc\Snail\Services;
 
 use Exception;
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class i18nService
 {
@@ -11,11 +13,12 @@ class i18nService
     protected $language;
     protected $languagePath;
     protected $conf;
-    protected $logprefix = ['language', 'error'];
     protected $logger;
     protected $container;
     protected $cacheService;
     protected $cacheconf;
+
+    use HandleExceptionTrait, DebugTrait;
 
     public function __construct(Container $container)
     {
@@ -28,19 +31,7 @@ class i18nService
         $this->cacheService = $container->resolve('CacheService');
     }
 
-    /**
-     * 日志
-     */
-    public function log($msg)
-    {
-        $this->logger->log($msg, $this->logprefix[0]);
-    }
-
-    public function error($msg)
-    {
-        $this->logger->log($msg, $this->logprefix[1]);
-    }
-
+   
     /**
      * 判断缓存是否文件类型
      */
@@ -57,8 +48,7 @@ class i18nService
         $translationFile = "{$this->languagePath}/{$this->language}.php";
 
         if (!file_exists($translationFile)) {
-            $this->error("Translation file for language '{$this->language}' not found.");
-            throw new Exception("Translation file for language '{$this->language}' not found.");
+            self::handleException("Translation file for language '{$this->language}' not found.");
         }
 
         // 先判断缓存服务是否为文件类型，如果不是文件类型，则使用缓存

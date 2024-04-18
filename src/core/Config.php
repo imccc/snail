@@ -104,7 +104,7 @@ class Config
      * @param  mixed  $val         配置值
      * @return mixed
      */
-    public function save($configfile, $val)
+    public static function save($configfile, $val)
     {
         $cfg = self::load($configfile);
         $cfg = array_merge($cfg, $val);

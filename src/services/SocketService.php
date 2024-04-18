@@ -3,11 +3,15 @@
 namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class SocketService
 {
+
+    use HandleExceptionTrait, DebugTrait;
+
     protected $config;
-    protected $logconf;
     protected $container;
     protected $logger;
     protected $logprefix = ['socket', 'error'];
@@ -22,7 +26,6 @@ class SocketService
         $this->container = $container;
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
-        $this->logconf = $this->config->get('logger.on');
     }
 
     public function start()
@@ -34,18 +37,14 @@ class SocketService
         $result = socket_bind($this->socket, $this->address, $this->port);
 
         if (!$result) {
-            if ($this->logconf['socket']) {
-                $this->logger->log("Socket 绑定失败：" . socket_strerror(socket_last_error()), $this->logprefix[1]);
-            }
+            self::bindDebugInfo('socket_bind', socket_strerror(socket_last_error()));
         }
 
         // 开始监听连接
         $result = socket_listen($this->socket, 5); // 最大连接数为 5
 
         if (!$result) {
-            if ($this->logconf['socket']) {
-                $this->logger->log("Socket 监听失败：" . socket_strerror(socket_last_error()), $this->logprefix[1]);
-            }
+            self::bindDebugInfo('socket_listen', socket_strerror(socket_last_error()));
         }
 
         $this->logger->log("服务端启动，监听地址：{$this->address}，端口：{$this->port}", $this->logprefix[0]);
@@ -57,7 +56,7 @@ class SocketService
             $clientSocket = socket_accept($this->socket);
 
             if (!$clientSocket) {
-                $this->logger->log("接受客户端连接失败：" . socket_strerror(socket_last_error()), $this->logprefix[1]);
+                self::bindDebugInfo('accept', socket_strerror(socket_last_error()));
                 echo "接受客户端连接失败：" . socket_strerror(socket_last_error()) . PHP_EOL;
                 continue;
             }
@@ -71,7 +70,7 @@ class SocketService
                 // fork 失败
                 echo "创建子进程失败" . PHP_EOL;
                 if ($this->logconf['socket']) {
-                    $this->logger->log("创建子进程失败：" . socket_strerror(socket_last_error()), $this->logfile);
+                    self::bindDebugInfo('error', "创建子进程失败：" . socket_strerror(socket_last_error()));
                 }
                 continue;
             } elseif ($pid === 0) {
@@ -93,9 +92,8 @@ class SocketService
             $input = socket_read($clientSocket, 1024);
 
             if ($input === false) {
-                if ($this->logconf['socket']) {
-                    $this->logger->log("读取客户端数据失败：" . socket_strerror(socket_last_error()), $this->logfile);
-                }
+                self::bindDebugInfo('socket_read', 'Error reading from socket\r\n' . socket_strerror(socket_last_error()));
+
                 echo "读取客户端数据失败：" . socket_strerror(socket_last_error()) . PHP_EOL;
                 break;
             }
@@ -103,9 +101,7 @@ class SocketService
             if (trim($input) === 'quit') {
                 // 客户端发送 quit 命令，则断开连接
                 echo "客户端断开连接" . PHP_EOL;
-                if ($this->logconf['socket']) {
-                    $this->logger->log("客户端断开连接", $this->logfile);
-                }
+                self::bindDebugInfo('client', '客户端断开连接');
                 socket_close($clientSocket);
                 break;
             }

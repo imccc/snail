@@ -2,13 +2,14 @@
 
 namespace Imccc\Snail\Mvc;
 
-use Exception;
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Interfaces\ViewInterface;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class View implements ViewInterface
 {
+    use HandleExceptionTrait, DebugTrait;
     protected $container;
     protected $config;
     protected $logger;
@@ -20,8 +21,6 @@ class View implements ViewInterface
     protected $_deftpl;
     protected $_ext;
     protected $_data = []; // 将 _datas 改为 _data
-    protected $_cache;
-    protected $_engine;
 
     public function __construct(Container $container)
     {
@@ -37,7 +36,7 @@ class View implements ViewInterface
 
         $this->engine = $container->resolve('TemplateService');
         if (DEBUG['view'] && DEBUG['debug']) {
-            register_shutdown_function([$this, 'debug']);
+            register_shutdown_function([self, 'debug']);
         }
     }
 
@@ -66,31 +65,9 @@ class View implements ViewInterface
     public function display($tpl = null)
     {
         $fullpath = $tpl . $this->_ext;
-        $this->_debuginfo['view']['display']['tpl'] = $fullpath;
+        self::bindDebugInfo('displayFullpath', $fullpath);
         $this->_data['title'] = SNAIL . ' - ' . SNAIL_VERSION;
         $this->engine->display($fullpath, $this->_data);
-    }
-
-    /**
-     * 异常处理函数
-     */
-    protected function handleException(Exception $e): void
-    {
-        ExceptionHandlerTrait::handleException($e);
-    }
-
-    /**
-     * 添加调试信息。
-     *
-     * @return void
-     */
-    public function debug(): void
-    {
-        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        $info .= '<pre>';
-        $info .= print_r($this->_debuginfo, true);
-        $info .= '</pre>';
-        ExceptionHandlerTrait::showDebug($info);
     }
 
 }

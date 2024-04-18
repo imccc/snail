@@ -2,11 +2,13 @@
 
 namespace Imccc\Snail\Services;
 
-use Exception;
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class MailService
 {
+    use HandleExceptionTrait, DebugTrait;
     // SMTP服务器主机
     private $host;
 
@@ -60,8 +62,10 @@ class MailService
         $this->password = $this->config['password'];
         $this->connectionTimeout = $this->config['connectionTimeout'];
         $this->responseTimeout = $this->config['responseTimeout'];
-        $this->debug = $this->config['debug'];
-        $this->log = $this->config['log'];
+
+        if (defined('DEBUG') && DEBUG['debug'] && DEBUG['mail'] ?? false) {
+            register_shutdown_function([self, 'debug']);
+        }
     }
 
     /**
@@ -75,17 +79,13 @@ class MailService
         } else {
             $this->socket = fsockopen($this->host, $this->port, $errno, $errstr, $this->connectionTimeout);
         }
-        // 记录连接日志
-        if ($this->log) {
-            $this->logger->log('Connecting to SMTP host: ' . $this->host . ':' . $this->port, $this->logprefix[0]);
-        }
+        // 记录连接调试信息
+        self::bindDebugInfo('connect', "Connecting to SMTP host {$this->host}:{$this->port}");
+
         // 检查连接是否成功
         if (!$this->socket) {
             // 记录连接失败日志并抛出异常
-            if ($this->debug) {
-                $this->logger->log('Could not connect to SMTP host: ' . $errstr . ' (' . $errno . ')', $this->logprefix[1]);
-            }
-            throw new Exception("Could not connect to SMTP host: $errstr ($errno)");
+            self::bindDebugInfo('connect', "Failed to connect to SMTP host {$this->host}:{$this->port} : $errstr");
         }
         // 设置响应超时时间
         stream_set_timeout($this->socket, $this->responseTimeout);
@@ -205,7 +205,7 @@ class MailService
 
         // 记录邮件发送日志
         if ($this->log) {
-            $this->logger->log("Mail sent successfully.\r\n From: $from\r\n To: $to\r\n CC: " . implode(", ", $cc) . "\r\n BCC: " . implode(", ", $bcc) . "\r\n Subject: $subject\r\n Body: $body", $this->logprefix[0]);
+            self::bindDebugInfo('mailSussess', "Mail sent successfully.\r\n From: $from\r\n To: $to\r\n CC: " . implode(", ", $cc) . "\r\n BCC: " . implode(", ", $bcc) . "\r\n Subject: $subject\r\n Body: $body");
         }
 
         // 关闭套接字连接

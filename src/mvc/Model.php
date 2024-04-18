@@ -4,10 +4,13 @@ namespace Imccc\Snail\Mvc;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Interfaces\ModelInterface;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HendleExceptionTrait;
 use PDOException;
 
 class Model implements ModelInterface
 {
+    use HendleExceptionTrait, DebugTrait;
     protected $container;
     protected $sqlService;
     protected $logger;
@@ -86,7 +89,7 @@ class Model implements ModelInterface
             return $result ?: [];
         } catch (PDOException $e) {
             // 处理异常或记录日志
-            $this->handleException($e);
+            self::handleException($e);
             return [];
         }
     }
@@ -104,7 +107,7 @@ class Model implements ModelInterface
             $this->afterSave();
             return $result;
         } catch (PDOException $e) {
-            $this->handleException($e);
+            self::handleException($e);
             return false;
         }
     }
@@ -122,7 +125,7 @@ class Model implements ModelInterface
             $this->afterSave();
             return $result;
         } catch (PDOException $e) {
-            $this->handleException($e);
+            self::handleException($e);
             return false;
         }
     }
@@ -143,7 +146,7 @@ class Model implements ModelInterface
             $this->reset();
             return $result;
         } catch (PDOException $e) {
-            $this->handleException($e);
+            self::handleException($e);
             return false;
         }
     }
@@ -156,11 +159,6 @@ class Model implements ModelInterface
     protected function afterSave(): void
     {
         // 自定义逻辑，比如清理缓存、发送通知等
-    }
-
-    protected function handleException(PDOException $e): void
-    {
-       ExcteptionHandlerTrait::handleException($e);
     }
 
     protected function reset(): void

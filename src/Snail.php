@@ -13,7 +13,8 @@ define('USE_PHP_VERSION', '7.2.5');
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
 use Imccc\Snail\Core\Router;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class Snail
 {
@@ -25,19 +26,19 @@ class Snail
     protected $logprefix = ['debug', 'info', 'error'];
     protected $container;
 
+    use HandleExceptionTrait, DebugTrait;
     public function __construct()
     {
         if (version_compare(PHP_VERSION, USE_PHP_VERSION, '<')) {
-            die('PHP version must be greater than or equal to ' . USE_PHP_VERSION);
+            self::handleException('PHP version must be greater than or equal to ' . USE_PHP_VERSION);
+            die();
         }
         session_start();
         $this->initializeContainer();
         $this->run();
 
         if (DEBUG['debug']) {
-            register_shutdown_function([$this, function () {
-                ExceptionHandlerTrait::showDebugInfo($this->_debuginfo, self::class);
-            }]);
+            register_shutdown_function([self, 'debug']);
         }
     }
 
@@ -47,7 +48,7 @@ class Snail
     public function run()
     {
         // 注册全局异常处理函数
-        set_error_handler([ExceptionHandlerTrait::class, 'handleException']);
+        set_error_handler('handleException');
 
         //初始化路由
         $d = new Router($this->container);
@@ -110,7 +111,7 @@ class Snail
             $info .= "Shared: " . ($binding['shared'] ? 'Yes' : 'No') . "<br>";
             $info .= "-------------------------<br>";
         }
-        $this->_debuginfo[self::class]['bindings'] = $info;
+        self::bindDebugInfo('bindings',$info);
     }
 
 }

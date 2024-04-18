@@ -1,28 +1,9 @@
 <?php
-/**
- * Curl助手类
- *
- * @author  sam <sam@imccc.cc>
- * @since   2024-03-31
- * @version 1.0
- */
-namespace Imccc\Snail\Helpers;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
-class CurlHelper
+trait CurlTrait
 {
-    /**
-     * 发送 HTTP 请求
-     *
-     * @param string $url 请求URL
-     * @param array $opt 请求选项数组
-     *     - params: 请求参数（仅在方法为 POST 或 PUT 时有效）
-     *     - method: 请求方法（GET、POST、PUT、DELETE），默认为 GET
-     *     - options: cURL 选项数组
-     *     - fakeIp: 伪造的 IP 地址
-     *     - proxy: 代理服务器地址（例如：http://proxy.example.com:8080）
-     *     - proxyAuth: 代理服务器认证信息 [username, password]
-     * @return mixed 返回响应内容，如果请求失败则返回 false
-     */
+    use HandleExceptionTrait;
     public static function sendRequest($url, $opt = [])
     {
         // 解析请求选项数组
@@ -101,7 +82,7 @@ class CurlHelper
             // 关闭 cURL 资源
             curl_close($ch);
             // 抛出异常或记录日志等错误处理逻辑
-            throw new \Exception("cURL request failed: $error");
+            self::handleException("cURL request failed: $error");
         }
 
         // 关闭 cURL 资源

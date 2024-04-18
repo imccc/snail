@@ -1,31 +1,24 @@
 <?php
-
-namespace Imccc\Snail\Traits;
-
 use ErrorException;
 use SplFileObject;
 use Throwable;
 
-trait ExceptionHandlerTrait
+trait HandleExceptionTrait
 {
-    // 错误计数器
     private static $errorCount = 0;
     private static $debugIndex = 0;
-    protected static $style = [
+    protected static $handleStyle = [
         'error' => 'background-color: #ffdddd; color: #000; padding: 10px; margin: 10px; border: 1px solid #ff0000;',
         'debug' => 'background-color: #ddddff; color: #000; padding: 10px; margin: 10px; border: 1px solid #0000ff;',
-        'info' => 'background-color: #ddffdd;color: #000; padding: 10px; margin: 10px',
         'title' => 'background-color: #dddddd; color: #000; padding: 10px; margin: 10px;',
     ];
-    public static $tpl = [
-        'debug' => '<div style="{{$debugstyle}}"> <h3 style="{{$titlestyle}}"> Snail Debug <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
-        'error' => '<div style="{{$errorstyle}}"> <h3 style="{{$titlestyle}}"> Snail Debug <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
-        'detail' => '<p>Error Type: {{$code}}</p><p>Strack Trace: {{$trace}}</p><pre style="background-color: #eee;">{{$err}}</pre>',
+    public static $handleTpl = [
+        'error' => '<div style="{{$errorstyle}}"> <h3 style="{{$titlestyle}}"> Snail Error <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
     ];
 
     // 处理异常的方法
-    public static function handleException($exceptionOrErrorCode): void
+    public static function handleException($exceptionOrErrorCode, $string = ''): void
     {
         // 增加错误计数
         self::$errorCount++;
@@ -37,37 +30,13 @@ trait ExceptionHandlerTrait
             $errorMessage = is_string($exceptionOrErrorCode) ? $exceptionOrErrorCode : "Unknown error";
             $exception = new ErrorException("Error: " . $errorMessage);
         }
-
+        if (!empty($string)) {
+            echo " -=[ $string ]=- ";
+        }
         // 显示错误信息
         self::showError($exception);
         // 记录错误日志
         self::logError($exception);
-    }
-
-    /**
-     * 显示调试信息
-     * @param String $exception
-     */
-    public static function showDebugInfo(String $infoStr, String $className): void
-    {
-        if (DEBUG['debug'] ?? false) {
-            $info = "<h3>以下信息由 类: " . $className . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-            $info .= '<pre>';
-            $info .= print_r($infoStr, true);
-            $info .= '</pre>';
-            static::showDebug($info);
-        }
-    }
-
-    /**
-     * 显示调试信息
-     */
-    public static function showDebug(String $exception): void
-    {
-        self::$debugIndex++;
-        // 根据调试模式显示详细错误信息或简单提示
-        $str = str_replace(['{{$debugstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$style['debug'], self::$style['title'], self::getDebugIndex(), $exception], self::$tpl['debug']);
-        echo $str;
     }
 
     /**
@@ -78,36 +47,17 @@ trait ExceptionHandlerTrait
         if (DEBUG['debug'] ?? false) {
             self::$debugIndex++;
             // 根据调试模式显示详细错误信息或简单提示
-            $str = str_replace(['{{$debugstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$style['error'], self::$style['title'], self::getDebugIndex(), $self::showDetailedError($exception)], self::$tpl['error']);
+            $str = str_replace(['{{$errorstyle}}', '{{$titlestyle}}', '{{$index}}', '{{$info}}'], [self::$handleStyle['error'], self::$handleStyle['title'], self::getDebugIndex(), self::showDetailedError($exception)], self::$handletpl['error']);
         } else {
-            $str = self::$tpl['simple'];
+            $str = self::$handleTpl['simple'];
         }
         echo $str;
     }
 
-    // 显示详细错误信息
-    protected static function showDetailedError(Throwable $exception): void
+    public static function showDetailedError($exception)
     {
-        $errorCode = self::extractErrorCode($exception);
-
-        // 错误类型映射
-        $errorTypeMap = [
-            '0' => 'EXCEPTION', '1' => 'ERROR', '2' => 'WARNING', '4' => 'PARSE',
-            '8' => 'NOTICE', '16' => 'CORE_ERROR', '32' => 'CORE_WARNING', '64' => 'COMPILE_ERROR',
-            '128' => 'COMPILE_WARNING', '256' => 'USER_ERROR', '512' => 'USER_WARNING',
-            '1024' => 'USER_NOTICE', '2048' => 'STRICT', '4096' => 'RECOVERABLE_ERROR',
-            '8192' => 'DEPRECATED', '16384' => 'USER_DEPRECATED',
-        ];
-
-        $str = str_replace(['{{$code}}', '{{$trace}}', '{{$err}}'], [$errorTypeMap[$errorCode], $exception->getTraceAsString(), self::formatStackTrace($exception->getTrace())], self::$tpl['detail']);
+        $str = str_replace(['{{$code}}', '{{$trace}}', '{{$err}}'], [$errorTypeMap[$errorCode], $exception->getTraceAsString(), self::formatStackTrace($exception->getTrace())], self::$handleTpl['detail']);
         echo $str;
-    }
-
-    // 提取错误码
-    protected static function extractErrorCode(Throwable $exception): int
-    {
-        $parts = explode(":", $exception->getMessage());
-        return count($parts) > 1 ? (int) trim($parts[1]) : 0;
     }
 
     // 格式化堆栈跟踪信息
@@ -156,18 +106,6 @@ trait ExceptionHandlerTrait
         $file = new SplFileObject($filePath);
         $file->seek($lineNumber - 1);
         return $file->valid() ? $file->current() : null;
-    }
-
-    // 获取错误计数
-    public static function getErrorCount(): int
-    {
-        return self::$errorCount;
-    }
-
-    // 获取错误计数
-    public static function getDebugIndex(): int
-    {
-        return self::$debugIndex;
     }
 
     // 记录错误日志

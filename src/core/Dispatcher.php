@@ -2,7 +2,8 @@
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\handleExceptionTrait;
 
 class Dispatcher
 {
@@ -10,20 +11,19 @@ class Dispatcher
     protected $middlewares = [];
     protected $container;
     protected $debug;
-    protected $_debuginfo = [];
 
-    use ExceptionHandlerTrait;
+    use HandleExceptionTrait, DebugTrait;
 
     public function __construct(Container $container, $routes)
     {
         $this->routes = $routes;
         $this->container = $container;
+        // 注册全局异常处理函数
+        set_error_handler('handleException');
         // 记录调试信息 本类名称
-        $this->_debuginfo['route'] = $routes;
+        self::bindDebugInfo('route', $routes);
         if (DEBUG['dispatch'] && DEBUG['debug']) {
-            register_shutdown_function([$this, function () {
-                ExceptionHandlerTrait::showDebugInfo($this->_debuginfo, self::class);
-            }]);
+            register_shutdown_function([self, 'deubg']);
         }
     }
 
@@ -36,7 +36,7 @@ class Dispatcher
     {
         $middlewareInstance = $this->container->make($middlewareClass);
         $this->middlewares[] = $middlewareInstance;
-        $this->_debuginfo[self::class]['middleware'] = $middlewareClass;
+        self::bingDebugInfo('middleware', $middlewareClass);
         return $this; // 支持链式调用
     }
 
@@ -60,16 +60,16 @@ class Dispatcher
             // 这是一个静态文件请求，直接返回文件内容
             header('Content-Type: ' . mime_content_type($parsedRoute['file_path']));
             readfile($parsedRoute['file_path']);
-            $this->_debuginfo[self::class]['file'] = $parsedRoute['file_path'];
+            self::bindDebugInfo('file', $parsedRoute['file_path']);
             exit;
         }
         // 如果路由是闭包，则直接执行闭包并退出
         if (isset($parsedRoute['closure'])) {
             ($parsedRoute['closure'])(); // 执行闭包
-            $this->_debuginfo[self::class]['closure'] = $parsedRoute['closure'];
+            self::bindDebugInfo('closure', $parsedRoute['closure']);
             exit(); // 执行完闭包后退出
         } elseif (isset($this->routes['404'])) {
-            $this->_debuginfo[self::class]['404'] = $parsedRoute['404'];
+            self::bindDebugInfo('404', $this->routes['404']);
             // 如果路由不存在，则返回 404
             header('HTTP/1.1 404 Not Found');
             exit('404 Not Found');
@@ -92,7 +92,7 @@ class Dispatcher
     {
         // 逆序遍历中间件数组来构建执行链
         $middlewares = array_reverse($this->middlewares);
-        $this->_debuginfo[self::class]['middleware'] = $middlewares;
+        self::bindDebugInfo('middleware', $middlewares);
         $next = $finalHandler;
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next) {
@@ -115,36 +115,28 @@ class Dispatcher
         // 构建控制器类名
         $controllerClass = $namespace . '\\' . $controller;
         // echo $controllerClass;die;
-        $this->_debuginfo[self::class]['controllerClass'] = $controllerClass;
+        self::bindDebugInfo('controllerClass', $controllerClass);
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
-            $this->handleException("$controllerClass Controller class not found.");
+            self::handleException("$controllerClass Controller class not found.");
         }
 
         // 创建控制器对象，并传入路由参数数组
         $controllerObj = new $controllerClass($this->routes);
 
         // 检查控制器方法是否存在
-        $this->_debuginfo[self::class]['action'] = $action;
+        self::bindDebugInfo('action', $action);
         if (!method_exists($controllerObj, $action)) {
-            $this->handleException("$action Action method not found in $controllerClass Controller.");
+            self::handleException("$action Action method not found in $controllerClass Controller.");
         }
 
         // 调用控制器方法
         $result = call_user_func([$controllerObj, $action]);
-        $this->_debuginfo[self::class]['result'] = $result;
+        self::bindDebugInfo('result', $result);
         // 输出结果
         if (!empty($result)) {
             echo $result;
         }
-    }
-
-    /**
-     * 信息
-     */
-    protected function handleException(Exception $e): void
-    {
-        ExceptionHandlerTrait::handleException($e);
     }
 
 }

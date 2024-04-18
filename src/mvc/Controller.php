@@ -5,7 +5,7 @@ use Imccc\Snail\Core\Container;
 use Imccc\Snail\Interfaces\ControllerInterface;
 use Imccc\Snail\Mvc\Model;
 use Imccc\Snail\Mvc\View;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\DebugTrait;
 
 class Controller implements ControllerInterface
 {
@@ -16,7 +16,6 @@ class Controller implements ControllerInterface
     protected $container;
     protected $logger;
     protected $logprefix = ['controller', 'error', 'debug'];
-    protected $_debuginfo;
     protected $_data = [];
     private $_view;
     private $_model;
@@ -28,23 +27,21 @@ class Controller implements ControllerInterface
     private $_action;
     private $_api;
 
+    use HandleExceptionTrait, DebugTrait;
+
     public function __construct($routes)
     {
         $this->routes = $routes;
 
-        $this->_debuginfo = [
-            'namespace' => $this->routes['namespace'],
-            'controller' => $this->routes['controller'],
-            'action' => $this->routes['action'],
-            'params' => $this->routes['params'],
-        ];
+        self::bindDebugInfo('original', $this->routes);
+
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
         $this->conf = $this->config->get('logger.on');
 
         if (DEBUG['controller'] && DEBUG['debug']) {
-            register_shutdown_function([$this, 'debug']);
+            register_shutdown_function([self, 'debug']);
         }
 
     }
@@ -119,7 +116,7 @@ class Controller implements ControllerInterface
             $methodName = $this->routes['action'];
         }
         $path = str_replace(['{$group}', '{$action}'], [$controllerName, $methodName], $pathFormat);
-        $this->_debuginfo['preParseTpl'] = $path;
+        self::bindDebugInfo('preParseTpl', $path);
         return $path;
     }
 
@@ -163,8 +160,7 @@ class Controller implements ControllerInterface
             case strpos($contentType, 'application/xml') !== false:
                 $data = simplexml_load_string($rawData);
                 if ($data === false) {
-                    $this->logger->log('XML 解析错误', $this->logprefix[1]);
-                    $this->handleException('XML 解析错误');
+                    self::handleException('XML 解析错误');
                 }
                 $input['body'] = (array) $data;
                 break;
@@ -244,30 +240,8 @@ class Controller implements ControllerInterface
                 $headers[$headerName] = $value;
             }
         }
-        $this->_debuginfo['headers'] = $headers;
+        self::bindDebugInfo('headers', $headers);
         return $headers;
-    }
-
-    /**
-     * 添加调试信息。
-     *
-     * @return void
-     */
-    public function debug(): void
-    {
-        $info = "<h3>以下信息由 类: " . self::class . " 提供<small>@ " . date("Y-m-d H:i:s.u") . "</small></h3>";
-        $info .= '<pre>';
-        $info .= print_r($this->_debuginfo, true);
-        $info .= '</pre>';
-        ExceptionHandlerTrait::showDebug($info);
-    }
-
-    /**
-     * 异常处理函数
-     */
-    protected function handleException(Exception $e): void
-    {
-        ExceptionHandlerTrait::handleException($e);
     }
 
     /**
