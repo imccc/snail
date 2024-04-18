@@ -1,4 +1,5 @@
 <?php
+namespace Imccc\Snail\Traits;
 trait DebugTrait
 {
     protected static $debugIndex = 0;
