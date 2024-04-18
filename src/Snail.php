@@ -48,7 +48,7 @@ class Snail
     public function run()
     {
         // 注册全局异常处理函数
-        set_error_handler('handleException');
+        set_error_handler([self::class, 'handleException']);
 
         //初始化路由
         $d = new Router($this->container);

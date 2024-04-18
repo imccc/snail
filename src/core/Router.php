@@ -4,7 +4,7 @@ namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class Router
 {
@@ -26,7 +26,7 @@ class Router
     protected $parsedRoute; // 解析后的路由信息
     protected $_debuginfo = [];
 
-    use ExceptionHandlerTrait, DebugTrait;
+    use HandleExceptionTrait, DebugTrait;
     /**
      * 构造函数，初始化路由配置和默认值
      *
