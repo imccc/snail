@@ -1,12 +1,12 @@
 <?php
-use ErrorException;
-use SplFileObject;
-use Throwable;
+namespace Imccc\Snail\Traits;
+// use ErrorException;
+// use SplFileObject;
+// use Throwable;
 
 trait HandleExceptionTrait
 {
     private static $errorCount = 0;
-    private static $debugIndex = 0;
     protected static $handleStyle = [
         'error' => 'background-color: #ffdddd; color: #000; padding: 10px; margin: 10px; border: 1px solid #ff0000;',
         'debug' => 'background-color: #ddddff; color: #000; padding: 10px; margin: 10px; border: 1px solid #0000ff;',
@@ -15,6 +15,7 @@ trait HandleExceptionTrait
     public static $handleTpl = [
         'error' => '<div style="{{$errorstyle}}"> <h3 style="{{$titlestyle}}"> Snail Error <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
+        'detail' => '<p>Error Type: {{$code}}</p><p>Strack Trace: {{$trace}}</p><pre style="background-color: #eee;">{{$err}}</pre>',
     ];
 
     // 处理异常的方法
