@@ -12,7 +12,7 @@ namespace Imccc\Snail\Core;
 
 use Closure;
 use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\ExceptionHandlerTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 use ReflectionClass;
 
 class Container
@@ -24,7 +24,7 @@ class Container
     protected $aliases = []; // 存储服务别名信息
     protected $lastBound = ''; // 最后绑定的接口或抽象类
 
-    use ExceptionHandlerTrait, DebugTrait;
+    use HandleExceptionTrait, DebugTrait;
     // 获取容器实例的静态方法
     public static function getInstance()
     {
