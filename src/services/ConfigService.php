@@ -26,7 +26,7 @@ class ConfigService
         $this->container = $container;
 
         // 脚本结束时执行debug,方便调试，开关在index.php或者snail.php配置
-        if (DEBUG['config'] && DEBUG['debug']) {
+        if (DEBUG['config'] && DEBUG['debug']??false) {
             register_shutdown_function([self, 'debug']);
         }
 

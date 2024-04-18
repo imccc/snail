@@ -17,6 +17,7 @@ return [
         'dispatch' => true,
         'middleware' => true,
         'controller' => true,
+        'config' => true,
         'view' => true,
         'model' => true,
         'database' => true,
