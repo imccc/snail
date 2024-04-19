@@ -16,7 +16,7 @@ use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class ConfigService
 {
-    use DebugTrait,HandleExceptionTrait;
+    use DebugTrait, HandleExceptionTrait;
 
     private $container; // 容器
 
@@ -25,7 +25,7 @@ class ConfigService
     public function __construct(Container $container)
     {
         set_error_handler([self::class, 'handleException']);
-        
+
         $this->container = $container;
 
         // 脚本结束时执行debug,方便调试，开关在index.php或者snail.php配置

@@ -225,7 +225,7 @@ class LoggerService
         try {
             $sqlService->execute($sql, $params);
         } catch (Exception $e) {
-            self::handleException("Failed to log to database: " . $e->getMessage());
+            self::handleException($e->getMessage(), "Failed log to database");
         }
     }
 
@@ -270,7 +270,7 @@ class LoggerService
             $sqlService->execute($sql, [':daysToKeep' => $daysToKeep]);
         } catch (Exception $e) {
             // 记录到服务器日志
-            self::handleException("Failed to clean up database logs: " . $e->getMessage());
+            self::handleException($e->getMessage(), "Failed to clean up database logs");
         }
     }
 
@@ -303,7 +303,7 @@ class LoggerService
             $sqlService->createTable($table, $columns);
         } catch (Exception $e) {
             // 记录到服务器日志
-            self::handleException("Failed to create log table: " . $e->getMessage());
+            self::handleException($e->getMessage(), "Failed to create log table");
         }
     }
 

@@ -3,7 +3,7 @@ namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\handleExceptionTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class Dispatcher
 {
@@ -55,34 +55,39 @@ class Dispatcher
      */
     protected function handleRequest()
     {
-        // 获取路由信息
-        $parsedRoute = $this->routes;
+        try {
+            // 获取路由信息
+            $parsedRoute = $this->routes;
 
-        if (!empty($parsedRoute['is_static'])) {
-            // 这是一个静态文件请求，直接返回文件内容
-            header('Content-Type: ' . mime_content_type($parsedRoute['file_path']));
-            readfile($parsedRoute['file_path']);
-            self::bindDebugInfo('file', $parsedRoute['file_path']);
-            exit;
-        }
-        // 如果路由是闭包，则直接执行闭包并退出
-        if (isset($parsedRoute['closure'])) {
-            ($parsedRoute['closure'])(); // 执行闭包
-            self::bindDebugInfo('closure', $parsedRoute['closure']);
-            exit(); // 执行完闭包后退出
-        } elseif (isset($this->routes['404'])) {
-            self::bindDebugInfo('404', $this->routes['404']);
-            // 如果路由不存在，则返回 404
-            header('HTTP/1.1 404 Not Found');
-            exit('404 Not Found');
-        } else {
-            if (isset($parsedRoute['namespace']) && $parsedRoute !== '') {
-                // 如果路由不是闭包且不是 404，则继续执行中间件和路由处理器
-                $this->executeMiddlewares(function () {
-                    $this->executeRouteHandler();
-                });
-                exit(); // 执行完路由处理器后退出
+            if (!empty($parsedRoute['is_static'])) {
+                // 这是一个静态文件请求，直接返回文件内容
+                header('Content-Type: ' . mime_content_type($parsedRoute['file_path']));
+                readfile($parsedRoute['file_path']);
+                self::bindDebugInfo('file', $parsedRoute['file_path']);
+                exit;
             }
+            // 如果路由是闭包，则直接执行闭包并退出
+            if (isset($parsedRoute['closure'])) {
+                ($parsedRoute['closure'])(); // 执行闭包
+                self::bindDebugInfo('closure', $parsedRoute['closure']);
+                exit(); // 执行完闭包后退出
+            } elseif (isset($this->routes['404'])) {
+                self::bindDebugInfo('404', $this->routes['404']);
+                // 如果路由不存在，则返回 404
+                header('HTTP/1.1 404 Not Found');
+                exit('404 Not Found');
+            } else {
+                if (isset($parsedRoute['namespace']) && $parsedRoute !== '') {
+                    // 如果路由不是闭包且不是 404，则继续执行中间件和路由处理器
+                    $this->executeMiddlewares(function () {
+                        $this->executeRouteHandler();
+                    });
+                    exit(); // 执行完路由处理器后退出
+                }
+            }
+        } catch (Throwable $exception) {
+            // 捕获异常并处理
+            self::handleException($exception);
         }
     }
 
