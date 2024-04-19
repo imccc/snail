@@ -48,7 +48,7 @@ class Router
 
         // 脚本结束时执行debug,方便调试，开关在router.conf.php中的on节点配置
         if (DEBUG['route'] && DEBUG['debug']) {
-            register_shutdown_function('deubg');
+            register_shutdown_function([self::class, 'debug']);
         }
 
     }
