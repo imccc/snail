@@ -19,17 +19,10 @@ class TemplateService
     use DebugTrait,HandleExceptionTrait;
     public function __construct(Container $container)
     {
-        // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
-
-        $this->container = $container;
+      $this->container = $container;
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
         $this->engine = $this->config->get('template.engine') ?? 'snail';
-
-        if (DEBUG['debug'] && DEBUG['template']) {
-            register_shutdown_function([self::class, 'debug']);
-        }
     }
 
     public function setEngine($engine)

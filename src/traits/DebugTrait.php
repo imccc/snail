@@ -16,14 +16,11 @@ trait DebugTrait
     protected static function debug($info='')
     {
         if (defined('DEBUG') && DEBUG['debug']) {
-            if (empty($info)){
-                $infoStr = self::$_debugInfo ;
-            }else{
-                $infoStr = print_r($info, true);
-            }
+            $infoStr = $info ? $info : self::$_debugInfo ;
+        
             $str = str_replace(
                 ['{{style}}', '{{title}}', '{{class}}', '{{index}}', '{{info}}'],
-                [self::$styles['debug'], self::$styles['title'], self::class, self::getDebugIndex(), $infoStr],
+                [self::$styles['debug'], self::$styles['title'], self::class, self::getDebugIndex(), print_r($infoStr,true)],
                 self::$templates['debug']
             );
             echo $str;
