@@ -30,7 +30,6 @@ class Container
     {
         if (!self::$instance) {
             self::$instance = new self();
-            register_shutdown_function([self::class, 'debug']);
         }
         return self::$instance;
     }

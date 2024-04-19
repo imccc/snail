@@ -34,8 +34,6 @@ class Router
      */
     public function __construct(Container $container)
     {
-        // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
 
         $this->container = $container;
         $this->routeMap = $container->resolve('ConfigService')->get('route');
@@ -45,11 +43,6 @@ class Router
         $this->defaultAction = $this->routeMap['def']['default_action'] ?? 'index';
 
         $this->parsedRoute = $this->parseRoute($this->getUri());
-
-        // 脚本结束时执行debug,方便调试，开关在router.conf.php中的on节点配置
-        if (DEBUG['route'] && DEBUG['debug']) {
-            register_shutdown_function([self::class, 'debug']);
-        }
 
     }
 

@@ -11,24 +11,19 @@
 namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
-// use Imccc\Snail\Traits\DebugTrait;
-// use Imccc\Snail\Traits\HandleExceptionTrait;
+use Imccc\Snail\Traits\DebugTrait;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class ConfigService
 {
     private $container; // 容器
     protected $debuginfo = [];
 
-    // use HandleExceptionTrait, DebugTrait;
+    use HandleExceptionTrait, DebugTrait;
 
     public function __construct(Container $container)
     {
-        // set_error_handler([self::class, 'handleException']);
-
         $this->container = $container;
-
-        // 脚本结束时执行debug,方便调试，开关在index.php或者snail.php配置
-        // register_shutdown_function([self::class, 'debug']);
     }
 
     /**
@@ -46,13 +41,13 @@ class ConfigService
         // 检查app目录下的配置文件是否存在，存在则返回配置信息，否则返回框架默认配置
         if (file_exists($acf)) {
             return include $acf;
-            // self::bindDebugInfo($configfile, $acf);
+            self::bindDebugInfo($configfile, $acf);
         } elseif (file_exists($cf)) {
             return include $cf;
-            // self::bindDebugInfo($configfile, $cf);
+            self::bindDebugInfo($configfile, $cf);
         } else {
             return [];
-            // self::bindDebugInfo($configfile, "$configfile NotExist");
+            self::bindDebugInfo($configfile, "$configfile NotExist");
         }
     }
 
@@ -71,7 +66,7 @@ class ConfigService
         $pm = explode(CS, $key);
         $f = $pm[0];
         $cfg = $this->load($f);
-        self::bindDebugInfo($key, $cfg);
+        // self::bindDebugInfo($key, $cfg);
         // 没有{CS}分割符直接返回全部配置
         if (false === strpos($key, CS)) {
             return $cfg;
@@ -98,7 +93,7 @@ class ConfigService
      * @param  mixed  $value  配置值
      * @return array          设置后的完整配置数组
      */
-    public static function set(string $key, mixed $value): array
+    public function set(string $key, mixed $value): array
     {
         if (!$key) {
             return [];
@@ -140,6 +135,14 @@ class ConfigService
 
         // 写入配置文件
         file_put_contents($acf, "<?php \n return " . var_export($cfg, true) . ";");
+    }
+
+    /**
+     * 销毁
+     */
+    public function __derestruct()
+    {
+       self::debug();
     }
 
 }

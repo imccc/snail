@@ -24,9 +24,6 @@ class View implements ViewInterface
 
     public function __construct(Container $container)
     {
-        // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
-
         $this->container = $container;
         $this->config = $container->resolve('ConfigService');
         $this->logger = $container->resolve('LoggerService');
@@ -38,9 +35,6 @@ class View implements ViewInterface
         $this->_ext = $this->tplconf['ext'] ?? '.tpl';
 
         $this->engine = $container->resolve('TemplateService');
-        if (DEBUG['view'] && DEBUG['debug']) {
-            register_shutdown_function([self::class, 'debug']);
-        }
     }
 
     /**

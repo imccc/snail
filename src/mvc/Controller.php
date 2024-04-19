@@ -32,8 +32,6 @@ class Controller implements ControllerInterface
     public function __construct($routes)
     {
         // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
-
         $this->routes = $routes;
 
         self::bindDebugInfo('original', $this->routes);
@@ -41,10 +39,6 @@ class Controller implements ControllerInterface
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
-
-        if (DEBUG['controller'] && DEBUG['debug']) {
-            register_shutdown_function([self::class, 'debug']);
-        }
 
     }
 

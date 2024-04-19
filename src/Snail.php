@@ -40,7 +40,7 @@ class Snail
         $this->initializeContainer();
         $this->run();
 
-        if (DEBUG['debug']) {
+        if (defind('DEBUG') && DEBUG['debug'] ?? false) {
             register_shutdown_function([self::class, 'debug']);
         }
     }
