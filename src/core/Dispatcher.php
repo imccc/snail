@@ -21,11 +21,11 @@ class Dispatcher
 
         $this->routes = $routes;
         $this->container = $container;
-        
+
         // 记录调试信息 本类名称
         self::bindDebugInfo('route', $routes);
         if (DEBUG['dispatch'] && DEBUG['debug']) {
-            register_shutdown_function([self::class, 'deubg']);
+            register_shutdown_function([self::class, 'debug']);
         }
     }
 

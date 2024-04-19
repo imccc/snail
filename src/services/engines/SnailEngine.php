@@ -21,6 +21,7 @@ class SnailEngine
     public function __construct(Container $container)
     {
         set_error_handler([self::class, 'handleException']);
+
         $this->container = $container;
         $this->config = $container->resolve('ConfigService');
         $this->cache = $container->resolve('CacheService');
@@ -28,7 +29,7 @@ class SnailEngine
         $this->templateConfig = $this->config->get('template');
 
         if (DEBUG['debug'] && DEBUG['engine']) {
-            register_shutdown_function([$this, 'debug']);
+            register_shutdown_function([self::class, 'debug']);
         }
     }
 

@@ -7,21 +7,22 @@ use Throwable;
 
 trait HandleExceptionTrait
 {
-    private static $errorCount = 0;
-    protected static $handleStyle = [
-        'error' => 'background-color: #ffdddd; color: #000; padding: 10px; margin: 10px; border: 1px solid #ff0000;',
-        'debug' => 'background-color: #ddddff; color: #000; padding: 10px; margin: 10px; border: 1px solid #0000ff;',
-        'title' => 'background-color: #dddddd; color: #000; padding: 10px; margin: 10px;',
-    ];
+    protected static $errorCount = 0;
     public static $handleTpl = [
-        'error' => '<div style="{{$errorstyle}}"> <h3 style="{{$titlestyle}}"> Snail Error <span style="float:right"># {{$index}}</span></h3><div style="padding: 10px">{{$info}}</div></div>',
+        'error' => '<div class="handleError"><h3 class="handleTitle"> <small>{{$from}}</small><span style="float:right"># {{$index}}</span></h3><div class="handleContent">{{$info}}</div></div>',
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
-        'detail' => '<p>Strack Trace: {{$trace}}</p><pre style="background-color: #eee;">{{$err}}</pre>',
+        'detail' => '<p class="handleTrace">Strack Trace: {{$trace}}</p><pre class="handleContent">{{$err}}</pre>',
+        'banner' => '<div class="handleBanner"><h1>Snail Framework Debug & Handler</h1></div><div class="handleNow">{{$now}}</div>',
     ];
 
     // 处理异常的方法
     public static function handleException($exceptionOrErrorCode, $string = ''): void
     {
+        if (self::$errorCount == 0) {
+            $now = date('Y-m-d H:i:s');
+            echo str_replace('{{$now}}', $now, self::$handleTpl['banner']);
+        }
+
         // 增加错误计数
         self::$errorCount++;
 
@@ -37,10 +38,6 @@ trait HandleExceptionTrait
         self::showError($exception);
         // 记录错误日志
         self::logError($exception);
-        // if (!empty($string)) {
-        //     echo " -=[ $string ]=- ";
-        // }
-
     }
 
     /**
@@ -50,7 +47,7 @@ trait HandleExceptionTrait
     {
         if (DEBUG['debug'] ?? false) {
             // 根据调试模式显示详细错误信息或简单提示
-            $str = str_replace(['{{$errorstyle}}', '{{$titlestyle}}',  '{{$info}}'], [self::$handleStyle['error'], self::$handleStyle['title'],  self::showDetailedError($exception)], self::$handleTpl['error']);
+            $str = str_replace(['{{$from}}', '{{$index}}', '{{$info}}'], [self::class, self::$errorCount, self::showDetailedError($exception)], self::$handleTpl['error']);
         } else {
             $str = self::$handleTpl['simple'];
         }
@@ -60,7 +57,7 @@ trait HandleExceptionTrait
     public static function showDetailedError($exception)
     {
         $str = str_replace(['{{$trace}}', '{{$err}}'], [$exception->getTraceAsString(), self::formatStackTrace($exception->getTrace())], self::$handleTpl['detail']);
-        echo $str;
+        return $str;
     }
 
     // 格式化堆栈跟踪信息
@@ -126,3 +123,58 @@ trait HandleExceptionTrait
         error_log($log);
     }
 }
+?>
+
+        <style>
+
+
+.handleBanner, .handleError,.handleNow {
+    margin: 10px 30px;
+    border-radius: 5px;
+    color: #FFFFFF;
+}
+
+.handleTrace {
+    padding: 20px;
+    margin: 0;
+}
+
+.handleBanner {
+    padding: 5px;
+    background-color: #FF8800;
+    text-align: center;
+}
+
+.handleTitle {
+    background-color: #e7c090;
+    color: #50290d;
+    padding: 10px 16px;
+    margin-bottom:0;
+    border-bottom: 1px solid #fcb322;
+    border-radius: 5px 5px 0 0;
+}
+
+.handleError {
+    background-color: #f1d7c4db;
+    color: #45350b;
+}
+
+.handleTrace {
+    background-color: #f6f2e2;
+    border-bottom: 1px solid #fcb322;
+    color: #000000;
+    white-space: pre-wrap; /* 添加自动换行 */
+}
+
+.handleNow {
+    color: #000000;
+    text-align: end;
+}
+
+.handleContent {
+    padding: 10px;
+    white-space: pre-wrap; /* 添加自动换行 */
+}
+
+
+        </style>
