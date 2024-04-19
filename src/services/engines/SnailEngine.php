@@ -20,17 +20,11 @@ class SnailEngine
 
     public function __construct(Container $container)
     {
-        set_error_handler([self::class, 'handleException']);
-
         $this->container = $container;
         $this->config = $container->resolve('ConfigService');
         $this->cache = $container->resolve('CacheService');
         $this->logger = $container->resolve('LoggerService');
         $this->templateConfig = $this->config->get('template');
-
-        if (DEBUG['debug'] && DEBUG['engine']) {
-            register_shutdown_function([self::class, 'debug']);
-        }
     }
 
     /**
@@ -45,7 +39,7 @@ class SnailEngine
         // 构建模板文件路径
         // $tplPath = $this->templateConfig['path'] . $tpl;
         $tplPath = $tpl;
-        $this->_debuginfo['SnailEngine']['render']['tplPath'] = $tplPath;
+        self::bindDebugInfo('render',$tplPath);
 
         // 判断是否启用缓存
         if ($this->templateConfig['cache']) {
@@ -104,14 +98,13 @@ class SnailEngine
      */
     protected function loadTemplate(string $tplPath): string
     {
-        if (!file_exists($tplPath)) {
-            // 记录模板文件不存在错误日志
-            $this->_debuginfo['SnailEngine']['loadTemplate']['tplPath'] = $tplPath;
-            $this->logger->log('Snail Template File Not Found', $this->logprefix[1]);
+        try {
+            $content = file_get_contents($tplPath);
+        }catch (RuntimeException $e) {
+            $content = '';
             throw new \RuntimeException("Template file not found: $tplPath");
         }
-
-        return file_get_contents($tplPath);
+        return $content;
     }
 
     /**

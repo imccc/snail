@@ -13,11 +13,11 @@ trait DebugTrait
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
     ];
 
-    protected static function debug($info)
+    protected static function debug($info='')
     {
         if (defined('DEBUG') && DEBUG['debug']) {
             if (empty($info)){
-                $infoStr = self::$_debuginfo ;
+                $infoStr = self::$_debugInfo ;
             }else{
                 $infoStr = print_r($info, true);
             }
