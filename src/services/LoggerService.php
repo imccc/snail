@@ -42,6 +42,7 @@ class LoggerService
         $this->config = $this->container->resolve('ConfigService');
         $this->logconf = $this->config->get('logger');
         $this->tableName = $this->logconf['log_db_table'];
+
         register_shutdown_function([self::class, 'debug']);
 
         // 注册一个脚本结束时的回调，用于处理日志队列中剩余的日志

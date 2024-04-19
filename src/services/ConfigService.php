@@ -16,11 +16,10 @@ use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class ConfigService
 {
-    use DebugTrait, HandleExceptionTrait;
-
     private $container; // 容器
-
     protected $debuginfo = [];
+
+    use HandleExceptionTrait, DebugTrait;
 
     public function __construct(Container $container)
     {
