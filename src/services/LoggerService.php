@@ -18,8 +18,8 @@ namespace Imccc\Snail\Services;
 
 use Exception;
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
+// use Imccc\Snail\Traits\DebugTrait;
+// use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class LoggerService
 {
@@ -30,12 +30,12 @@ class LoggerService
     private $container; // 容器
     private $tableName;
 
-    use HandleExceptionTrait, DebugTrait;
+    // use HandleExceptionTrait, DebugTrait;
 
     public function __construct(Container $container)
     {
         // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
+        // set_error_handler([self::class, 'handleException']);
 
         $this->container = $container;
         // 解析配置服务并获取日志配置信息
@@ -43,7 +43,7 @@ class LoggerService
         $this->logconf = $this->config->get('logger');
         $this->tableName = $this->logconf['log_db_table'];
 
-        register_shutdown_function([self::class, 'debug']);
+        // register_shutdown_function([self::class, 'debug']);
 
         // 注册一个脚本结束时的回调，用于处理日志队列中剩余的日志
         register_shutdown_function([$this, 'flushLogs']);
@@ -80,7 +80,7 @@ class LoggerService
             default:
                 // 如果配置为其他类型，则直接写入服务器日志
                 $this->logToServer("[$pre] $message");
-                self::handleException('Invalid log type, to see server logs');
+                // self::handleException('Invalid log type, to see server logs');
                 break;
         }
     }
@@ -226,7 +226,8 @@ class LoggerService
         try {
             $sqlService->execute($sql, $params);
         } catch (Exception $e) {
-            self::handleException($e->getMessage(), "Failed log to database");
+            throw new Exception($e->getMessage());
+            // self::handleException($e->getMessage(), "Failed log to database");
         }
     }
 
@@ -271,7 +272,8 @@ class LoggerService
             $sqlService->execute($sql, [':daysToKeep' => $daysToKeep]);
         } catch (Exception $e) {
             // 记录到服务器日志
-            self::handleException($e->getMessage(), "Failed to clean up database logs");
+            throw new Exception("Failed to clean up database: " . $e->getMessage());
+            // self::handleException($e->getMessage(), "Failed to clean up database logs");
         }
     }
 
@@ -304,7 +306,8 @@ class LoggerService
             $sqlService->createTable($table, $columns);
         } catch (Exception $e) {
             // 记录到服务器日志
-            self::handleException($e->getMessage(), "Failed to create log table");
+            throw new Exception("Failed to create log table: " . $e->getMessage());
+            // self::handleException($e->getMessage(), "Failed to create log table");
         }
     }
 

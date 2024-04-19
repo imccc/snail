@@ -11,24 +11,24 @@
 namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
+// use Imccc\Snail\Traits\DebugTrait;
+// use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class ConfigService
 {
     private $container; // 容器
     protected $debuginfo = [];
 
-    use HandleExceptionTrait, DebugTrait;
+    // use HandleExceptionTrait, DebugTrait;
 
     public function __construct(Container $container)
     {
-        set_error_handler([self::class, 'handleException']);
+        // set_error_handler([self::class, 'handleException']);
 
         $this->container = $container;
 
         // 脚本结束时执行debug,方便调试，开关在index.php或者snail.php配置
-        register_shutdown_function([self::class, 'debug']);
+        // register_shutdown_function([self::class, 'debug']);
     }
 
     /**
@@ -46,13 +46,13 @@ class ConfigService
         // 检查app目录下的配置文件是否存在，存在则返回配置信息，否则返回框架默认配置
         if (file_exists($acf)) {
             return include $acf;
-            self::bindDebugInfo($configfile, $acf);
+            // self::bindDebugInfo($configfile, $acf);
         } elseif (file_exists($cf)) {
             return include $cf;
-            self::bindDebugInfo($configfile, $cf);
+            // self::bindDebugInfo($configfile, $cf);
         } else {
             return [];
-            self::bindDebugInfo($configfile, "$configfile NotExist");
+            // self::bindDebugInfo($configfile, "$configfile NotExist");
         }
     }
 

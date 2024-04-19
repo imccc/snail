@@ -30,6 +30,7 @@ class Container
     {
         if (!self::$instance) {
             self::$instance = new self();
+            register_shutdown_function([self::class, 'debug']);
         }
         return self::$instance;
     }
@@ -37,7 +38,6 @@ class Container
     // 私有构造函数以确保只能通过 getInstance 方法获取实例
     private function __construct()
     {
-        register_shutdown_function([self::class, 'debug']);
     }
 
     // 克隆方法私有化，防止外部克隆对象
