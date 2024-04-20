@@ -66,7 +66,7 @@ class MailService
         $this->connectionTimeout = $this->config['connectionTimeout'];
         $this->responseTimeout = $this->config['responseTimeout'];
 
-        if (defined('DEBUG') && DEBUG['debug'] && DEBUG['mail'] ?? false) {
+        if (defined('SNAIL_DEBUG') && SNAIL_DEBUG['debug'] && SNAIL_DEBUG['mail'] ?? false) {
             register_shutdown_function([self::class, 'debug']);
         }
     }

@@ -2,13 +2,14 @@
 namespace Imccc\Snail\Traits;
 
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\StyleTrait;
 
 trait DebugTrait
 {
     protected static $debugIndex = 0; // 调试信息索引
     protected static $_debugInfo = []; // 存储调试信息
     protected static $debugStyleOutput = false; // 用于记录样式是否已经输出
-
+    use StyleTrait;
     protected static $templates = [
         'debug' => '<div class="debugCentent"> <h3 class="debugTitle"> {{class}}<span style="float:right">#{{index}}</span></h3><div style="padding: 10px"><pre>{{info}}</pre></div></div>',
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
@@ -29,7 +30,7 @@ trait DebugTrait
 
         self::$debugIndex++;
 
-        if (defined('DEBUG') && DEBUG['debug'] ?? false) {
+        if (defined('SNAIL_DEBUG') && SNAIL_DEBUG['debug'] ?? false) {
             $infoStr = $info ? $info : self::getDebugInfo();
             $str = str_replace(
                 ['{{class}}', '{{index}}', '{{info}}'],
@@ -37,7 +38,7 @@ trait DebugTrait
                 self::$templates['debug']
             );
             echo $str;
-            if (DEBUG['log']) {
+            if (SNAIL_DEBUG['log']) {
                 self::debuglog($infoStr);
             }
         }
@@ -58,50 +59,6 @@ trait DebugTrait
         return self::$_debugInfo;
     }
 
-    public static function debugStyle()
-    {
-        // 在输出样式之前确保没有其他输出
-        $style = "
-        <style>
-
-        /** 调试模式样式 */
-
-        .debugBanner, .debugCentent,.debugNow {
-            margin: 10px 30px;
-            border-radius: 5px;
-            color: #FFFFFF;
-        }
-
-        .debugBanner {
-            padding: 5px;
-            background-color: #67c295;
-            text-align: center;
-        }
-
-        .debugTitle {
-            background-color: #ade3c8;
-            color: #50290d;
-            padding: 10px 16px;
-            margin-top: 0;
-            margin-bottom:0;
-            border-bottom: 1px solid #67c295;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .debugCentent {
-            background-color: #90e7bb;
-            color: #45350b;
-        }
-
-        .debugNow {
-            color: #000000;
-            text-align: end;
-        }
-        </style>
-        ";
-
-        return $style;
-    }
 
     protected static function debuglog($infoStr)
     {

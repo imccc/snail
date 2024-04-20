@@ -3,50 +3,9 @@ namespace Imccc\Snail\Traits;
 
 trait StyleTrait
 {
-    public static function debugStyle()
-    {
-        header("Content-type: text/css; charset=utf-8");
-        echo "
-
-        /** 调试模式样式 */
-
-        .debugBanner, .debugCentent,.debugNow {
-            margin: 10px 30px;
-            border-radius: 5px;
-            color: #FFFFFF;
-        }
-
-        .debugBanner {
-            padding: 5px;
-            background-color: #67c295;
-            text-align: center;
-        }
-
-        .debugTitle {
-            background-color: #ade3c8;
-            color: #50290d;
-            padding: 10px 16px;
-            margin-top: 0;
-            margin-bottom:0;
-            border-bottom: 1px solid #67c295;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .debugCentent {
-            background-color: #90e7bb;
-            color: #45350b;
-        }
-
-        .debugNow {
-            color: #000000;
-            text-align: end;
-        }";
-    }
-
     public static function handleStyle()
     {
-        header("Content-type: text/css; charset=utf-8");
-        echo "
+        $style = "<style>
         /** 错误处理 */
 
         .handleBanner, .handleError,.handleNow {
@@ -96,7 +55,53 @@ trait StyleTrait
             padding: 10px;
             white-space: pre-wrap; /* 添加自动换行 */
         }
-
+        </style>
         ";
+        return $style;
     }
+
+    public static function debugStyle()
+    {
+        $style = "
+        <style>
+
+        /** 调试模式样式 */
+
+        .debugBanner, .debugCentent,.debugNow {
+            margin: 10px 30px;
+            border-radius: 5px;
+            color: #FFFFFF;
+        }
+
+        .debugBanner {
+            padding: 5px;
+            background-color: #67c295;
+            text-align: center;
+        }
+
+        .debugTitle {
+            background-color: #ade3c8;
+            color: #50290d;
+            padding: 10px 16px;
+            margin-top: 0;
+            margin-bottom:0;
+            border-bottom: 1px solid #67c295;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .debugCentent {
+            background-color: #90e7bb;
+            color: #45350b;
+        }
+
+        .debugNow {
+            color: #000000;
+            text-align: end;
+        }
+        </style>
+        ";
+
+        return $style;
+    }
+
 }

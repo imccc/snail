@@ -4,11 +4,12 @@ namespace Imccc\Snail\Traits;
 use ErrorException;
 use SplFileObject;
 use Throwable;
+use Imccc\Snail\Traits\StyleTrait;
 
 trait HandleExceptionTrait
 {
     protected static $handleStyleOutput = false; // 用于记录样式是否已经输出
-
+    use StyleTrait;
     protected static $errorCount = 0;
     public static $handleTpl = [
         'error' => '<div class="handleError"><h3 class="handleTitle"> <small>{{$from}}</small><span style="float:right"># {{$index}}</span></h3><div class="handleContent">{{$info}}</div></div>',
@@ -52,7 +53,7 @@ trait HandleExceptionTrait
      */
     public static function showError(Throwable $exception): void
     {
-        if (DEBUG['debug'] ?? false) {
+        if (defined('SNAIL_DEBUG') && SNAIL_DEBUG['debug'] ?? false) {
             // 根据调试模式显示详细错误信息或简单提示
             $str = str_replace(['{{$from}}', '{{$index}}', '{{$info}}'], [self::class, self::$errorCount, self::showDetailedError($exception)], self::$handleTpl['error']);
         } else {
@@ -115,62 +116,7 @@ trait HandleExceptionTrait
         return $file->valid() ? $file->current() : null;
     }
 
-    public static function handleStyle()
-    {
-        $style = "<style>
-        /** 错误处理 */
-
-        .handleBanner, .handleError,.handleNow {
-            margin: 10px 30px;
-            border-radius: 5px;
-            color: #FFFFFF;
-        }
-
-        .handleTrace {
-            padding: 20px;
-            margin: 0;
-        }
-
-        .handleBanner {
-            padding: 5px;
-            background-color: #FF8800;
-            text-align: center;
-        }
-
-        .handleTitle {
-            background-color: #e7c090;
-            color: #50290d;
-            padding: 10px 16px;
-            margin-bottom:0;
-            border-bottom: 1px solid #fcb322;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .handleError {
-            background-color: #f1d7c4db;
-            color: #45350b;
-        }
-
-        .handleTrace {
-            background-color: #f6f2e2;
-            border-bottom: 1px solid #fcb322;
-            color: #000000;
-            white-space: pre-wrap; /* 添加自动换行 */
-        }
-
-        .handleNow {
-            color: #000000;
-            text-align: end;
-        }
-
-        .handleContent {
-            padding: 10px;
-            white-space: pre-wrap; /* 添加自动换行 */
-        }
-        </style>
-        ";
-        return $style;
-    }
+   
 
     // 记录错误日志
     private static function logError(Throwable $exception): void

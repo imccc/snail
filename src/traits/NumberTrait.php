@@ -86,4 +86,70 @@ trait MumberTrait
 
         return $output;
     }
+
+    /**
+     * 生成随机数字
+     *
+     * @param int $length 生成数字的长度
+     * @return string 生成的随机数字
+     */
+    public static function randomNumber($length = 6)
+    {
+        $numbers = range(0, 9);
+        shuffle($numbers);
+        $numbers = array_slice($numbers, 0, $length);
+        return implode('', $numbers);
+    }
+
+    /**
+     * 数字转中文
+     *
+     * @param int $number 要转换的数字
+     * @return string 转换后的中文数字
+     */
+    public static function numberToChinese($number)
+    {
+        // 数据类型和范围检查
+        if (!is_int($number) || $number < 0) {
+            throw new InvalidArgumentException('输入必须是非负整数');
+        }
+
+        $chineseNumbers = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+        $chineseUnits = ['', '十', '百', '千', '万', '亿', '兆', '京', '垓', '秭', '穰', '沟', '涧', '正', '载', '极'];
+
+        $chinese = '';
+        $numberStr = str_pad($number, 16, '0', STR_PAD_LEFT); // 限制最大长度，优化性能
+        $length = strlen($numberStr);
+
+        for ($i = 0; $i < $length; $i++) {
+            $digit = $numberStr[$i];
+            $unit = $length - $i - 1;
+
+            // 添加零的特殊处理逻辑
+            $isZero = ($digit == '0');
+            $isUnitMultipleOfFour = ($unit % 4 == 0 && $digit != '0');
+            $specialZeroHandling = ($isZero && ($unit == 4 || $unit == 8 || $unit == 12 || $unit == 16 || $unit == 20 || $unit == 24 || $unit == 28 || $unit == 32 || $unit == 36 || $unit == 40 || $unit == 44 || $unit == 48));
+
+            if ($isUnitMultipleOfFour || $specialZeroHandling) {
+                $chinese .= '零';
+            }
+
+            $chinese .= $chineseNumbers[$digit] . $chineseUnits[$unit];
+
+            // 简化处理万和亿的逻辑
+            if ($unit >= 4 && $digit == '0') {
+                $chinese .= $chineseUnits[$unit];
+            }
+        }
+
+        // 移除开头多余的零
+        $chinese = ltrim($chinese, '零');
+
+        // 对于数字0特殊情况处理
+        if ($number == 0) {
+            $chinese = '零';
+        }
+
+        return $chinese;
+    }
 }
