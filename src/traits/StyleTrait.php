@@ -3,7 +3,7 @@ namespace Imccc\Snail\Traits;
 
 trait StyleTrait
 {
-    public static function debugSytle()
+    public static function debugStyle()
     {
         header("Content-type: text/css; charset=utf-8");
         echo "

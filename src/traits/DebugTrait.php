@@ -9,6 +9,7 @@ trait DebugTrait
     protected static $debugIndex = 0; // 调试信息索引
     protected static $_debugInfo = []; // 存储调试信息
     protected static $debugStyleOutput = false; // 用于记录样式是否已经输出
+
     use StyleTrait;
     protected static $templates = [
         'debug' => '<div class="debugCentent"> <h3 class="debugTitle"> {{class}}<span style="float:right">#{{index}}</span></h3><div style="padding: 10px"><pre>{{info}}</pre></div></div>',
