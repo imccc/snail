@@ -2,7 +2,6 @@
 namespace Imccc\Snail\Traits;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\StyleTrait;
 
 trait DebugTrait
 {
@@ -10,7 +9,6 @@ trait DebugTrait
     protected static $_debugInfo = []; // 存储调试信息
     protected static $debugStyleOutput = false; // 用于记录样式是否已经输出
 
-    use StyleTrait;
     protected static $templates = [
         'debug' => '<div class="debugCentent"> <h3 class="debugTitle"> {{class}}<span style="float:right">#{{index}}</span></h3><div style="padding: 10px"><pre>{{info}}</pre></div></div>',
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
@@ -58,6 +56,46 @@ trait DebugTrait
     protected static function getDebugInfo()
     {
         return self::$_debugInfo;
+    }
+
+    public static function debugStyle()
+    {
+        header("Content-type: text/css; charset=utf-8");
+        echo "
+
+        /** 调试模式样式 */
+
+        .debugBanner, .debugCentent,.debugNow {
+            margin: 10px 30px;
+            border-radius: 5px;
+            color: #FFFFFF;
+        }
+
+        .debugBanner {
+            padding: 5px;
+            background-color: #67c295;
+            text-align: center;
+        }
+
+        .debugTitle {
+            background-color: #ade3c8;
+            color: #50290d;
+            padding: 10px 16px;
+            margin-top: 0;
+            margin-bottom:0;
+            border-bottom: 1px solid #67c295;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .debugCentent {
+            background-color: #90e7bb;
+            color: #45350b;
+        }
+
+        .debugNow {
+            color: #000000;
+            text-align: end;
+        }";
     }
 
     protected static function debuglog($infoStr)

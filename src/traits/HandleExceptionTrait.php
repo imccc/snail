@@ -2,14 +2,12 @@
 namespace Imccc\Snail\Traits;
 
 use ErrorException;
-use Imccc\Snail\Traits\StyleTrait;
 use SplFileObject;
 use Throwable;
 
 trait HandleExceptionTrait
 {
     protected static $handleStyleOutput = false; // 用于记录样式是否已经输出
-    use StyleTrait;
 
     protected static $errorCount = 0;
     public static $handleTpl = [
@@ -115,6 +113,63 @@ trait HandleExceptionTrait
         $file = new SplFileObject($filePath);
         $file->seek($lineNumber - 1);
         return $file->valid() ? $file->current() : null;
+    }
+
+       public static function handleStyle()
+    {
+        header("Content-type: text/css; charset=utf-8");
+        echo "
+        /** 错误处理 */
+
+        .handleBanner, .handleError,.handleNow {
+            margin: 10px 30px;
+            border-radius: 5px;
+            color: #FFFFFF;
+        }
+
+        .handleTrace {
+            padding: 20px;
+            margin: 0;
+        }
+
+        .handleBanner {
+            padding: 5px;
+            background-color: #FF8800;
+            text-align: center;
+        }
+
+        .handleTitle {
+            background-color: #e7c090;
+            color: #50290d;
+            padding: 10px 16px;
+            margin-bottom:0;
+            border-bottom: 1px solid #fcb322;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .handleError {
+            background-color: #f1d7c4db;
+            color: #45350b;
+        }
+
+        .handleTrace {
+            background-color: #f6f2e2;
+            border-bottom: 1px solid #fcb322;
+            color: #000000;
+            white-space: pre-wrap; /* 添加自动换行 */
+        }
+
+        .handleNow {
+            color: #000000;
+            text-align: end;
+        }
+
+        .handleContent {
+            padding: 10px;
+            white-space: pre-wrap; /* 添加自动换行 */
+        }
+
+        ";
     }
 
     // 记录错误日志
