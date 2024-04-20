@@ -11,7 +11,6 @@
 namespace Imccc\Snail\Core;
 
 use Closure;
-use Imccc\Snail\Traits\DebugTrait;
 use Imccc\Snail\Traits\HandleExceptionTrait;
 use ReflectionClass;
 
@@ -23,8 +22,9 @@ class Container
     protected $bindings = []; // 存储绑定的服务信息
     protected $aliases = []; // 存储服务别名信息
     protected $lastBound = ''; // 最后绑定的接口或抽象类
+    protected $_debugInfo = []; // 调试信息
 
-    use HandleExceptionTrait, DebugTrait;
+    use HandleExceptionTrait;
     // 获取容器实例的静态方法
     public static function getInstance()
     {
@@ -32,6 +32,21 @@ class Container
             self::$instance = new self();
         }
         return self::$instance;
+    }
+
+    // 绑定调试信息
+    public function addDebugInfo($key, $value, $method = 'def')
+    {
+        $this->_debugInfo[$method][$key] = $value;
+    }
+
+    // 获取调试信息
+    public function getDebugInfo($method = 'def')
+    {
+        if ($method == 'def') {
+            return $this->_debugInfo;
+        }
+        return $this->_debugInfo[$method];
     }
 
     // 私有构造函数以确保只能通过 getInstance 方法获取实例

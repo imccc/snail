@@ -23,7 +23,7 @@ class Snail
     protected $conf; // snail配置
     protected $logconf; // 日志配置
     protected $logger; // 日志服务
-    protected $logprefix = ['debug', 'info', 'error'];
+    protected $logprefix = ['debug', 'info', 'error', 'snail'];
     protected $container;
 
     use HandleExceptionTrait, DebugTrait;
@@ -39,10 +39,6 @@ class Snail
         session_start();
         $this->initializeContainer();
         $this->run();
-
-        if (defind('DEBUG') && DEBUG['debug'] ?? false) {
-            register_shutdown_function([self::class, 'debug']);
-        }
     }
 
     /**
@@ -80,9 +76,9 @@ class Snail
         $this->logconf = $this->config->get('logger.on');
 
         // 系统配置 用define主要是为了全局使用，不然在应用中直接加载就可以了
-        define('DEBUG', $this->logconf);
+        define('SNAIL_DEBUG', $this->logconf);
 
-        if (DEBUG['report']) {
+        if (SNAIL_DEBUG['report']) {
             error_reporting(E_ALL); //报告所有错误
         } else {
             error_reporting(0); //关闭所有错误报告

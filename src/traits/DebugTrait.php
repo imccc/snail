@@ -1,32 +1,49 @@
 <?php
 namespace Imccc\Snail\Traits;
+
+use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\StyleTrait;
+
 trait DebugTrait
 {
-    protected static $debugIndex = 0;
-    protected static $_debugInfo = [];
-    protected static $styles = [
-        'debug' => 'background-color: #ddddff; color: #000; padding: 10px; margin: 10px; border: 1px solid #0000ff;',
-        'title' => 'background-color: #dddddd; color: #000; padding: 10px; margin: 10px;',
-    ];
+    protected static $debugIndex = 0; // 调试信息索引
+    protected static $_debugInfo = []; // 存储调试信息
+    protected static $debugStyleOutput = false; // 用于记录样式是否已经输出
+    use StyleTrait;
     protected static $templates = [
-        'debug' => '<div style="{{style}}"> <h3 style="{{title}}"> Debug Information from {{class}}<span style="float:right">#{{index}}</span></h3><div style="padding: 10px"><pre>{{info}}</pre></div></div>',
+        'debug' => '<div class="debugCentent"> <h3 class="debugTitle"> {{class}}<span style="float:right">#{{index}}</span></h3><div style="padding: 10px"><pre>{{info}}</pre></div></div>',
         'simple' => '<h1>Oops, something went wrong!</h1><p>Please contact the administrator for assistance.</p>',
+        'banner' => '<div class="debugBanner"><h1>Snail Framework Debug</h1></div><div class="debugNow">{{$now}}</div>',
     ];
 
-    protected static function debug($info='')
+    protected static function debug($info = '')
     {
-        if (defined('DEBUG') && DEBUG['debug']) {
-            $infoStr = $info ? $info : self::$_debugInfo ;
-        
+        if (!self::$debugStyleOutput) { // 如果样式未输出，则输出样式
+            self::debugStyle();
+            self::$debugStyleOutput = true; // 设置样式已经输出
+        }
+
+        if (self::$debugIndex == 0) {
+            $now = date('Y-m-d H:i:s');
+            echo str_replace('{{$now}}', $now, self::$templates['banner']);
+        }
+
+        self::$debugIndex++;
+
+        if (defined('DEBUG') && DEBUG['debug'] ?? false) {
+            $infoStr = $info ? $info : self::getDebugInfo();
             $str = str_replace(
-                ['{{style}}', '{{title}}', '{{class}}', '{{index}}', '{{info}}'],
-                [self::$styles['debug'], self::$styles['title'], self::class, self::getDebugIndex(), print_r($infoStr,true)],
+                ['{{class}}', '{{index}}', '{{info}}'],
+                [self::class, self::getDebugIndex(), print_r($infoStr, true)],
                 self::$templates['debug']
             );
             echo $str;
+            if (DEBUG['log']) {
+                self::debuglog($infoStr);
+            }
         }
     }
-  
+
     protected static function bindDebugInfo($key, $value)
     {
         self::$_debugInfo[self::class][$key] = $value;
@@ -34,6 +51,26 @@ trait DebugTrait
 
     private static function getDebugIndex()
     {
-        return self::$debugIndex++;
+        return self::$debugIndex;
     }
+
+    protected static function getDebugInfo()
+    {
+        return self::$_debugInfo;
+    }
+
+    protected static function debuglog($infoStr)
+    {
+        $container = Container::getInstance();
+        // 获取当前方法所在的类和方法名称
+        $method = __METHOD__;
+        list($class, $methodName) = explode('::', $method) ?? [];
+
+        //尝试使用容器获取日志服务
+        $logService = $container->resolve('LoggerService');
+        if ($logService) {
+            $logService->log($infoStr, $methodName);
+        }
+    }
+
 }
