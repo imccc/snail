@@ -21,7 +21,7 @@ trait HandleExceptionTrait
     public static function handleException($exceptionOrErrorCode, $string = ''): void
     {
         if (!self::$handleStyleOutput) { // 如果样式未输出，则输出样式
-            self::handleStyle();
+            echo self::handleStyle();
             self::$handleStyleOutput = true; // 设置样式已经输出
         }
 
@@ -115,10 +115,9 @@ trait HandleExceptionTrait
         return $file->valid() ? $file->current() : null;
     }
 
-       public static function handleStyle()
+    public static function handleStyle()
     {
-        header("Content-type: text/css; charset=utf-8");
-        echo "
+        $style = "<style>
         /** 错误处理 */
 
         .handleBanner, .handleError,.handleNow {
@@ -168,8 +167,9 @@ trait HandleExceptionTrait
             padding: 10px;
             white-space: pre-wrap; /* 添加自动换行 */
         }
-
+        </style>
         ";
+        return $style;
     }
 
     // 记录错误日志

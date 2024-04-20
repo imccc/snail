@@ -18,7 +18,7 @@ trait DebugTrait
     protected static function debug($info = '')
     {
         if (!self::$debugStyleOutput) { // 如果样式未输出，则输出样式
-            self::debugStyle();
+            echo self::debugStyle(); // 输出样式
             self::$debugStyleOutput = true; // 设置样式已经输出
         }
 
@@ -60,8 +60,9 @@ trait DebugTrait
 
     public static function debugStyle()
     {
-        header("Content-type: text/css; charset=utf-8");
-        echo "
+        // 在输出样式之前确保没有其他输出
+        $style = "
+        <style>
 
         /** 调试模式样式 */
 
@@ -95,7 +96,11 @@ trait DebugTrait
         .debugNow {
             color: #000000;
             text-align: end;
-        }";
+        }
+        </style>
+        ";
+
+        return $style;
     }
 
     protected static function debuglog($infoStr)
