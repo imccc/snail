@@ -39,6 +39,9 @@ class Snail
         session_start();
         $this->initializeContainer();
         $this->run();
+        register_shutdown_function(function () {
+            self::debug();
+        });
     }
 
     /**

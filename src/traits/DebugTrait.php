@@ -38,7 +38,7 @@ trait DebugTrait
             );
             echo $str;
             if (SNAIL_DEBUG['log']) {
-                self::debuglog($infoStr);
+                self::debugLog($infoStr);
             }
         }
     }
@@ -103,7 +103,7 @@ trait DebugTrait
         return $style;
     }
 
-    protected static function debuglog($infoStr)
+    protected static function debugLog($infoStr)
     {
         $container = Container::getInstance();
         // 获取当前方法所在的类和方法名称
