@@ -44,11 +44,7 @@ trait DebugTrait
             );
             echo $str;
             if (SNAIL_DEBUG['log']) {
-                $method = __METHOD__;
-                $methodName = list($class, $methodName) = explode('::', $method);
-                self::debugLog($infoStr, $methodName);
-                self::debugLog1($infoStr);
-
+                self::debugLog($infoStr);
             }
         }
     }
@@ -136,40 +132,23 @@ trait DebugTrait
     }
 
     /**
-     * 记录日志
-     * @param string $infoStr
-     * @return void
-     */
-    protected static function debugLog($infoStr, $methodName)
-    {
-        $container = Container::getInstance();
-        // 获取当前方法所在的类和方法名称
-        $info = print_r($infoStr, true);
-        //尝试使用容器获取日志服务
-        $logService = $container->resolve('LoggerService');
-        if ($logService) {
-            $logService->log($info, $methodName);
-        } else {
-            error_log("__DebugTrait__:" . $methodName . $info);
-        }
-    }
-
-    /**
      * 另一种记录日志
      * @param string $infoStr
      * @return void
      */
-    protected static function debugLog1($infoStr)
+    protected static function debugLog($infoStr)
     {
         $container = Container::getInstance();
         // 获取调用该方法的类名
         $callerClass = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class'];
         // 获取当前方法所在的类和方法名称
+        $callerMethod = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
+
         $info = print_r($infoStr, true);
         //尝试使用容器获取日志服务
         $logService = $container->resolve('LoggerService');
         if ($logService) {
-            $logService->log($info, $callerClass);
+            $logService->log($info, $callerClass."::".$callerMethod);
         } else {
             error_log("__DebugTrait__:" . $callerClass . $info);
         }

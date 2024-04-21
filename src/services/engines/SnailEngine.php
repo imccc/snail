@@ -39,7 +39,7 @@ class SnailEngine
         // 构建模板文件路径
         // $tplPath = $this->templateConfig['path'] . $tpl;
         $tplPath = $tpl;
-        self::bindDebugInfo('render',$tplPath);
+        self::bindDebugInfo('render', $tplPath);
 
         // 判断是否启用缓存
         if ($this->templateConfig['cache']) {
@@ -82,7 +82,7 @@ class SnailEngine
         $content = $this->replaceVariables($content, $data);
 
         // 替换模板块
-        $content = $this->replaceBlocks($content);
+        $content = $this->parseTemplateBlocks($content);
 
         // 解析静态资源标签
         $content = $this->parseAssetTags($content);
@@ -100,7 +100,7 @@ class SnailEngine
     {
         try {
             $content = file_get_contents($tplPath);
-        }catch (RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $content = '';
             throw new \RuntimeException("Template file not found: $tplPath");
         }
@@ -280,7 +280,5 @@ class SnailEngine
 
         return $content;
     }
-
-  
 
 }
