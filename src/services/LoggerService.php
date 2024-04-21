@@ -127,6 +127,12 @@ class LoggerService
      */
     private function enqueueLog($message, $prefix)
     {
+        if (is_array($message)){
+            $message = print_r($message,true);
+        }else{
+            $message = (string)$message;
+        }
+
         $logEntry = [
             'time' => date('Y-m-d H:i:s'),
             'message' => $message,
