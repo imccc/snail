@@ -20,11 +20,11 @@ class View implements ViewInterface
     private $_debuginfo = [];
     protected $_deftpl;
     protected $_ext;
-    protected $_data = []; // 将 _datas 改为 _data
-
-    public function __construct(Container $container)
+    protected $_data = [];
+    public function __construct(Container $container,$data)
     {
         $this->container = $container;
+        $this->_data = $data;
         $this->config = $container->resolve('ConfigService');
         $this->logger = $container->resolve('LoggerService');
 
@@ -35,23 +35,6 @@ class View implements ViewInterface
         $this->_ext = $this->tplconf['ext'] ?? '.tpl';
 
         $this->engine = $container->resolve('TemplateService');
-    }
-
-    /**
-     * 分配数据给视图
-     *
-     * @param string|array $key 参数键名或参数数组
-     * @param mixed $value 参数值（仅在第一个参数为键名时有效）
-     */
-    public function assign($key, $value = null): void
-    {
-        if (is_array($key)) {
-            foreach ($key as $k => $v) {
-                $this->_data[$k] = $v;
-            }
-        } else {
-            $this->_data[$key] = $value;
-        }
     }
 
     /**

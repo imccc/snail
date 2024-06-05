@@ -28,14 +28,14 @@ trait DebugTrait
             self::$debugStyleOutput = true; // 设置样式已经输出
         }
 
-        if (self::$debugIndex == 0) {
-            $now = date('Y-m-d H:i:s');
-            echo str_replace('{{$now}}', $now, self::$templates['banner']);
-        }
-
         self::$debugIndex++;
 
-        if (defined('SNAIL_DEBUG') && SNAIL_DEBUG['debug'] ?? false) {
+        if (defined('SNAIL_DEBUG') && SNAIL_DEBUG['debug']) {
+            if (self::$debugIndex == 1) {
+                $now = date('Y-m-d H:i:s');
+                echo str_replace('{{$now}}', $now, self::$templates['banner']);
+            }
+
             $infoStr = $info ? $info : self::getDebugInfo();
             $str = str_replace(
                 ['{{class}}', '{{index}}', '{{info}}'],
@@ -148,7 +148,7 @@ trait DebugTrait
         //尝试使用容器获取日志服务
         $logService = $container->resolve('LoggerService');
         if ($logService) {
-            $logService->log($info, $callerClass."::".$callerMethod);
+            $logService->log($info, $callerClass . "::" . $callerMethod);
         } else {
             error_log("__DebugTrait__:" . $callerClass . $info);
         }

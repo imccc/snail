@@ -20,31 +20,34 @@ trait HandleExceptionTrait
     // 处理异常的方法
     public static function handleException($exceptionOrErrorCode, $string = ''): void
     {
-        if (!self::$handleStyleOutput) { // 如果样式未输出，则输出样式
-            echo self::handleStyle();
-            self::$handleStyleOutput = true; // 设置样式已经输出
+        if (defined('SNAIL_DEBUG') && SNAIL_DEBUG['debug'] ?? false) {
+
+            if (!self::$handleStyleOutput) { // 如果样式未输出，则输出样式
+                echo self::handleStyle();
+                self::$handleStyleOutput = true; // 设置样式已经输出
+            }
+
+            if (self::$errorCount == 0) {
+                $now = date('Y-m-d H:i:s');
+                echo str_replace('{{$now}}', $now, self::$handleTpl['banner']);
+            }
+
+            // 增加错误计数
+            self::$errorCount++;
+
+            // 根据传入参数类型创建异常对象
+            if ($exceptionOrErrorCode instanceof Throwable) {
+                $exception = $exceptionOrErrorCode;
+            } else {
+                $errorMessage = is_string($exceptionOrErrorCode) ? $exceptionOrErrorCode : "Unknown error";
+                $exception = new ErrorException("Error: " . $errorMessage);
+            }
+
+            // 显示错误信息
+            self::showError($exception);
+            // 记录错误日志
+            self::logError($exception);
         }
-
-        if (self::$errorCount == 0) {
-            $now = date('Y-m-d H:i:s');
-            echo str_replace('{{$now}}', $now, self::$handleTpl['banner']);
-        }
-
-        // 增加错误计数
-        self::$errorCount++;
-
-        // 根据传入参数类型创建异常对象
-        if ($exceptionOrErrorCode instanceof Throwable) {
-            $exception = $exceptionOrErrorCode;
-        } else {
-            $errorMessage = is_string($exceptionOrErrorCode) ? $exceptionOrErrorCode : "Unknown error";
-            $exception = new ErrorException("Error: " . $errorMessage);
-        }
-
-        // 显示错误信息
-        self::showError($exception);
-        // 记录错误日志
-        self::logError($exception);
     }
 
     /**

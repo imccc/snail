@@ -43,18 +43,6 @@ class Controller implements ControllerInterface
     }
 
     /**
-     * 生成API方法
-     * @return void
-     */
-    public function api()
-    {
-        if (!$this->_api) {
-            $this->_api = $this->container->resolve('ApiService');
-        }
-        return $this->_api;
-    }
-
-    /**
      * 获取与控制器关联的模型实例。
      *
      * @return mixeds
@@ -76,11 +64,29 @@ class Controller implements ControllerInterface
     public function getView()
     {
         if (!$this->_view) {
-            $this->_view = new View($this->container);
+            $this->_view = new View($this->container, $this->_data);
             return $this->_view;
         } else {
             return $this->_view;
         }
+    }
+
+    /**
+     * 生成API方法
+     * @return void
+     */
+    public function getApi()
+    {
+        if (!$this->_api) {
+            $this->_api = $this->container->resolve('ApiService');
+        }
+        return $this->_api;
+    }
+
+    public function api($oridata)
+    {
+        $this->getApi();
+        return $this->_api->show($oridata);
     }
 
     /**
@@ -125,7 +131,14 @@ class Controller implements ControllerInterface
      */
     public function assign($key, $value = null): void
     {
-        $this->_view->assign($key, $value);
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->_data[$k] = $v;
+            }
+        } else {
+            $this->_data[$key] = $value;
+        }
+
     }
 
     /**
