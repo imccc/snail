@@ -3,8 +3,8 @@
 namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 use Imccc\Snail\Helpers\SimpleXMLHelper;
+use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class ApiService
 {
@@ -163,10 +163,9 @@ class ApiService
                 }
             } else {
                 // 使用 CDATA 包装内容
-                $this->addChild("$key", null)->addCData("$value");
+                $xml->addChildWithCData("$key", "$value");
             }
         }
     }
-
 
 }
