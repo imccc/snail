@@ -23,14 +23,15 @@ trait DebugTrait
      */
     protected static function debug($info = '')
     {
-        if (!self::$debugStyleOutput) { // 如果样式未输出，则输出样式
-            echo self::debugStyle(); // 输出样式
-            self::$debugStyleOutput = true; // 设置样式已经输出
-        }
-
-        self::$debugIndex++;
-
         if (defined('SNAIL_DEBUG') && SNAIL_DEBUG['debug']) {
+
+            if (!self::$debugStyleOutput) { // 如果样式未输出，则输出样式
+                echo self::debugStyle(); // 输出样式
+                self::$debugStyleOutput = true; // 设置样式已经输出
+            }
+
+            self::$debugIndex++;
+
             if (self::$debugIndex == 1) {
                 $now = date('Y-m-d H:i:s');
                 echo str_replace('{{$now}}', $now, self::$templates['banner']);
