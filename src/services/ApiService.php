@@ -4,7 +4,7 @@ namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Traits\HandleExceptionTrait;
-use SimpleXMLElement;
+use Imccc\Snail\Helpers\XmlHelper;
 
 class ApiService
 {
@@ -139,7 +139,7 @@ class ApiService
      */
     protected function arrayToXml(array $data, $rootElement = 'root'): string
     {
-        $xml = new SimpleXMLElement('<' . $rootElement . '/>');
+        $xml = new XmlHelper('<' . $rootElement . '/>');
         $this->arrayToXmlHelper($data, $xml);
         return $xml->asXML();
     }
@@ -151,14 +151,14 @@ class ApiService
      * @param SimpleXMLElement $xml 当前 XML 元素
      * @return void
      */
-    protected function arrayToXmlHelper(array $data, SimpleXMLElement &$xml): void
+    protected function arrayToXmlHelper(array $data, XmlHelper &$xml): void
     {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
                 if (is_numeric($key)) {
                     $this->arrayToXmlHelper($value, $xml);
                 } else {
-                    $subnode = $this->addChild("$key");
+                    $subnode = $xml->addChild("$key");
                     $this->arrayToXmlHelper($value, $subnode);
                 }
             } else {
@@ -168,18 +168,5 @@ class ApiService
         }
     }
 
-    protected  function addCData($cdataText) {
-        // Create a DOMElement from this SimpleXMLElement
-        $dom = dom_import_simplexml($this);
-        
-        // Create a new DOMDocument to hold the CDATA section
-        $ownerDoc = $dom->ownerDocument;
-        
-        // Create a CDATA section with the provided text
-        $cdata = $ownerDoc->createCDATASection($cdataText);
-        
-        // Append the CDATA section to the DOMElement
-        $dom->appendChild($cdata);
-    }
 
 }
