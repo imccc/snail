@@ -37,21 +37,26 @@ class ApiService
     {
         // 设置响应头
         $this->setResponseHeaders();
+        $result = [
+            'code' => $data['code'] ?? 0,
+            'message' => $data['message'] ?? '',
+            'data' => $data['data'] ?? [],
+        ];
 
         // 根据输出格式输出数据
         switch ($this->format) {
             case 'json':
-                echo json_encode($data);
+                echo json_encode($result);
                 break;
             case 'xml':
-                echo $this->arrayToXml($data);
+                echo $this->arrayToXml($result);
                 break;
             case 'yaml':
-                echo yaml_emit($data);
+                echo yaml_emit($result);
                 break;
             case 'jsonp':
                 $callback = $this->getJsonpCallback();
-                echo $callback . '(' . json_encode($data) . ');';
+                echo $callback . '(' . json_encode($result) . ');';
                 break;
             default:
                 // 不支持的格式，返回 406 Not Acceptable
@@ -153,14 +158,28 @@ class ApiService
                 if (is_numeric($key)) {
                     $this->arrayToXmlHelper($value, $xml);
                 } else {
-                    $subnode = $xml->addChild("$key");
+                    $subnode = $this->addChild("$key");
                     $this->arrayToXmlHelper($value, $subnode);
                 }
             } else {
                 // 使用 CDATA 包装内容
-                $xml->addChild("$key", null)->addCData("$value");
+                $this->addChild("$key", null)->addCData("$value");
             }
         }
+    }
+
+    protected  function addCData($cdataText) {
+        // Create a DOMElement from this SimpleXMLElement
+        $dom = dom_import_simplexml($this);
+        
+        // Create a new DOMDocument to hold the CDATA section
+        $ownerDoc = $dom->ownerDocument;
+        
+        // Create a CDATA section with the provided text
+        $cdata = $ownerDoc->createCDATASection($cdataText);
+        
+        // Append the CDATA section to the DOMElement
+        $dom->appendChild($cdata);
     }
 
 }
