@@ -4,7 +4,7 @@ namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Traits\HandleExceptionTrait;
-use Imccc\Snail\Helpers\XmlHelper;
+use Imccc\Snail\Helpers\SimpleXMLHelper;
 
 class ApiService
 {
@@ -151,7 +151,7 @@ class ApiService
      * @param SimpleXMLElement $xml 当前 XML 元素
      * @return void
      */
-    protected function arrayToXmlHelper(array $data, XmlHelper &$xml): void
+    protected function arrayToXmlHelper(array $data, SimpleXMLHelper &$xml): void
     {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
