@@ -139,7 +139,7 @@ class ApiService
      */
     protected function arrayToXml(array $data, $rootElement = 'root'): string
     {
-        $xml = new XmlHelper('<' . $rootElement . '/>');
+        $xml = new SimpleXMLHelper('<' . $rootElement . '/>');
         $this->arrayToXmlHelper($data, $xml);
         return $xml->asXML();
     }
