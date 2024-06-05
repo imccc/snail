@@ -2,6 +2,8 @@
 
 namespace Imccc\Snail\Helpers;
 
+use SimpleXMLElement;
+
 class SimpleXMLHelper extends SimpleXMLElement
 {
     /**
