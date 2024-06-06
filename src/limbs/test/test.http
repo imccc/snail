@@ -18,4 +18,7 @@ name=foo&password=bar
 
 ## API 测试
 ### ----------------------------
-GET {{baseUrl}}/api/users HTTP/1.1
+GET {{baseUrl}}/api/index HTTP/1.1
+Accept: application/xml; charset=utf-8
+headers:
+  X-json-unescaped-unicode: 1

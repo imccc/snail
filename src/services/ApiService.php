@@ -42,21 +42,34 @@ class ApiService
             'message' => $data['message'] ?? '',
             'data' => $data['data'] ?? [],
         ];
-
+        $jsuu = $this->getJsuu();
         // 根据输出格式输出数据
         switch ($this->format) {
             case 'json':
-                echo json_encode($result);
+                if ($jsuu) {
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                } else {
+                    echo json_encode($result);
+                }
                 break;
             case 'xml':
                 echo $this->arrayToXml($result);
                 break;
             case 'yaml':
-                echo yaml_emit($result);
+                if ($jsuu) {
+                    echo yaml_emit($data, YAML_UTF8_ENCODING);
+                } else {
+                    echo yaml_emit($result);
+                }
+
                 break;
             case 'jsonp':
                 $callback = $this->getJsonpCallback();
-                echo $callback . '(' . json_encode($result) . ');';
+                if ($jsuu) {
+                    echo $callback . '(' . json_encode($result, JSON_UNESCAPED_UNICODE) . ');';
+                } else {
+                    echo $callback . '(' . json_encode($result) . ');';
+                }
                 break;
             default:
                 // 不支持的格式，返回 406 Not Acceptable
@@ -72,7 +85,7 @@ class ApiService
      */
     protected function setResponseHeaders(): void
     {
-        header('Content-Type: ' . $this->getContentType());
+        header('Content-Type: ' . $this->getContentType() . '; charset=' . $this->getCharset());
     }
 
     /**
@@ -97,6 +110,31 @@ class ApiService
     }
 
     /**
+     * 获取字符集
+     *
+     * @return string 字符集
+     */
+    protected function getCharset()
+    {
+        $acceptHeader = $_SERVER['HTTP_ACCEPT'] ?? '';
+        if (preg_match('/charset=([^;]+)/', $acceptHeader, $matches)) {
+            return $matches[1];
+        } else {
+            return 'utf-8';
+        }
+    }
+
+    /**
+     * 获取 JSON 是否需要转义
+     *
+     * @return bool
+     */
+    protected function getJsuu(): bool
+    {
+        return $_SERVER['HTTP_X_JSON_UNESCAPED_UNICODE'] ?? false;
+    }
+
+    /**
      * 获取 JSONP 回调函数名
      *
      * @return string 回调函数名
@@ -117,17 +155,27 @@ class ApiService
     protected function getOutputFormat(): string
     {
         $acceptHeader = $_SERVER['HTTP_ACCEPT'] ?? '';
-        if (strpos($acceptHeader, 'application/json') !== false) {
-            return 'json';
-        } elseif (strpos($acceptHeader, 'application/xml') !== false) {
-            return 'xml';
-        } elseif (strpos($acceptHeader, 'application/yaml') !== false) {
-            return 'yaml';
-        } elseif (isset($_GET['callback'])) {
+
+        if (isset($_GET['callback'])) {
             return 'jsonp';
-        } else {
-            return 'json'; // 默认使用 JSON 格式
         }
+
+        // 优先级顺序
+        $formats = [
+            'application/json' => 'json',
+            'application/xml' => 'xml',
+            'application/yaml' => 'yaml',
+            'text/html' => 'html',
+            'text/plain' => 'text',
+        ];
+
+        foreach ($formats as $mime => $format) {
+            if (strpos($acceptHeader, $mime) !== false) {
+                return $format;
+            }
+        }
+
+        return 'json'; // 默认使用 JSON 格式
     }
 
     /**
@@ -137,35 +185,10 @@ class ApiService
      * @param string $rootElement 根元素名称
      * @return string XML 字符串
      */
-    protected function arrayToXml(array $data, $rootElement = 'root'): string
+    protected function xmlhelper($data)
     {
-        $xml = new SimpleXMLHelper('<' . $rootElement . '/>');
-        $this->arrayToXmlHelper($data, $xml);
-        return $xml->asXML();
+       $xml = new SimpleXMLHelper;
+       $encoding = $this->getCharset();
+       $xml->xmlEncode($data,'root',$encoding);
     }
-
-    /**
-     * 递归辅助方法，将数组转换为 XML
-     *
-     * @param array $data 要转换的数组
-     * @param SimpleXMLElement $xml 当前 XML 元素
-     * @return void
-     */
-    protected function arrayToXmlHelper(array $data, SimpleXMLHelper &$xml): void
-    {
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                if (is_numeric($key)) {
-                    $this->arrayToXmlHelper($value, $xml);
-                } else {
-                    $subnode = $xml->addChild("$key");
-                    $this->arrayToXmlHelper($value, $subnode);
-                }
-            } else {
-                // 使用 CDATA 包装内容
-                $xml->addChildWithCData("$key", "$value");
-            }
-        }
-    }
-
 }
