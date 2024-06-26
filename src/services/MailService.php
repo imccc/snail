@@ -8,7 +8,7 @@ use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class MailService
 {
-    use HandleExceptionTrait, DebugTrait;
+    use DebugTrait;
     // SMTP服务器主机
     private $host;
 
@@ -50,9 +50,6 @@ class MailService
 
     public function __construct(Container $container)
     {
-        // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
-
         $this->container = $container;
         // 获取邮件配置
         $this->config = $this->container->resolve('ConfigService')->get('mail');

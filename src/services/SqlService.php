@@ -40,9 +40,6 @@ class SqlService
      */
     public function __construct(Container $container)
     {
-        // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
-
         $this->container = $container;
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService')->get('database');
@@ -72,7 +69,7 @@ class SqlService
             $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $options);
             self::bindDebugInfo('dsn', $dsn);
         } catch (PDOException $e) {
-            self::handleException($e, "Connect to database failed!");
+           throw new Exception("Connect to database failed! Error: " . $e->getMessage());
         }
     }
 
@@ -95,7 +92,7 @@ class SqlService
                 $dsn = "oci:dbname={$dsnConfig['dbname']}";
                 break;
             default:
-                self::handleException(new Exception("Unsupported database driver: $driver"));
+                throw new Exception("Unsupported database driver: $driver");
         }
         self::bindDebugInfo('dsn', $dsn);
         return $dsn;
@@ -150,7 +147,7 @@ class SqlService
             $this->join = ''; // 重置连接条件
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            self::handleException($e, 'Params: ' . json_encode($params));
+            throw new Exception("Query failed! Error: " . $e->getMessage());
         }
     }
 
@@ -178,7 +175,7 @@ class SqlService
             $stmt->execute($params);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            self::handleException($e, 'SQL Select Error:' . $sql);
+            throw new Exception("Select failed! Error: " . $e->getMessage());
         }
     }
 
@@ -202,7 +199,7 @@ class SqlService
             $stmt->execute(array_values($data));
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'Insert Error:' . $sql);
+            throw new Exception("Insert failed! Error: " . $e->getMessage());
         }
     }
 
@@ -231,7 +228,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'Update Error:' . $sql);
+            throw new Exception("Update failed! Error: " . $e->getMessage());
         }
     }
 
@@ -253,7 +250,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'Delete Error:' . $sql);
+            throw new Exception("Delete failed! Error: " . $e->getMessage());
         }
     }
 
@@ -273,7 +270,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'Execution Error:' . $sql);
+            throw new Exception("Execute failed! Error: " . $e->getMessage());
         }
     }
 
@@ -293,7 +290,7 @@ class SqlService
             $stmt->execute($params);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            self::handleException($e, 'Fetch Error:' . $sql);
+            throw new Exception("Fetch failed! Error: " . $e->getMessage());
         }
     }
 
@@ -314,7 +311,7 @@ class SqlService
             $this->result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'FetchAll Error:' . $sql);
+            throw new Exception("FetchAll failed! Error: " . $e->getMessage());
         }
     }
 
@@ -449,7 +446,7 @@ class SqlService
             try {
                 $stmt->bindValue($paramName, $value, $paramType);
             } catch (PDOException $e) {
-                self::handleException($e, 'Parameter Binding Error:' . $sql);
+                throw new Exception("Parameter Binding Error: " . $e->getMessage());
             }
         }
     }
@@ -501,7 +498,7 @@ class SqlService
             }
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'Batch Insert  Error:' . $sql);
+            throw new Exception("Batch Insert Error: " . $e->getMessage());
         }
     }
 
@@ -537,7 +534,7 @@ class SqlService
             }
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'Batch Update  Error:' . $sql);
+            throw new Exception("Batch Update Error: " . $e->getMessage());
         }
     }
 
@@ -559,7 +556,7 @@ class SqlService
             $stmt->execute($params);
             return $this;
         } catch (PDOException $e) {
-            self::handleException($e, 'Batch Delete  Error:' . $sql);
+            throw new Exception("Batch Delete Error: " . $e->getMessage());
         }
     }
 
@@ -585,7 +582,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            self::handleException($e, 'Create Table  Error:' . $sql);
+            throw new Exception("Create Table Error: " . $e->getMessage());
         }
     }
 
@@ -604,7 +601,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            self::handleException($e, 'Truncate Table  Error:' . $sql);
+            throw new Exception("Truncate Table Error: " . $e->getMessage());
         }
     }
 
@@ -623,7 +620,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            self::handleException($e, 'Drop Table  Error:' . $sql);
+            throw new Exception("Drop Table Error: " . $e->getMessage());
         }
     }
 
@@ -648,7 +645,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            self::handleException($e, 'Alter Table  Error:' . $sql);
+            throw new Exception("Alter Table Error: " . $e->getMessage());
         }
     }
 
@@ -686,7 +683,7 @@ class SqlService
             file_put_contents($filePath, $output);
             return true;
         } catch (Exception $e) {
-            self::handleException($e, 'Export SQL  Error:' . $sql);
+            throw new Exception("Export SQL Error: " . $e->getMessage());
         }
     }
 
@@ -723,13 +720,13 @@ class SqlService
                 $this->deleteDirectory($tempDir);
                 return true;
             } else {
-                self::handleException($e, 'Failed to open the ZIP file');
+                throw new Exception('Failed to open the ZIP file');
             }
         } elseif ($extension === 'sql') {
             // 如果是 SQL 文件，则直接导入
             return $this->importSingleSqlFile($filePath);
         } else {
-            self::handleException($e, 'Unsupported file format:' . $filePath);
+            throw new Exception('Unsupported file format');
         }
     }
 
@@ -748,7 +745,7 @@ class SqlService
             $this->pdo->exec($sql);
             return true;
         } catch (PDOException $e) {
-            self::handleException($e, 'Import SQL Error:' . $sql);
+            throw new Exception("Import SQL Error: " . $e->getMessage());
         }
     }
 

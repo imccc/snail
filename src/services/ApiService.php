@@ -39,7 +39,7 @@ class ApiService
         $this->setResponseHeaders();
         $result = [
             'code' => $data['code'] ?? 0,
-            'message' => $data['message'] ?? '',
+            'message' => $data['message'] ? $data['msg'] : '',
             'data' => $data['data'] ?? [],
         ];
         $jsuu = $this->getJsuu();
@@ -187,8 +187,8 @@ class ApiService
      */
     protected function xmlhelper($data)
     {
-       $xml = new SimpleXMLHelper;
-       $encoding = $this->getCharset();
-       $xml->xmlEncode($data,'root',$encoding);
+        $xml = new SimpleXMLHelper;
+        $encoding = $this->getCharset();
+        $xml->xmlEncode($data, 'root', $encoding);
     }
 }

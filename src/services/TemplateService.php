@@ -6,23 +6,24 @@ use Imccc\Snail\Core\Container;
 use Imccc\Snail\Services\Engines\SnailEngine;
 use Imccc\Snail\Services\Engines\TwigEngine;
 use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class TemplateService
 {
     protected $config;
     protected $logger;
     protected $container;
-    protected $logprefix = ['template', 'error'];
     protected $engine;
+    protected $_engine;
+    protected $logprefix = ['template', 'error'];
 
-    use DebugTrait,HandleExceptionTrait;
+    use DebugTrait;
     public function __construct(Container $container)
     {
-      $this->container = $container;
+        $this->container = $container;
         $this->config = $this->container->resolve('ConfigService');
         $this->logger = $this->container->resolve('LoggerService');
-        $this->engine = $this->config->get('template.engine') ?? 'snail';
+        $this->_engine = $this->config->get('template.engine') ?? 'snail';
+        $this->setEngine($this->_engine);
     }
 
     public function setEngine($engine)
@@ -47,10 +48,9 @@ class TemplateService
      */
     public function display($tpl, $data = [])
     {
-        $this->setEngine($this->engine);
-        self::bindDebugInfo('template', $tpl);
+        self::bindDebugInfo('display_template', $tpl);
         $content = $this->engine->render($tpl, $data);
-        return $content;
+        echo $content;
     }
 
     /**
@@ -62,6 +62,7 @@ class TemplateService
      */
     public function render($tpl, $data = [])
     {
+        self::bindDebugInfo('render_template', $tpl);
         return $this->engine->render($tpl, $data);
     }
 

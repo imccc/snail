@@ -1,9 +1,7 @@
 <?php
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 trait CurlTrait
 {
-    use HandleExceptionTrait;
     public static function sendRequest($url, $opt = [])
     {
         // 解析请求选项数组
@@ -82,7 +80,7 @@ trait CurlTrait
             // 关闭 cURL 资源
             curl_close($ch);
             // 抛出异常或记录日志等错误处理逻辑
-            self::handleException("cURL request failed: $error");
+                throw new Exception("CURL Error: $error");
         }
 
         // 关闭 cURL 资源

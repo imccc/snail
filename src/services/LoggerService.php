@@ -18,8 +18,6 @@ namespace Imccc\Snail\Services;
 
 use Exception;
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class LoggerService
 {
@@ -29,8 +27,6 @@ class LoggerService
     private $logconf; // 日志配置
     private $container; // 容器
     private $tableName;
-
-    use HandleExceptionTrait, DebugTrait;
 
     public function __construct(Container $container)
     {
@@ -228,7 +224,6 @@ class LoggerService
             $sqlService->execute($sql, $params);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
-            // self::handleException($e->getMessage(), "Failed log to database");
         }
     }
 
@@ -274,7 +269,6 @@ class LoggerService
         } catch (Exception $e) {
             // 记录到服务器日志
             throw new Exception("Failed to clean up database: " . $e->getMessage());
-            // self::handleException($e->getMessage(), "Failed to clean up database logs");
         }
     }
 
@@ -308,7 +302,6 @@ class LoggerService
         } catch (Exception $e) {
             // 记录到服务器日志
             throw new Exception("Failed to create log table: " . $e->getMessage());
-            // self::handleException($e->getMessage(), "Failed to create log table");
         }
     }
 
