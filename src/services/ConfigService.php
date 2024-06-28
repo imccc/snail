@@ -40,13 +40,10 @@ class ConfigService
         // 检查app目录下的配置文件是否存在，存在则返回配置信息，否则返回框架默认配置
         if (file_exists($acf)) {
             return include $acf;
-            $this->logger->log('[ '.self::class.' ]' . "::load($configfile) from $acf",$this->logprefix[2]);
         } elseif (file_exists($cf)) {
             return include $cf;
-            $this->logger->log('[ '.self::class.' ]' . "::load($configfile) from $cf",$this->logprefix[2]);
         } else {
             return [];
-            $this->logger->log('[ '.self::class.' ]' . "$configfile NotExist" ,$this->logprefix[1]);
         }
     }
 
