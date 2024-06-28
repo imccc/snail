@@ -98,7 +98,7 @@ class Controller implements ControllerInterface
         $this->assign(['data' => $this->_data, 'title' => 'Snail PHP']);
         $fulltpl = $this->preParseTpl($tpl);
         // 根据视图模板和数据渲染视图，并返回渲染结果
-        $this->_view->display($this->_tpl, $data);
+        $this->_view->display($this->_tpl, $this->_data);
     }
 
     /**0

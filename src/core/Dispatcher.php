@@ -91,7 +91,7 @@ class Dispatcher
         $middlewares = array_reverse($this->middlewares);
         $this->logger->log(self::class . ' Execute middlewares: ' . implode(', ', array_map(function ($middleware) {
             return get_class($middleware);
-        }, $middlewares)), $this->logger->logprefix[0]);
+        }, $middlewares)), $this->logprefix[0]);
         $next = $finalHandler;
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next) {
@@ -124,7 +124,7 @@ class Dispatcher
         $controllerObj = new $controllerClass($this->routes);
 
         // 检查控制器方法是否存在
-        self::bindDebugInfo('action', $action);
+        $this->logger->log(self::class . ' Execute route handler: ' . $controllerClass . '::' . $action, $this->logprefix[0]);
         if (!method_exists($controllerObj, $action)) {
             $this->logger->log(self::class . ' Action method not found in ' . $controllerClass . ' Controller: ' . $action, $this->logprefix[2]);
         }
