@@ -37,7 +37,6 @@ class ConfigService
         // 检查app目录下的配置文件是否存在，存在则返回配置信息，否则返回框架默认配置
         if (file_exists($acf)) {
             return include $acf;
-       
         } elseif (file_exists($cf)) {
             return include $cf;
         } else {
@@ -131,12 +130,6 @@ class ConfigService
         file_put_contents($acf, "<?php \n return " . var_export($cfg, true) . ";");
     }
 
-    /**
-     * 销毁
-     */
-    public function __derestruct()
-    {
-       self::debug();
-    }
+   
 
 }

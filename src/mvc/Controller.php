@@ -32,7 +32,7 @@ class Controller implements ControllerInterface
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
-        $this->logger->log('[ '.self::class.' ]' . ' Controller init: ' . print_r($routes, true), $this->logprefix[2]);
+        $this->logger->log(self::class . ' Controller init: ' . print_r($routes, true), $this->logprefix[2]);
     }
 
     /**
@@ -115,7 +115,7 @@ class Controller implements ControllerInterface
             $methodName = $this->routes['action'];
         }
         $path = str_replace(['{$group}', '{$action}'], [$controllerName, $methodName], $pathFormat);
-        $this->logger->log('[ '.self::class.' ]' . ' preParseTpl: ' . $path, $this->logprefix[2]);
+        $this->logger->log(self::class . ' preParseTpl: ' . $path, $this->logprefix[2]);
         return $path;
     }
 

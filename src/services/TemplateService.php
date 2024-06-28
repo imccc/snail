@@ -71,7 +71,7 @@ class TemplateService
     public function render($tpl, $data = [])
     {
         // 记录日志
-        $this->logger->log(self::class . 'Template render: ' . $tpl, $this->logger->logprefix[2]);
+        $this->logger->log(self::class . 'Template render: ' . $tpl, $this->logprefix[2]);
         // 使用当前模板引擎渲染模板
         return $this->engine->render($tpl, $data);
     }
@@ -87,7 +87,7 @@ class TemplateService
         // 使用当前模板引擎进行缓存处理
         $this->engine->cache($tpl, $data);
         // 记录日志
-        $this->logger->log(self::class . 'Template cache: ' . $tpl, $this->logger->logprefix[2]);
+        $this->logger->log(self::class . 'Template cache: ' . $tpl, $this->logprefix[2]);
     }
 
 }
