@@ -2,26 +2,21 @@
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class Dispatcher
 {
     protected $routes;
     protected $middlewares = [];
     protected $container;
-    protected $debug;
-
-    use HandleExceptionTrait, DebugTrait;
+    protected $logger;
+    protected $logprefix = ['debug', 'info', 'error', 'snail'];
 
     public function __construct(Container $container, $routes)
     {
 
         $this->routes = $routes;
         $this->container = $container;
-
-        // 记录调试信息 本类名称
-        self::bindDebugInfo('route', $routes);
+        $this->logger = $container->resolve('LoggerService');
     }
 
     /**
@@ -33,7 +28,7 @@ class Dispatcher
     {
         $middlewareInstance = $this->container->make($middlewareClass);
         $this->middlewares[] = $middlewareInstance;
-        self::bingDebugInfo('middleware', $middlewareClass);
+        $this->logger->log(self::class .' Add middleware: ' . $middlewareClass, $this->logger->logprefix[0]);
         return $this; // 支持链式调用
     }
 
@@ -58,16 +53,16 @@ class Dispatcher
                 // 这是一个静态文件请求，直接返回文件内容
                 header('Content-Type: ' . mime_content_type($parsedRoute['file_path']));
                 readfile($parsedRoute['file_path']);
-                self::bindDebugInfo('file', $parsedRoute['file_path']);
+                $this->logger->log(self::class . ' Static file request: ' . $parsedRoute['file_path'], $this->logger->logprefix[0]);
                 exit;
             }
             // 如果路由是闭包，则直接执行闭包并退出
             if (isset($parsedRoute['closure'])) {
                 ($parsedRoute['closure'])(); // 执行闭包
-                self::bindDebugInfo('closure', $parsedRoute['closure']);
+                $this->logger->log(self::class . ' Execute closure: ' . $parsedRoute['closure'], $this->logger->logprefix[0]);
                 exit(); // 执行完闭包后退出
             } elseif (isset($this->routes['404'])) {
-                self::bindDebugInfo('404', $this->routes['404']);
+                $this->logger->log(self::class . ' 404 Not Found', $this->logger->logprefix[0]);
                 // 如果路由不存在，则返回 404
                 header('HTTP/1.1 404 Not Found');
                 exit('404 Not Found');
@@ -82,7 +77,7 @@ class Dispatcher
             }
         } catch (Throwable $exception) {
             // 捕获异常并处理
-            self::handleException($exception);
+            throw $exception;
         }
     }
 
@@ -94,7 +89,9 @@ class Dispatcher
     {
         // 逆序遍历中间件数组来构建执行链
         $middlewares = array_reverse($this->middlewares);
-        self::bindDebugInfo('middleware', $middlewares);
+        $this->logger->log(self::class . ' Execute middlewares: ' . implode(', ', array_map(function ($middleware) {
+            return get_class($middleware);
+        }, $middlewares)), $this->logger->logprefix[0]);
         $next = $finalHandler;
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next) {
@@ -117,10 +114,10 @@ class Dispatcher
         // 构建控制器类名
         $controllerClass = $namespace . '\\' . $controller;
         // echo $controllerClass;die;
-        self::bindDebugInfo('controllerClass', $controllerClass);
+        $this->logger->log(self::class . ' Execute route handler: ' . $controllerClass . '::' . $action, $this->logger->logprefix[0]);
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
-            self::handleException("$controllerClass Controller class not found.");
+            $this->logger->log(self::class . ' Controller class not found: ' . $controllerClass, $this->logger->logprefix[2]);
         }
 
         // 创建控制器对象，并传入路由参数数组
@@ -129,12 +126,12 @@ class Dispatcher
         // 检查控制器方法是否存在
         self::bindDebugInfo('action', $action);
         if (!method_exists($controllerObj, $action)) {
-            self::handleException("$action Action method not found in $controllerClass Controller.");
+            $this->logger->log(self::class . ' Action method not found in ' . $controllerClass . ' Controller: ' . $action, $this->logger->logprefix[2]);
         }
 
         // 调用控制器方法
         $result = call_user_func([$controllerObj, $action]);
-        self::bindDebugInfo('result', $result);
+        $this->logger->log(self::class . ' Execute route handler result: ' . $result, $this->logger->logprefix[0]);
         // 输出结果
         if (!empty($result)) {
             echo $result;

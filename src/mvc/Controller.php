@@ -5,8 +5,6 @@ use Imccc\Snail\Core\Container;
 use Imccc\Snail\Interfaces\ControllerInterface;
 use Imccc\Snail\Mvc\Model;
 use Imccc\Snail\Mvc\View;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class Controller implements ControllerInterface
 {
@@ -27,19 +25,14 @@ class Controller implements ControllerInterface
     private $_action;
     private $_api;
 
-    use HandleExceptionTrait, DebugTrait;
-
     public function __construct($routes)
     {
         // 注册全局异常处理函数
         $this->routes = $routes;
-
-        self::bindDebugInfo('original', $this->routes);
-
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
-
+        $this->logger->log(self::class . ' Controller init: ' . print_r($routes, true), $this->logger->logprefix[2]);
     }
 
     /**
@@ -65,10 +58,8 @@ class Controller implements ControllerInterface
     {
         if (!$this->_view) {
             $this->_view = new View($this->container, $this->_data);
-            return $this->_view;
-        } else {
-            return $this->_view;
         }
+        return $this->_view;
     }
 
     /**
@@ -83,10 +74,16 @@ class Controller implements ControllerInterface
         return $this->_api;
     }
 
+    /**
+     * 显示API
+     *
+     * @param [type] $oridata
+     * @return void
+     */
     public function api($oridata)
     {
         $this->getApi();
-        return $this->_api->show($oridata);
+        $this->_api->show($oridata);
     }
 
     /**
@@ -101,7 +98,7 @@ class Controller implements ControllerInterface
         $this->assign(['data' => $this->_data, 'title' => 'Snail PHP']);
         $fulltpl = $this->preParseTpl($tpl);
         // 根据视图模板和数据渲染视图，并返回渲染结果
-        return $this->_view->display($this->_tpl);
+        $this->_view->display($this->_tpl, $data);
     }
 
     /**0
@@ -118,7 +115,7 @@ class Controller implements ControllerInterface
             $methodName = $this->routes['action'];
         }
         $path = str_replace(['{$group}', '{$action}'], [$controllerName, $methodName], $pathFormat);
-        self::bindDebugInfo('preParseTpl', $path);
+        $this->logger->log(self::class . ' preParseTpl: ' . $path, $this->logger->logprefix[2]);
         return $path;
     }
 
@@ -169,7 +166,7 @@ class Controller implements ControllerInterface
             case strpos($contentType, 'application/xml') !== false:
                 $data = simplexml_load_string($rawData);
                 if ($data === false) {
-                    self::handleException('XML 解析错误');
+                    throw new \Exception('XML format error');
                 }
                 $input['body'] = (array) $data;
                 break;
@@ -249,7 +246,7 @@ class Controller implements ControllerInterface
                 $headers[$headerName] = $value;
             }
         }
-        self::bindDebugInfo('headers', $headers);
+        $this->logger->log('Request Headers: ' . json_encode($headers), $this->logprefix[2]);
         return $headers;
     }
 

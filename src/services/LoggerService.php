@@ -1,19 +1,4 @@
 <?php
-/**
- * 日志服务
- *
- * @package Imccc\Snail\Services
- * @author  Imccc
- * @version 0.0.1
- * @status  beta
- * @copyright Copyright (c) 2024 Imccc.
- * @license Apache-2.0
- * @last_modified_at 2024-04-12 23:08
- *
- * @warning logger.conf.php 配置文件中，去掉了写入类型的前缀，改为自动前缀，
- * 但是在on中，如果不存在。则不会写入。需要要手动增加在on数组中，当前已修得sql表不存在的问题
- */
-
 namespace Imccc\Snail\Services;
 
 use Exception;
@@ -48,31 +33,36 @@ class LoggerService
      */
     public function log($message, $prefix = 'def')
     {
-        $pre = "__" . strtoupper($prefix) . "__";
-        switch ($this->logconf['log_type']) {
-            case 'file':
-                // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
-                if ($this->logconf['on'][$prefix] ?? false) {
-                    $this->enqueueLog("[$pre] $message", $pre);
-                }
-                break;
-            case 'server':
-                // 如果配置为直接写入服务器日志，则直接写入
-                if ($this->logconf['on'][$prefix] ?? false) {
+        if ($this->logconf['on']['log']) {
+            $pre = "__" . strtoupper($prefix) . "__";
+            switch ($this->logconf['log_type']) {
+                case 'file':
+                    // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
+                    if ($this->logconf['on'][$prefix] ?? false) {
+                        $this->enqueueLog("[$pre] $message", $pre);
+                    }
+                    break;
+                case 'server':
+                    // 如果配置为直接写入服务器日志，则直接写入
+                    if ($this->logconf['on'][$prefix] ?? false) {
+                        $this->logToServer("[$pre] $message");
+                    }
+                    break;
+                case 'database':
+                    // 如果配置为记录到数据库且当前日志类型在配置中启用，则将日志加入队列
+                    if ($this->logconf['on'][$prefix] ?? false) {
+                        $this->enqueueLog("$message", $pre);
+                    }
+                    break;
+                default:
+                    // 如果配置为其他类型，则直接写入服务器日志
                     $this->logToServer("[$pre] $message");
-                }
-                break;
-            case 'database':
-                // 如果配置为记录到数据库且当前日志类型在配置中启用，则记录到数据库
-                if ($this->logconf['on'][$prefix] ?? false) {
-                    $this->logToDatabase("$message", $pre);
-                }
-                break;
-            default:
-                // 如果配置为其他类型，则直接写入服务器日志
-                $this->logToServer("[$pre] $message");
-                // self::handleException('Invalid log type, to see server logs');
-                break;
+                    break;
+            }
+        } else {
+            if ($this->logconf['on']['report']) {
+                throw new Exception('LoggerService: Logger Configure file "log" is not true.');
+            }
         }
     }
 
@@ -100,10 +90,16 @@ class LoggerService
      */
     public function logSql($message, $prefix = 'sql')
     {
-        $pre = "__" . strtoupper($prefix) . "__";
-        // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
-        if ($this->logconf['on'][$prefix] ?? false) {
-            $this->enqueueLog("[$pre] $message", $pre);
+        if ($this->logconf['on']['log']) {
+            $pre = "__" . strtoupper($prefix) . "__";
+            // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
+            if ($this->logconf['on'][$prefix] ?? false) {
+                $this->enqueueLog("[$pre] $message", $pre);
+            }
+        } else {
+            if ($this->logconf['on']['report']) {
+                throw new Exception('LoggerService: Logger Configure file "log" is not true.');
+            }
         }
     }
 
@@ -123,10 +119,10 @@ class LoggerService
      */
     private function enqueueLog($message, $prefix)
     {
-        if (is_array($message)){
-            $message = print_r($message,true);
-        }else{
-            $message = (string)$message;
+        if (is_array($message)) {
+            $message = print_r($message, true);
+        } else {
+            $message = (string) $message;
         }
 
         $logEntry = [
@@ -144,7 +140,7 @@ class LoggerService
     }
 
     /**
-     * 立即将日志队列中的日志写入到文件中
+     * 立即将日志队列中的日志写入到文件中或数据库中
      */
     public function flushLogs()
     {
@@ -153,26 +149,66 @@ class LoggerService
             return;
         }
 
-        // 对日志进行分组处理，按照文件名分组
-        $logsByFile = [];
-        foreach ($this->logQueue as $logEntry) {
-            $filename = $this->resolveFilename($logEntry['filename']);
-            $logsByFile[$filename][] = "[" . $logEntry['time'] . "] - " . $logEntry['message'];
-        }
-
-        // 分别写入对应的文件
-        foreach ($logsByFile as $filename => $messages) {
-            // 创建目录
-
-            if (!is_dir($this->logconf['log_file_path'])) {
-                mkdir($this->logconf['log_file_path'], 0777, true);
+        if ($this->logconf['log_type'] === 'database') {
+            $this->flushLogsToDatabase();
+        } else {
+            // 对日志进行分组处理，按照文件名分组
+            $logsByFile = [];
+            foreach ($this->logQueue as $logEntry) {
+                $filename = $this->resolveFilename($logEntry['filename']);
+                $logsByFile[$filename][] = "[" . $logEntry['time'] . "] - " . $logEntry['message'];
             }
 
-            file_put_contents($filename, implode(PHP_EOL, $messages) . PHP_EOL, FILE_APPEND);
+            // 分别写入对应的文件
+            foreach ($logsByFile as $filename => $messages) {
+                // 创建目录
+                if (!is_dir($this->logconf['log_file_path'])) {
+                    mkdir($this->logconf['log_file_path'], 0777, true);
+                }
+
+                file_put_contents($filename, implode(PHP_EOL, $messages) . PHP_EOL, FILE_APPEND);
+            }
         }
 
         // 清空日志队列
         $this->logQueue = [];
+    }
+
+    /**
+     * 将日志队列中的日志批量写入数据库
+     */
+    private function flushLogsToDatabase()
+    {
+        // 使用容器解析数据库服务
+        $sqlService = $this->container->resolve('SqlService');
+        $prefix = $sqlService->getPrefix();
+        $realTableName = $prefix . $this->tableName;
+
+        // 确保日志数据库表存在
+        if (!$this->checkTableExists($realTableName)) {
+            $this->createTable($realTableName);
+        }
+
+        $insertValues = [];
+        $params = [];
+        foreach ($logQueue as $index => $logEntry) {
+            $type = "__" . strtoupper($logEntry['filename']) . "__";
+            $insertValues[] = "(:time$index, :message$index, :type$index)";
+            $params[":time$index"] = $logEntry['time'];
+            $params[":message$index"] = $logEntry['message'];
+            $params[":type$index"] = $type;
+        }
+
+        $sql = "INSERT INTO {$realTableName} (times, message, type) VALUES " . implode(', ', $insertValues);
+
+        // 执行批量插入操作
+        try {
+            $sqlService->execute($sql, $params);
+        } catch (Exception $e) {
+            if ($this->logconf['on']['report']) {
+                throw new Exception($e->getMessage());
+            }
+        }
     }
 
     /**
@@ -186,45 +222,6 @@ class LoggerService
         $logMessage = date('Y-m-d H:i:s') . ' - ' . $message . PHP_EOL;
         // 记录到服务器日志
         error_log($logMessage);
-    }
-
-    /**
-     * 记录日志到数据库
-     *
-     * @param string $message 日志消息
-     * @param string $type 日志类型
-     * @param string $tableName 数据库表名
-     */
-    private function logToDatabase($message, $type = 'def')
-    {
-        // 使用容器解析数据库服务
-        $sqlService = $this->container->resolve('SqlService');
-        $prefix = $sqlService->getPrefix();
-        $realTableName = $prefix . $this->tableName;
-
-        // 确保日志数据库表存在
-        if (!$this->checkTableExists($realTableName)) {
-            $this->createTable($realTableName);
-        }
-
-        $type = "__" . strtoupper($type) . "__";
-
-        // 准备插入语句
-        $sql = "INSERT INTO {$realTableName} (times, message, type) VALUES (:times, :message, :type)";
-
-        // 准备参数数组
-        $params = [
-            ':times' => date('Y-m-d H:i:s'),
-            ':message' => $message,
-            ':type' => $type,
-        ];
-
-        // 绑定参数并执行插入操作
-        try {
-            $sqlService->execute($sql, $params);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
     }
 
     /**
@@ -268,7 +265,9 @@ class LoggerService
             $sqlService->execute($sql, [':daysToKeep' => $daysToKeep]);
         } catch (Exception $e) {
             // 记录到服务器日志
-            throw new Exception("Failed to clean up database: " . $e->getMessage());
+            if ($this->logconf['on']['report']) {
+                throw new Exception("Failed to clean up database: " . $e->getMessage());
+            }
         }
     }
 
@@ -300,18 +299,9 @@ class LoggerService
         try {
             $sqlService->createTable($table, $columns);
         } catch (Exception $e) {
-            // 记录到服务器日志
-            throw new Exception("Failed to create log table: " . $e->getMessage());
+            if ($this->logconf['on']['report']) {
+                throw new Exception("Failed to create log table: " . $e->getMessage());
+            }
         }
     }
-
-    /**
-     * 销毁
-     */
-    public function __destruct()
-    {
-        // 记录日志
-        self::debug();
-    }
-
 }

@@ -3,8 +3,6 @@
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class Router
 {
@@ -24,9 +22,10 @@ class Router
     protected $defaultController; // 默认控制器
     protected $defaultAction; // 默认动作
     protected $parsedRoute; // 解析后的路由信息
-    protected $_debuginfo = [];
+    protected $logger;
+    protected $logprefix = ['debug', 'info', 'error', 'snail'];
+    protected $middlewares = []; // 中间件列表
 
-    use HandleExceptionTrait, DebugTrait;
     /**
      * 构造函数，初始化路由配置和默认值
      *
@@ -37,7 +36,7 @@ class Router
 
         $this->container = $container;
         $this->routeMap = $container->resolve('ConfigService')->get('route');
-
+        $this->logger = $container->resolve('LoggerService');
         $this->defaultNamespace = $this->routeMap['def']['default_namespace'] ?? 'App\Controllers';
         $this->defaultController = $this->routeMap['def']['default_controller'] ?? 'Home';
         $this->defaultAction = $this->routeMap['def']['default_action'] ?? 'index';
@@ -55,7 +54,7 @@ class Router
     {
         $uri = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL) ?? '/';
         $uri = trim(parse_url($uri, PHP_URL_PATH), '/');
-        self::bindDebugInfo('uri', $uri);
+        $this->logger->log(self::class .' Get URI: ' . $uri, $this->logger->logprefix[0]);
         return $this->removeUrlSuffix($uri) ?: '/';
     }
 
@@ -228,5 +227,4 @@ class Router
     {
         return $this->routeMap['keyvalue'] ?? false;
     }
-
 }

@@ -14,7 +14,7 @@ use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
 use Imccc\Snail\Core\Router;
 use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
+// use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class Snail
 {
@@ -26,22 +26,21 @@ class Snail
     protected $logprefix = ['debug', 'info', 'error', 'snail'];
     protected $container;
 
-    use HandleExceptionTrait, DebugTrait;
+    // use HandleExceptionTrait, DebugTrait;
     public function __construct()
     {
         if (version_compare(PHP_VERSION, USE_PHP_VERSION, '<')) {
-            self::handleException('PHP version must be greater than or equal to ' . USE_PHP_VERSION);
-            die();
+            die('PHP version must be greater than or equal to ' . USE_PHP_VERSION);
         }
         // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
+        // set_error_handler([self::class, 'handleException']);
 
         session_start();
         $this->initializeContainer();
         $this->run();
-        register_shutdown_function(function () {
-            self::debug();
-        });
+        // register_shutdown_function(function () {
+        //     self::debug();
+        // });
     }
 
     /**
@@ -86,6 +85,9 @@ class Snail
         } else {
             error_reporting(0); //关闭所有错误报告
         }
+        if (SNAIL_DEBUG['debug'] && SNAIL_DEBUG['service']) {
+            $this->getServices() ;// 获取所有已经注册的服务
+        }
     }
 
     /**
@@ -110,7 +112,8 @@ class Snail
             $info .= "Shared: " . ($binding['shared'] ? 'Yes' : 'No') . "<br>";
             $info .= "-------------------------<br>";
         }
-        self::bindDebugInfo('bindings', $info);
+        $this->logger->log($info, $this->logprefix[0]); // 输出到日志
+        // self::bindDebugInfo('bindings', $info);
     }
 
 }

@@ -4,12 +4,9 @@ namespace Imccc\Snail\Mvc;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Interfaces\ViewInterface;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class View implements ViewInterface
 {
-    use HandleExceptionTrait, DebugTrait;
     protected $container;
     protected $config;
     protected $logger;
@@ -17,7 +14,6 @@ class View implements ViewInterface
     protected $tplconf;
     protected $templatePath;
     protected $templateTags;
-    private $_debuginfo = [];
     protected $_deftpl;
     protected $_ext;
     protected $_data = [];
@@ -38,16 +34,30 @@ class View implements ViewInterface
     }
 
     /**
+     * 渲染视图
+     * @param string $tpl
+     * @return string
+     */
+    public function render($tpl = null)
+    {
+        $tpl = $tpl ?? $this->_deftpl;
+        $fullpath = $tpl . $this->_ext;
+        $this->logger->log(self::class . ' View render fullpath: ' . $fullpath, $this->logprefix[2]);
+        return $this->engine->render($fullpath, $this->_data);
+    }
+
+    /**
      * 显示视图
      * @param string $tpl
      * @return string
      */
     public function display($tpl = null)
     {
+        $tpl = $tpl ?? $this->_deftpl;
         $fullpath = $tpl . $this->_ext;
-        self::bindDebugInfo('displayFullpath', $fullpath);
-        $this->_data['title'] = SNAIL . ' - ' . SNAIL_VERSION;
-        $this->engine->display($fullpath, $this->_data);
+        $this->logger->log(self::class . ' View display fullpath: ' . $fullpath, $this->logprefix[2]);
+        echo $this->engine->display($fullpath, $this->_data);
     }
 
 }
+ 
