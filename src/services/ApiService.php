@@ -4,11 +4,9 @@ namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Helpers\SimpleXMLHelper;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class ApiService
 {
-    use HandleExceptionTrait;
 
     protected $container;
     protected $format;
@@ -21,7 +19,6 @@ class ApiService
     public function __construct(Container $container)
     {
         // 注册全局异常处理函数
-        set_error_handler([self::class, 'handleException']);
 
         $this->container = $container;
         $this->format = $this->getOutputFormat();

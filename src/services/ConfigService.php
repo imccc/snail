@@ -16,13 +16,10 @@ class ConfigService
 {
     private $container; // 容器
     protected $debuginfo = [];
-    private $logger;
-    private $logprefix   = ['config','error','debug'];
 
     public function __construct(Container $container)
     {
         $this->container = $container;
-        $this->logger = $this->container->resolve('LoggerService');
     }
 
     /**
@@ -40,6 +37,7 @@ class ConfigService
         // 检查app目录下的配置文件是否存在，存在则返回配置信息，否则返回框架默认配置
         if (file_exists($acf)) {
             return include $acf;
+       
         } elseif (file_exists($cf)) {
             return include $cf;
         } else {
@@ -78,7 +76,6 @@ class ConfigService
                     }
                 }
             }
-            $this->logger->log('[ '.self::class.' ]' . "::get($key) from $f",$this->logprefix[0]);
             return $cfg;
         }
     }
@@ -134,6 +131,12 @@ class ConfigService
         file_put_contents($acf, "<?php \n return " . var_export($cfg, true) . ";");
     }
 
-   
+    /**
+     * 销毁
+     */
+    public function __derestruct()
+    {
+       self::debug();
+    }
 
 }
