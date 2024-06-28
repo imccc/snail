@@ -38,7 +38,7 @@ class Router
         $this->routeMap = $container->resolve('ConfigService')->get('route');
         $this->logger = $container->resolve('LoggerService');
         $this->defaultNamespace = $this->routeMap['def']['default_namespace'] ?? 'App\Controllers';
-        $this->defaultController = $this->routeMap['def']['default_controller'] ?? 'Home';
+        $this->defaultController = $this->routeMap['def']['default_controller'] ?? 'Index';
         $this->defaultAction = $this->routeMap['def']['default_action'] ?? 'index';
 
         $this->parsedRoute = $this->parseRoute($this->getUri());
@@ -107,8 +107,8 @@ class Router
             // 如果 handler 是控制器和方法，则继续解析控制器和方法名
             $namespace = $config[2] ?? $this->routeMap['namespacemap'][$group] ?? $this->defaultNamespace;
             $controllerAction = explode('@', $handler);
-            $controller = $controllerAction[0] ?? $this->defaultController;
-            $action = $controllerAction[1] ?? $this->defaultAction;
+            $controller = $controllerAction[1] ?? $this->defaultController;
+            $action = $controllerAction[0] ?? $this->defaultAction;
 
             return [
                 'namespace' => $namespace,
