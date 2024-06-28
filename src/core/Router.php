@@ -54,7 +54,7 @@ class Router
     {
         $uri = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL) ?? '/';
         $uri = trim(parse_url($uri, PHP_URL_PATH), '/');
-        $this->logger->log(self::class .' Get URI: ' . $uri, $this->logger->logprefix[0]);
+        $this->logger->log(self::class .' Get URI: ' . $uri, $this->logprefix[0]);
         return $this->removeUrlSuffix($uri) ?: '/';
     }
 

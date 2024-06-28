@@ -53,16 +53,16 @@ class Dispatcher
                 // 这是一个静态文件请求，直接返回文件内容
                 header('Content-Type: ' . mime_content_type($parsedRoute['file_path']));
                 readfile($parsedRoute['file_path']);
-                $this->logger->log(self::class . ' Static file request: ' . $parsedRoute['file_path'], $this->logger->logprefix[0]);
+                $this->logger->log(self::class . ' Static file request: ' . $parsedRoute['file_path'], $this->logprefix[0]);
                 exit;
             }
             // 如果路由是闭包，则直接执行闭包并退出
             if (isset($parsedRoute['closure'])) {
                 ($parsedRoute['closure'])(); // 执行闭包
-                $this->logger->log(self::class . ' Execute closure: ' . $parsedRoute['closure'], $this->logger->logprefix[0]);
+                $this->logger->log(self::class . ' Execute closure: ' . $parsedRoute['closure'], $this->logprefix[0]);
                 exit(); // 执行完闭包后退出
             } elseif (isset($this->routes['404'])) {
-                $this->logger->log(self::class . ' 404 Not Found', $this->logger->logprefix[0]);
+                $this->logger->log(self::class . ' 404 Not Found', $this->logprefix[0]);
                 // 如果路由不存在，则返回 404
                 header('HTTP/1.1 404 Not Found');
                 exit('404 Not Found');
@@ -114,10 +114,10 @@ class Dispatcher
         // 构建控制器类名
         $controllerClass = $namespace . '\\' . $controller;
         // echo $controllerClass;die;
-        $this->logger->log(self::class . ' Execute route handler: ' . $controllerClass . '::' . $action, $this->logger->logprefix[0]);
+        $this->logger->log(self::class . ' Execute route handler: ' . $controllerClass . '::' . $action, $this->logprefix[0]);
         // 检查控制器类是否存在
         if (!class_exists($controllerClass)) {
-            $this->logger->log(self::class . ' Controller class not found: ' . $controllerClass, $this->logger->logprefix[2]);
+            $this->logger->log(self::class . ' Controller class not found: ' . $controllerClass, $this->logprefix[2]);
         }
 
         // 创建控制器对象，并传入路由参数数组
@@ -126,12 +126,12 @@ class Dispatcher
         // 检查控制器方法是否存在
         self::bindDebugInfo('action', $action);
         if (!method_exists($controllerObj, $action)) {
-            $this->logger->log(self::class . ' Action method not found in ' . $controllerClass . ' Controller: ' . $action, $this->logger->logprefix[2]);
+            $this->logger->log(self::class . ' Action method not found in ' . $controllerClass . ' Controller: ' . $action, $this->logprefix[2]);
         }
 
         // 调用控制器方法
         $result = call_user_func([$controllerObj, $action]);
-        $this->logger->log(self::class . ' Execute route handler result: ' . $result, $this->logger->logprefix[0]);
+        $this->logger->log(self::class . ' Execute route handler result: ' . $result, $this->logprefix[0]);
         // 输出结果
         if (!empty($result)) {
             echo $result;
