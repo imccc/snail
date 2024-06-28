@@ -186,7 +186,7 @@ class Model implements ModelInterface
             $this->reset();
             return $result ?: [];
         } catch (PDOException $e) {
-            $this->log(self::class . ' ' . $e->getMessage());
+            $this->log('[ '.self::class.' ]' . ' ' . $e->getMessage());
             throw $e;
         }
     }
@@ -205,7 +205,7 @@ class Model implements ModelInterface
             $this->afterSave();
             return $result;
         } catch (PDOException $e) {
-            $this->log(self::class . ' ' . $e->getMessage());
+            $this->log('[ '.self::class.' ]' . ' ' . $e->getMessage());
             throw $e;
         }
     }
@@ -224,7 +224,7 @@ class Model implements ModelInterface
             $this->afterSave();
             return $result;
         } catch (PDOException $e) {
-            $this->log(self::class . ' ' . $e->getMessage());
+            $this->log('[ '.self::class.' ]' . ' ' . $e->getMessage());
             throw $e;
         }
     }
@@ -245,7 +245,7 @@ class Model implements ModelInterface
             $this->reset();
             return $result;
         } catch (PDOException $e) {
-            $this->log(self::class . ' ' . $e->getMessage());
+            $this->log('[ '.self::class.' ]' . ' ' . $e->getMessage());
             throw $e;
         }
     }

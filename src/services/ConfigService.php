@@ -11,19 +11,18 @@
 namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
-use Imccc\Snail\Traits\DebugTrait;
-use Imccc\Snail\Traits\HandleExceptionTrait;
 
 class ConfigService
 {
     private $container; // 容器
     protected $debuginfo = [];
-
-    use HandleExceptionTrait, DebugTrait;
+    private $logger;
+    private $logprefix   = ['config','error','debug'];
 
     public function __construct(Container $container)
     {
         $this->container = $container;
+        $this->logger = $this->container->resolve('LoggerService');
     }
 
     /**
@@ -41,13 +40,13 @@ class ConfigService
         // 检查app目录下的配置文件是否存在，存在则返回配置信息，否则返回框架默认配置
         if (file_exists($acf)) {
             return include $acf;
-            self::bindDebugInfo($configfile, $acf);
+            $this->logger->log('[ '.self::class.' ]' . "::load($configfile) from $acf",$this->logprefix[2]);
         } elseif (file_exists($cf)) {
             return include $cf;
-            self::bindDebugInfo($configfile, $cf);
+            $this->logger->log('[ '.self::class.' ]' . "::load($configfile) from $cf",$this->logprefix[2]);
         } else {
             return [];
-            self::bindDebugInfo($configfile, "$configfile NotExist");
+            $this->logger->log('[ '.self::class.' ]' . "$configfile NotExist" ,$this->logprefix[1]);
         }
     }
 
@@ -82,6 +81,7 @@ class ConfigService
                     }
                 }
             }
+            $this->logger->log('[ '.self::class.' ]' . "::get($key) from $f",$this->logprefix[0]);
             return $cfg;
         }
     }
@@ -137,12 +137,6 @@ class ConfigService
         file_put_contents($acf, "<?php \n return " . var_export($cfg, true) . ";");
     }
 
-    /**
-     * 销毁
-     */
-    public function __derestruct()
-    {
-       self::debug();
-    }
+   
 
 }

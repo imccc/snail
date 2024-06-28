@@ -42,7 +42,7 @@ class View implements ViewInterface
     {
         $tpl = $tpl ?? $this->_deftpl;
         $fullpath = $tpl . $this->_ext;
-        $this->logger->log(self::class . ' View render fullpath: ' . $fullpath, $this->logprefix[2]);
+        $this->logger->log('[ '.self::class.' ]' . ' View render fullpath: ' . $fullpath, $this->logprefix[2]);
         return $this->engine->render($fullpath, $this->_data);
     }
 
@@ -55,7 +55,7 @@ class View implements ViewInterface
     {
         $tpl = $tpl ?? $this->_deftpl;
         $fullpath = $tpl . $this->_ext;
-        $this->logger->log(self::class . ' View display fullpath: ' . $fullpath, $this->logprefix[2]);
+        $this->logger->log('[ '.self::class.' ]' . ' View display fullpath: ' . $fullpath, $this->logprefix[2]);
         echo $this->engine->render($fullpath, $this->_data);
     }
 

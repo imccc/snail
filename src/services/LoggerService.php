@@ -35,11 +35,12 @@ class LoggerService
     {
         if ($this->logconf['on']['log']) {
             $pre = "__" . strtoupper($prefix) . "__";
+            $timestamp = $this->getMicrotime();
             switch ($this->logconf['log_type']) {
                 case 'file':
                     // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
                     if ($this->logconf['on'][$prefix] ?? false) {
-                        $this->enqueueLog("[$pre] $message", $pre);
+                        $this->enqueueLog("[$pre] $message", $pre, $timestamp);
                     }
                     break;
                 case 'server':
@@ -51,7 +52,7 @@ class LoggerService
                 case 'database':
                     // 如果配置为记录到数据库且当前日志类型在配置中启用，则将日志加入队列
                     if ($this->logconf['on'][$prefix] ?? false) {
-                        $this->enqueueLog("$message", $pre);
+                        $this->enqueueLog("$message", $pre, $timestamp);
                     }
                     break;
                 default:
@@ -92,13 +93,14 @@ class LoggerService
     {
         if ($this->logconf['on']['log']) {
             $pre = "__" . strtoupper($prefix) . "__";
+            $timestamp = $this->getMicrotime();
             // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
             if ($this->logconf['on'][$prefix] ?? false) {
-                $this->enqueueLog("[$pre] $message", $pre);
+                $this->enqueueLog("[$pre] $message", $pre, $timestamp);
             }
         } else {
             if ($this->logconf['on']['report']) {
-                throw new Exception('LoggerService: Logger Configure file "log" is not true.');
+                throw new Exception('LoggerService: Logger Configure file "log" is not true on.');
             }
         }
     }
@@ -117,7 +119,7 @@ class LoggerService
     /**
      * 将日志消息加入队列
      */
-    private function enqueueLog($message, $prefix)
+    private function enqueueLog($message, $prefix, $time)
     {
         if (is_array($message)) {
             $message = print_r($message, true);
@@ -126,7 +128,7 @@ class LoggerService
         }
 
         $logEntry = [
-            'time' => date('Y-m-d H:i:s'),
+            'time' => $time ?? $this->getMicrotime(),
             'message' => $message,
             'filename' => $prefix,
         ];
@@ -148,6 +150,11 @@ class LoggerService
         if (empty($this->logQueue)) {
             return;
         }
+
+        // 按时间排序日志队列
+        usort($this->logQueue, function ($a, $b) {
+            return strtotime($a['time']) - strtotime($b['time']);
+        });
 
         if ($this->logconf['log_type'] === 'database') {
             $this->flushLogsToDatabase();
@@ -191,7 +198,7 @@ class LoggerService
 
         $insertValues = [];
         $params = [];
-        foreach ($logQueue as $index => $logEntry) {
+        foreach ($this->logQueue as $index => $logEntry) {
             $type = "__" . strtoupper($logEntry['filename']) . "__";
             $insertValues[] = "(:time$index, :message$index, :type$index)";
             $params[":time$index"] = $logEntry['time'];
@@ -219,7 +226,7 @@ class LoggerService
     private function logToServer($message)
     {
         // 添加时间戳到日志消息中
-        $logMessage = date('Y-m-d H:i:s') . ' - ' . $message . PHP_EOL;
+        $logMessage = $this->getMicrotime() . ' - ' . $message . PHP_EOL;
         // 记录到服务器日志
         error_log($logMessage);
     }
@@ -292,7 +299,7 @@ class LoggerService
         $sqlService = $this->container->resolve('SqlService'); // 解析 SqlService 对象
         $columns = [
             'id' => 'INT AUTO_INCREMENT PRIMARY KEY',
-            'times' => 'DATETIME',
+            'times' => 'DATETIME(6)', // 支持微秒精度的时间戳
             'message' => 'TEXT',
             'type' => 'VARCHAR(255)',
         ];
@@ -303,5 +310,17 @@ class LoggerService
                 throw new Exception("Failed to create log table: " . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * 获取当前时间的微秒精度时间戳
+     * @return string
+     */
+    private function getMicrotime()
+    {
+        $microtime = microtime(true);
+        $micro = sprintf("%06d", ($microtime - floor($microtime)) * 1000000);
+        $date = new \DateTime(date('Y-m-d H:i:s.' . $micro, $microtime));
+        return $date->format("Y-m-d H:i:s.u");
     }
 }
