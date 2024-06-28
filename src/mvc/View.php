@@ -10,7 +10,7 @@ class View implements ViewInterface
     protected $container;
     protected $config;
     protected $logger;
-    protected $logprefix = ['view', 'error'];
+    protected $logprefix = ['view', 'error','debug'];
     protected $tplconf;
     protected $templatePath;
     protected $templateTags;
@@ -56,7 +56,7 @@ class View implements ViewInterface
         $tpl = $tpl ?? $this->_deftpl;
         $fullpath = $tpl . $this->_ext;
         $this->logger->log(self::class . ' View display fullpath: ' . $fullpath, $this->logprefix[2]);
-        echo $this->engine->display($fullpath, $this->_data);
+        echo $this->engine->render($fullpath, $this->_data);
     }
 
 }

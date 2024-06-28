@@ -13,7 +13,7 @@ class SnailEngine
     protected $config;
     protected $cache;
     protected $logger;
-    protected $logprefix = ['template', 'error'];
+    protected $logprefix = ['template', 'error','debug'];
     protected $templateConfig;
     protected $blocks = [];
 
@@ -36,7 +36,7 @@ class SnailEngine
     public function render($tpl, $data = [])
     {
         $tplPath = $tpl;
-        self::bindDebugInfo('render', $tplPath);
+        $this->logger->log(self::class . 'Template render: ' . $tplPath, $this->logprefix[2]);
 
         // 判断是否启用缓存
         if ($this->templateConfig['cache']) {
@@ -54,7 +54,7 @@ class SnailEngine
         }
 
         // 记录渲染成功日志
-        $this->logger->log('Snail Template Render Success', $this->logprefix[0]);
+        $this->logger->log('Snail Template Render Success: ' . $content, $this->logprefix[0]);
 
         return $content;
     }
