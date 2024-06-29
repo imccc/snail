@@ -26,7 +26,7 @@ class SnailEngine
 
         $this->templateConfig = $this->config->get('template');
         $this->templatePath = $this->templateConfig['path'];
-        $this->templateTags = $this->templateConfig['snail'];
+        $this->templateTags = $this->templateConfig['snail']['tags'];
 
     }
 

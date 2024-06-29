@@ -23,7 +23,7 @@ class TwigEngine
         $this->templateConfig = $this->config->get('template');
         // 初始化 Twig 环境
         $loader = new FilesystemLoader([]); // 初始化空的 Twig 加载器
-        $twigConfig = $this->config['twig']['options'] ?? [];
+        $twigConfig = $this->templateConfig['twig']['options'] ?? [];
         $this->twig = new Environment($loader, $twigConfig);
     }
 
@@ -36,15 +36,13 @@ class TwigEngine
      */
     public function render(string $tpl, array $data = []): string
     {
-         try {
+        try {
             // 动态设置 Twig 加载路径
             $this->twig->getLoader()->addPath($tpl);
-
             // 渲染模板
             return $this->twig->render(basename($templatePath), $data);
         } catch (\Exception $e) {
-            $this->logger->error('模板渲染失败', ['exception' => $e]);
-            return '';
+            throw new \Exception("Template file not found:" . $e);
         }
 
     }

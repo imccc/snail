@@ -25,7 +25,6 @@ class View implements ViewInterface
 
         $this->tplconf = $this->config->get('template');
         $this->_deftpl = $this->tplconf['default'] ?? 'index';
-        $this->_ext = $this->tplconf['ext'] ?? '.tpl';
 
         $this->engine = $container->resolve('TemplateService');
     }
@@ -54,10 +53,9 @@ class View implements ViewInterface
      */
     public function render()
     {
-        extract($this->_data);
-        $fullpath = $tpl . $this->_ext;
+        // extract($this->_data);
         $this->logger->log(self::class . ' View render fullpath: ' . $fullpath, $this->logprefix[2]);
-        return $this->engine->render($fullpath);
+        return $this->engine->render($fullpath,$this->_data);
     }
 
     /**
