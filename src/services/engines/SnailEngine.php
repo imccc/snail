@@ -13,7 +13,7 @@ class SnailEngine
     protected $config;
     protected $cache;
     protected $logger;
-    protected $logprefix = ['template', 'error','debug'];
+    protected $logprefix = ['template', 'error', 'debug'];
     protected $templateConfig;
     protected $blocks = [];
 

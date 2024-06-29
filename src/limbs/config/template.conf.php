@@ -5,7 +5,13 @@ return [
     'path' => APP_PATH . '/{$group}/view/{$controller}/{$action}', // 模板路径规则
     'default' => 'index',
     'ext' => '.tpl',
-    'tags' => [
+    'twig' => [
+        'options' => [
+             'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/twig_cache', // Twig 缓存路径
+            // 其他 Twig 配置选项
+        ],
+    ],
+    'snail' => [
         "{{ if %% }}" => '<?php if(\1): ?>', // if标签
         "{{ else }}" => '<?php else: ?>', // else标签
         "{{ elseif %% }}" => '<?php elseif(\1): ?>', // elseif标签

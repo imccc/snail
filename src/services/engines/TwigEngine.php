@@ -13,19 +13,17 @@ class TwigEngine
     protected $logprefix = ['template', 'error'];
     protected $config;
     protected $logger;
+    protected $templateConfig;
 
     public function __construct(Container $container)
     {
-        // Twig 模板文件目录
-        $templatePath = $container->resolve('ConfigService')->get('template.path');
-
-        // Twig 加载器
-        $loader = new FilesystemLoader($templatePath);
-
-        // Twig 配置
-        $twigConfig = [];
-
-        // 创建 Twig 环境
+        $this->container = $container;
+        $this->config = $container->resolve('ConfigService');
+        $this->logger = $container->resolve('LoggerService');
+        $this->templateConfig = $this->config->get('template');
+        // 初始化 Twig 环境
+        $loader = new FilesystemLoader([]); // 初始化空的 Twig 加载器
+        $twigConfig = $this->config['twig']['options'] ?? [];
         $this->twig = new Environment($loader, $twigConfig);
     }
 
@@ -38,6 +36,20 @@ class TwigEngine
      */
     public function render(string $tpl, array $data = []): string
     {
-        return $this->twig->render($tpl, $data);
+         try {
+            // 预解析模板路径
+            $templatePath = $tpl. $this->config['ext'];
+
+            // 动态设置 Twig 加载路径
+            $this->twig->getLoader()->addPath($templatePath);
+
+            // 渲染模板
+            return $this->twig->render(basename($templatePath), $data);
+        } catch (\Exception $e) {
+            $this->logger->error('模板渲染失败', ['exception' => $e]);
+            return '';
+        }
+
     }
+
 }
