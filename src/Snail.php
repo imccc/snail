@@ -49,10 +49,10 @@ class Snail
     public function run()
     {
         //初始化路由
-        $d = new Router($this->container);
+        $r = new Router($this->container);
 
         //获取路由信息
-        $this->router = $d->getRouteInfo();
+        $this->router = $r->getRouteInfo();
 
         //初始化分发器
         $dispatch = new Dispatcher($this->container, $this->router);
@@ -98,7 +98,7 @@ class Snail
         // 获取所有已经注册的服务
         $bindings = $this->container->getBindings();
         $alises = $this->container->getAliases();
-        $info = PHP_EOL . PHP_EOL ."-------------------------".PHP_EOL ;
+        $info = PHP_EOL .'[ All Registered Services: ]'. PHP_EOL ."-------------------------".PHP_EOL ;
         // 遍历输出每个服务的信息
         foreach ($bindings as $serviceName => $binding) {
             $info .= "Service Name: $serviceName > ";
@@ -113,7 +113,6 @@ class Snail
             $info .= "-------------------------".PHP_EOL ;
         }
         $this->logger->log($info, $this->logprefix[0]); // 输出到日志
-        // self::bindDebugInfo('bindings', $info);
     }
 
 }

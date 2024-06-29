@@ -215,6 +215,8 @@ class Router
      */
     public function getRouteInfo(): array
     {
+        $this->logger->log(self::class . ' Get RouterInfo: ' . print_r($this->parsedRoute,TRUE), $this->logprefix[0]);
+
         return $this->parsedRoute;
     }
 

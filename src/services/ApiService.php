@@ -25,12 +25,12 @@ class ApiService
     }
 
     /**
-     * 输出数据
+     * 处理数据
      *
      * @param mixed $data 要输出的数据
      * @return void
      */
-    public function show($data): void
+    public function format($data):mixed
     {
         // 设置响应头
         $this->setResponseHeaders();
@@ -40,32 +40,33 @@ class ApiService
             'data' => $data['data'] ?? [],
         ];
         $jsuu = $this->getJsuu();
+        $od = null;
         // 根据输出格式输出数据
         switch ($this->format) {
             case 'json':
                 if ($jsuu) {
-                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                    $od = json_encode($result, JSON_UNESCAPED_UNICODE);
                 } else {
-                    echo json_encode($result);
+                    $od = json_encode($result);
                 }
                 break;
             case 'xml':
-                echo $this->arrayToXml($result);
+                $od = $this->arrayToXml($result);
                 break;
             case 'yaml':
                 if ($jsuu) {
-                    echo yaml_emit($data, YAML_UTF8_ENCODING);
+                    $od = yaml_emit($data, YAML_UTF8_ENCODING);
                 } else {
-                    echo yaml_emit($result);
+                    $od = yaml_emit($result);
                 }
 
                 break;
             case 'jsonp':
                 $callback = $this->getJsonpCallback();
                 if ($jsuu) {
-                    echo $callback . '(' . json_encode($result, JSON_UNESCAPED_UNICODE) . ');';
+                    $od = $callback . '(' . json_encode($result, JSON_UNESCAPED_UNICODE) . ');';
                 } else {
-                    echo $callback . '(' . json_encode($result) . ');';
+                    $od = $callback . '(' . json_encode($result) . ');';
                 }
                 break;
             default:
@@ -73,6 +74,18 @@ class ApiService
                 http_response_code(406);
                 exit('Not Acceptable');
         }
+        return $od;
+    }
+
+    /**
+     * 显示API数据
+     *
+     * @param mixed $data 要显示的数据
+     * @return void
+     */
+    public function show($data): void
+    {
+        echo $this->format($data);
     }
 
     /**
@@ -111,7 +124,7 @@ class ApiService
      *
      * @return string 字符集
      */
-    protected function getCharset()
+    protected function getCharset(): string
     {
         $acceptHeader = $_SERVER['HTTP_ACCEPT'] ?? '';
         if (preg_match('/charset=([^;]+)/', $acceptHeader, $matches)) {
@@ -182,7 +195,7 @@ class ApiService
      * @param string $rootElement 根元素名称
      * @return string XML 字符串
      */
-    protected function xmlhelper($data)
+    protected function xmlhelper($data):void
     {
         $xml = new SimpleXMLHelper;
         $encoding = $this->getCharset();

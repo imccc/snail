@@ -17,10 +17,9 @@ class View implements ViewInterface
     protected $_deftpl;
     protected $_ext;
     protected $_data = [];
-    public function __construct(Container $container,$data)
+    public function __construct(Container $container)
     {
         $this->container = $container;
-        $this->_data = $data;
         $this->config = $container->resolve('ConfigService');
         $this->logger = $container->resolve('LoggerService');
 
@@ -34,16 +33,33 @@ class View implements ViewInterface
     }
 
     /**
+     * 赋值数据
+     * @param string $key
+     * @param string $value
+     * @return void
+     */
+    public function assign($key, $value = null): void
+    {
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->_data[$k] = $v;
+            }
+        } else {
+            $this->_data[$key] = $value;
+        }
+    }
+
+    /**
      * 渲染视图
      * @param string $tpl
      * @return string
      */
-    public function render($tpl = null)
+    public function render()
     {
-        $tpl = $tpl ?? $this->_deftpl;
+        extract($this->_data);
         $fullpath = $tpl . $this->_ext;
         $this->logger->log(self::class . ' View render fullpath: ' . $fullpath, $this->logprefix[2]);
-        return $this->engine->render($fullpath, $this->_data);
+        return $this->engine->render($fullpath);
     }
 
     /**
@@ -51,12 +67,10 @@ class View implements ViewInterface
      * @param string $tpl
      * @return string
      */
-    public function display($tpl = null)
+    public function display()
     {
-        $tpl = $tpl ?? $this->_deftpl;
-        $fullpath = $tpl . $this->_ext;
         $this->logger->log(self::class . ' View display fullpath: ' . $fullpath, $this->logprefix[2]);
-        echo $this->engine->render($fullpath, $this->_data);
+        echo $this->render();
     }
 
 }

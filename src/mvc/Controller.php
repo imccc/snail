@@ -57,7 +57,7 @@ class Controller implements ControllerInterface
     public function getView()
     {
         if (!$this->_view) {
-            $this->_view = new View($this->container, $this->_data);
+            $this->_view = new View($this->container);
         }
         return $this->_view;
     }
@@ -92,13 +92,15 @@ class Controller implements ControllerInterface
      * @param string $tpl 模版信息，可以为空
      * @return void
      */
-    public function display($tpl = '')
+    public function display($tpl = 'index')
     {
         $this->getView();
-        $this->assign(['data' => $this->_data, 'title' => 'Snail PHP']);
-        $fulltpl = $this->preParseTpl($tpl);
-        // 根据视图模板和数据渲染视图，并返回渲染结果
-        $this->_view->display($this->_tpl, $this->_data);
+        $this->assign([
+            'data' => $this->_data,
+            'title' => 'Snail PHP',
+            'tpl' => $this->preParseTpl($tpl),
+        ]);
+        $this->_view->display();
     }
 
     /**0
@@ -128,14 +130,8 @@ class Controller implements ControllerInterface
      */
     public function assign($key, $value = null): void
     {
-        if (is_array($key)) {
-            foreach ($key as $k => $v) {
-                $this->_data[$k] = $v;
-            }
-        } else {
-            $this->_data[$key] = $value;
-        }
-
+        $this->getView();
+        $this->_view->assign($key, $value);
     }
 
     /**
