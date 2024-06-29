@@ -2,7 +2,7 @@
 return [
     'engine' => 'snail', // 引擎名称 snail twig
     'cache' => false, // 是否开启缓存
-    'path' => APP_PATH . '/{$group}/view/{$action}', // 模板路径规则
+    'path' => APP_PATH . '/{$group}/view/{$controller}/{$action}', // 模板路径规则
     'default' => 'index',
     'ext' => '.tpl',
     'tags' => [

@@ -1,5 +1,4 @@
 <?php
-
 namespace Imccc\Snail\Core;
 
 use Imccc\Snail\Core\Container;
@@ -33,7 +32,6 @@ class Router
      */
     public function __construct(Container $container)
     {
-
         $this->container = $container;
         $this->routeMap = $container->resolve('ConfigService')->get('route');
         $this->logger = $container->resolve('LoggerService');
@@ -42,7 +40,6 @@ class Router
         $this->defaultAction = $this->routeMap['def']['default_action'] ?? 'index';
 
         $this->parsedRoute = $this->parseRoute($this->getUri());
-
     }
 
     /**
@@ -54,7 +51,7 @@ class Router
     {
         $uri = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_URL) ?? '/';
         $uri = trim(parse_url($uri, PHP_URL_PATH), '/');
-        $this->logger->log(self::class .' Get URI: ' . $uri, $this->logprefix[0]);
+        $this->logger->log(self::class . ' Get URI: ' . $uri, $this->logprefix[0]);
         return $this->removeUrlSuffix($uri) ?: '/';
     }
 
@@ -94,13 +91,13 @@ class Router
     private function processMatch($config, $matches, $group)
     {
         $handler = $config[0];
-        $params = $config[3] ?? [];
+        $params = $matches;
 
         // 如果 handler 是闭包，则直接返回闭包以及参数
         if (is_callable($handler)) {
             return [
                 'closure' => $handler,
-                'params' => $matches,
+                'params' => $params,
             ];
 
         } else {
@@ -112,6 +109,7 @@ class Router
 
             return [
                 'namespace' => $namespace,
+                'group' => $group,
                 'controller' => $controller,
                 'action' => $action,
                 'params' => $params,
@@ -136,6 +134,7 @@ class Router
 
         return [
             'namespace' => $namespace,
+            'group' => $module,
             'controller' => $segments[1] ?? $this->defaultController,
             'action' => $segments[2] ?? $this->defaultAction,
             'params' => $param,
@@ -157,7 +156,6 @@ class Router
                     $params[$segments[$i]] = $segments[$i + 1];
                 }
             }
-
         } else {
             $params = array_slice($segments, 3);
         }
@@ -215,8 +213,7 @@ class Router
      */
     public function getRouteInfo(): array
     {
-        $this->logger->log(self::class . ' Get RouterInfo: ' . print_r($this->parsedRoute,TRUE), $this->logprefix[0]);
-
+        $this->logger->log(self::class . ' Get RouterInfo: ' . print_r($this->parsedRoute, true), $this->logprefix[0]);
         return $this->parsedRoute;
     }
 

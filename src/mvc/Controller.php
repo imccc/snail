@@ -110,13 +110,14 @@ class Controller implements ControllerInterface
     public function preParseTpl($tpl)
     {
         $pathFormat = $this->config->get('template.path');
-        $controllerName = $this->routes['controller'];
+        $group = $this->routes['group'];
+        $controller = $this->routes['controller'];
         if (!empty($tpl)) {
             $methodName = $tpl;
         } else {
             $methodName = $this->routes['action'];
         }
-        $path = str_replace(['{$group}', '{$action}'], [$controllerName, $methodName], $pathFormat);
+        $path = str_replace(['{$group}', '{$controller}','{$action}'], [$group, $controller, $methodName], $pathFormat);
         $this->logger->log(self::class . ' preParseTpl: ' . $path, $this->logprefix[2]);
         return $path;
     }

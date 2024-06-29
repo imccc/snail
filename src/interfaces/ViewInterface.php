@@ -18,14 +18,14 @@ interface ViewInterface
      * @param string $tpl
      * @return string
      */
-    public function render($tpl = null);
+    public function render();
 
     /**
      * 显示视图
      * @param string $tpl
      * @return string
      */
-    public function display($tpl = null);
+    public function display();
 
    
 }

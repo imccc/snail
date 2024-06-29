@@ -69,7 +69,6 @@ class View implements ViewInterface
      */
     public function display()
     {
-        $this->logger->log(self::class . ' View display fullpath: ' . $fullpath, $this->logprefix[2]);
         echo $this->render();
     }
 
