@@ -38,7 +38,7 @@ class TwigEngine
     {
         try {
             // 动态设置 Twig 加载路径
-            $this->twig->getLoader()->addPath($tpl);
+            $this->twig->getLoader()->addPath($tpl.$this->templateConfig['twig']['ext']);
             // 渲染模板
             return $this->twig->render(basename($templatePath), $data);
         } catch (\Exception $e) {

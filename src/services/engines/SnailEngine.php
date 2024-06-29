@@ -39,7 +39,7 @@ class SnailEngine
      */
     public function render($tpl, $data = [])
     {
-        $tplPath = $tpl;
+        $tplPath = $tpl.$this->templateConfig['snail']['ext'];
         $this->logger->log(self::class . 'Template render: ' . $tplPath, $this->logprefix[2]);
 
         // 判断是否启用缓存
