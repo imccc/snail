@@ -37,11 +37,8 @@ class TwigEngine
     public function render(string $tpl, array $data = []): string
     {
          try {
-            // 预解析模板路径
-            $templatePath = $tpl. $this->config['ext'];
-
             // 动态设置 Twig 加载路径
-            $this->twig->getLoader()->addPath($templatePath);
+            $this->twig->getLoader()->addPath($tpl);
 
             // 渲染模板
             return $this->twig->render(basename($templatePath), $data);

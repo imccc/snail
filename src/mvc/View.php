@@ -24,8 +24,6 @@ class View implements ViewInterface
         $this->logger = $container->resolve('LoggerService');
 
         $this->tplconf = $this->config->get('template');
-        $this->templatePath = $this->tplconf['path'];
-        $this->templateTags = $this->tplconf['tags'];
         $this->_deftpl = $this->tplconf['default'] ?? 'index';
         $this->_ext = $this->tplconf['ext'] ?? '.tpl';
 

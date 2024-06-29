@@ -23,7 +23,11 @@ class SnailEngine
         $this->config = $container->resolve('ConfigService');
         $this->cache = $container->resolve('CacheService');
         $this->logger = $container->resolve('LoggerService');
+
         $this->templateConfig = $this->config->get('template');
+        $this->templatePath = $this->templateConfig['path'];
+        $this->templateTags = $this->templateConfig['snail'];
+
     }
 
     /**
