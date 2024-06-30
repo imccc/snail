@@ -37,7 +37,7 @@ class SnailEngine
      */
     public function render($tpl, $data = [])
     {
-        $tplPath = $data['tplpath']. $tpl . $this->templateConfig['snail']['ext'];
+        $tplPath = $data['tplpath'] . $tpl . $this->templateConfig['snail']['ext'];
         $this->logger->log(self::class . 'Template render: ' . $tplPath, $this->logprefix[2]);
 
         // 判断是否启用缓存
@@ -135,10 +135,20 @@ class SnailEngine
     protected function replaceVariables(string $content, array $data): string
     {
         foreach ($data as $key => $value) {
-            $content = str_replace("{{$key}}", htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $content);
+            // 检查是否为字符串类型
+            if (is_string($value)) {
+                $content = str_replace("{{$key}}", htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $content);
+            } elseif (is_array($value)) {
+                // 如果是数组类型，可以选择将其转换为 JSON 字符串，或者处理为其他字符串形式
+                $content = str_replace("{{$key}}", json_encode($value), $content);
+            } else {
+                // 对于其他类型的数据，直接进行转换
+                $content = str_replace("{{$key}}", (string) $value, $content);
+            }
         }
 
         return $content;
+
     }
 
     /**
