@@ -70,6 +70,7 @@ class TemplateService
      */
     public function render($tpl, $data = [])
     {
+        $this->logger->log(self::class . 'Template render data: ' . print_r($data,true), $this->logprefix[2]);
         // 记录日志
         $this->logger->log(self::class . 'Template render: ' . $tpl, $this->logprefix[2]);
         // 使用当前模板引擎渲染模板

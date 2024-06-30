@@ -98,7 +98,8 @@ class Controller implements ControllerInterface
         $this->assign([
             'data' => $this->_data,
             'title' => 'Snail PHP',
-            'tpl' => $this->preParseTpl($tpl),
+            'tplpath' => $this->preParseTpl($tpl),
+            'tpl' => $tpl,
         ]);
         $this->_view->display();
     }
@@ -117,8 +118,8 @@ class Controller implements ControllerInterface
         } else {
             $methodName = $this->routes['action'];
         }
-        $path = str_replace(['{$group}', '{$controller}','{$action}'], [$group, $controller, $methodName], $pathFormat);
-        $this->logger->log(self::class . ' preParseTpl: ' . $path, $this->logprefix[2]);
+        $path = str_replace(['{$group}', '{$controller}'], [$group, $controller], $pathFormat);
+        $this->logger->log(self::class . ' preParseTplPath : ' . $path, $this->logprefix[2]);
         return $path;
     }
 

@@ -15,7 +15,6 @@ class View implements ViewInterface
     protected $templatePath;
     protected $templateTags;
     protected $_deftpl;
-    protected $_ext;
     protected $_data = [];
     public function __construct(Container $container)
     {
@@ -25,7 +24,6 @@ class View implements ViewInterface
 
         $this->tplconf = $this->config->get('template');
         $this->_deftpl = $this->tplconf['default'] ?? 'index';
-
         $this->engine = $container->resolve('TemplateService');
     }
 
@@ -53,9 +51,9 @@ class View implements ViewInterface
      */
     public function render()
     {
-        // extract($this->_data);
-        $this->logger->log(self::class . ' View render fullpath: ' . $fullpath, $this->logprefix[2]);
-        return $this->engine->render($fullpath,$this->_data);
+        extract($this->_data);
+        $this->logger->log(self::class . ' View render fullpath: ' . $tpl, $this->logprefix[2]);
+        return $this->engine->render($tpl,$this->_data);
     }
 
     /**

@@ -1,5 +1,4 @@
 <?php
-
 namespace Imccc\Snail\Services\Engines;
 
 use Imccc\Snail\Core\Container;
@@ -27,7 +26,6 @@ class SnailEngine
         $this->templateConfig = $this->config->get('template');
         $this->templatePath = $this->templateConfig['path'];
         $this->templateTags = $this->templateConfig['snail']['tags'];
-
     }
 
     /**
@@ -39,7 +37,7 @@ class SnailEngine
      */
     public function render($tpl, $data = [])
     {
-        $tplPath = $tpl.$this->templateConfig['snail']['ext'];
+        $tplPath = $tpl . $this->templateConfig['snail']['ext'];
         $this->logger->log(self::class . 'Template render: ' . $tplPath, $this->logprefix[2]);
 
         // 判断是否启用缓存
@@ -81,8 +79,8 @@ class SnailEngine
         // 替换模板变量
         $content = $this->replaceVariables($content, $data);
 
-        // 解析静态资源标签
-        $content = $this->parseAssetTags($content);
+        // 替换自定义标签
+        $content = $this->replaceTags($content);
 
         return $content;
     }
@@ -99,7 +97,7 @@ class SnailEngine
             $content = file_get_contents($tplPath);
         } catch (\RuntimeException $e) {
             $content = '';
-            throw new Exception("Template file not found: $tplPath");
+            throw new \Exception("Template file not found: $tplPath");
         }
         return $content;
     }
@@ -144,28 +142,18 @@ class SnailEngine
     }
 
     /**
-     * 解析静态资源标签
+     * 解析自定义标签
      *
      * @param string $content 待解析的模板内容
      * @return string 解析后的模板内容
      */
-    protected function parseAssetTags(string $content): string
+    protected function replaceTags(string $content): string
     {
-        // 解析 {{ js:vendor|type }} 和 {{ css:vendor|type }} 标签
-        $content = preg_replace_callback('/{{\s*(js|css):(\w+)\|(\w+)\s*}}/', function ($matches) {
-            $type = $matches[1]; // js 或 css
-            $vendor = $matches[2]; // 厂商名称
-            $assetType = $matches[3]; // 资源类型
-
-            // 获取静态资源路径
-            $assetPath = $this->getVendorAssetPath($vendor, $assetType);
-
-            // 构建标签内容
-            $tag = ($type === 'js') ? '<script src="' : '<link rel="stylesheet" href="';
-            $tag .= $assetPath . '">';
-
-            return $tag;
-        }, $content);
+        foreach ($this->templateTags as $tag => $replacement) {
+            $tag = preg_quote($tag, '/');
+            $tag = str_replace('%%', '(.+)', $tag);
+            $content = preg_replace('/' . $tag . '/', $replacement, $content);
+        }
 
         return $content;
     }
@@ -186,19 +174,5 @@ class SnailEngine
             $blockName = $matches[1];
             return isset($this->blocks[$blockName]) ? $this->blocks[$blockName] : '';
         }, $content);
-    }
-
-    /**
-     * 获取供应商静态资源路径
-     *
-     * @param string $vendor 供应商名称
-     * @param string $assetType 资源类型
-     * @return string 静态资源路径
-     */
-    protected function getVendorAssetPath(string $vendor, string $assetType): string
-    {
-        // 根据供应商和资源类型获取静态资源路径的实现
-        // 这里可以根据实际需求进行具体实现
-        return "/assets/{$vendor}/{$assetType}.min.js"; // 示例实现
     }
 }

@@ -2,7 +2,7 @@
 return [
     'engine' => 'snail', // 引擎名称 snail twig
     'cache' => false, // 是否开启缓存
-    'path' => APP_PATH . '/{$group}/view/{$controller}/{$action}', // 模板路径规则
+    'path' => APP_PATH . '/{$group}/view/{$controller}/', // 模板路径规则
     'default' => 'index',
     'twig' => [
         'ext' => '.twig',
@@ -13,6 +13,7 @@ return [
     ],
     'snail' => [
         'ext' => '.tpl',
+        'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/snail_cache', // Twig 缓存路径
         'tags' => [
             "{{ if %% }}" => '<?php if(\1): ?>', // if标签
             "{{ else }}" => '<?php else: ?>', // else标签

@@ -21,6 +21,7 @@ class TwigEngine
         $this->config = $container->resolve('ConfigService');
         $this->logger = $container->resolve('LoggerService');
         $this->templateConfig = $this->config->get('template');
+
         // 初始化 Twig 环境
         $loader = new FilesystemLoader([]); // 初始化空的 Twig 加载器
         $twigConfig = $this->templateConfig['twig']['options'] ?? [];
@@ -30,21 +31,25 @@ class TwigEngine
     /**
      * 渲染 Twig 模板
      *
-     * @param string $tpl 模板文件路径
+     * @param string $tpl 模板文件的绝对路径
      * @param array $data 渲染模板时所需的数据
      * @return string 渲染后的模板内容
+     * @throws \Exception 如果模板文件未找到
      */
     public function render(string $tpl, array $data = []): string
     {
         try {
+            // 获取模板目录和文件名
+            $templateDir = dirname($tpl);
+            $templateFile = basename($tpl);
+            $this->logger->log(self::class . ' Template file: ' . $tpl, $this->logprefix[0]);
             // 动态设置 Twig 加载路径
-            $this->twig->getLoader()->addPath($tpl.$this->templateConfig['twig']['ext']);
+            $this->twig->getLoader()->addPath($templateDir);
+
             // 渲染模板
-            return $this->twig->render(basename($templatePath), $data);
+            return $this->twig->render($templateFile, $data);
         } catch (\Exception $e) {
-            throw new \Exception("Template file not found:" . $e);
+            throw new \Exception("Template file not found or rendering error: " . $e->getMessage(), $e->getCode(), $e);
         }
-
     }
-
 }
