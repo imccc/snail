@@ -8,7 +8,7 @@ use Imccc\Snail\Services\Engines\TwigEngine;
 
 /**
  * 模板服务类
- * 
+ *
  * 提供模板渲染和缓存管理功能。
  */
 class TemplateService
@@ -22,11 +22,11 @@ class TemplateService
     // 当前模板引擎实例
     protected $engine;
     // 日志前缀选项
-    protected $logprefix = ['template', 'error','debug'];
+    protected $logprefix = ['template', 'error', 'debug'];
 
     /**
      * 构造函数
-     * 
+     *
      * @param Container $container 依赖注入的容器实例
      */
     public function __construct(Container $container)
@@ -41,9 +41,9 @@ class TemplateService
 
     /**
      * 设置模板引擎
-     * 
+     *
      * 根据传入的引擎名称选择相应的模板引擎实现。
-     * 
+     *
      * @param string $engine 模板引擎名称
      */
     public function setEngine()
@@ -60,7 +60,6 @@ class TemplateService
         }
     }
 
-
     /**
      * 渲染模板
      *
@@ -70,8 +69,6 @@ class TemplateService
      */
     public function render($tpl, $data = [])
     {
-        $this->logger->log(self::class . 'Template render data: ' . print_r($data,true), $this->logprefix[2]);
-        // 记录日志
         $this->logger->log(self::class . 'Template render: ' . $tpl, $this->logprefix[2]);
         // 使用当前模板引擎渲染模板
         return $this->engine->render($tpl, $data);
@@ -79,7 +76,7 @@ class TemplateService
 
     /**
      * 缓存模板
-     * 
+     *
      * @param string $tpl 模板文件路径
      * @param array $data 渲染模板时使用的数据
      */
