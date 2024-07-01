@@ -14,11 +14,13 @@ class CacheService
 {
     protected $container;
     protected $config;
+    protected $expiration;
 
     public function __construct(Container $container)
     {
         $this->container = $container;
         $this->config = $this->container->resolve('ConfigService')->get('cache');
+        $this->expiration = $this->config['expiration'];
     }
 
     public function get($key)
@@ -28,7 +30,7 @@ class CacheService
 
     public function set($key, $value, $expiration = 0)
     {
-        return $this->getCacheDriver()->set($key, $value, $expiration);
+        return $this->getCacheDriver()->set($key, $value, $this->expiration);
     }
 
     public function clear()
@@ -40,34 +42,31 @@ class CacheService
     {
         $driver = $this->config['driver'];
         $driverKey = 'cache.' . $driver;
-
-        if (!$this->container->has($driverKey)) {
-            switch ($driver) {
-                case 'file':
-                    $this->container->bind($driverKey, function () {
-                        return new FileCacheDriver($container);
-                    });
-                    break;
-                case 'redis':
-                    $this->container->bind($driverKey, function () {
-                        return new RedisCacheDriver($container);
-                    });
-                    break;
-                case 'memcached':
-                    $this->container->bind($driverKey, function () {
-                        return new MemcachedCacheDriver($container);
-                    });
-                    break;
-                case 'mongo':
-                    $this->container->bind($driverKey, function () {
-                        return new MongoCacheDriver($container);
-                    });
-                    break;
-                default:
-                    throw new RuntimeException('Unsupported cache driver');
-            }
+        switch ($driver) {
+            case 'file':
+                $this->container->bind($driverKey, function () {
+                    return new FileCacheDriver($this->container);
+                });
+                break;
+            case 'redis':
+                $this->container->bind($driverKey, function () {
+                    return new RedisCacheDriver($this->container);
+                });
+                break;
+            case 'memcached':
+                $this->container->bind($driverKey, function () {
+                    return new MemcachedCacheDriver($this->container);
+                });
+                break;
+            case 'mongodb':
+                $this->container->bind($driverKey, function () {
+                    return new MongoCacheDriver($this->container);
+                });
+                break;
+            default:
+                throw new RuntimeException('Unsupported cache driver');
         }
 
-        return $this->container->get($driverKey);
+        return $this->container->resolve($driverKey);
     }
 }

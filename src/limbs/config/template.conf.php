@@ -13,7 +13,8 @@ return [
     ],
     'snail' => [
         'ext' => '.tpl',
-        'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/snail_cache', // Twig 缓存路径
+        'tmp' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/temp', // snail 临时路径
+        'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/snail_cache', // snail 缓存路径
         'tags' => [
             "{{ if %% }}" => '<?php if(\1): ?>', // if标签
             "{{ else }}" => '<?php else: ?>', // else标签

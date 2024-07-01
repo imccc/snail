@@ -5,9 +5,6 @@ return [
     'driverConfig' => [
         'file' => [
             'path' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/cache', // 日志文件路径,
-            'level' => 'debug',
-            'max_files' => 10,
-            'max_file_size' => 1024 * 1024 * 10,
         ],
         'redis' => [
             'host' => '127.0.0.1',
