@@ -69,9 +69,10 @@ class TemplateService
      */
     public function render($tpl, $data = [])
     {
+        $fullpath = $data['fullpath']. $tpl;
         $this->logger->log(self::class . 'Template render: ' . $tpl, $this->logprefix[2]);
         // 使用当前模板引擎渲染模板
-        return $this->engine->render($tpl, $data);
+        return $this->engine->render($fullpath, $data);
     }
 
     /**

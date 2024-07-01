@@ -33,7 +33,7 @@ class SnailEngine
         }
 
         $tplPath = rtrim($data['tplpath'], '/') . '/' . $tpl . $this->templateConfig['snail']['ext'];
-        $this->log('Template render: ' . $tplPath, $this->logprefix[2]);
+        $this->log(self::class . ' Template render: ' . $tplPath, $this->logprefix[2]);
 
         if (!file_exists($tplPath)) {
             throw new \Exception("Template file not found: $tplPath");

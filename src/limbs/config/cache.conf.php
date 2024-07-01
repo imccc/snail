@@ -2,6 +2,7 @@
 
 return [
     'driver' => 'file',
+    'expiration' => 3600, // 缓存过期时间，单位秒'
     'driverConfig' => [
         'file' => [
             'path' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/cache', // 日志文件路径,
