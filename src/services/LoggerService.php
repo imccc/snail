@@ -3,6 +3,7 @@ namespace Imccc\Snail\Services;
 
 use Exception;
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Traits\IpTrait;
 
 class LoggerService
 {
@@ -13,6 +14,7 @@ class LoggerService
     private $container; // 容器
     private $tableName;
 
+    use IpTrait;
     public function __construct(Container $container)
     {
         $this->container = $container;
@@ -35,29 +37,30 @@ class LoggerService
     {
         if ($this->logconf['on']['log']) {
             $pre = "__" . strtoupper($prefix) . "__";
+            $ip = $this->ip();
             $timestamp = $this->getMicrotime();
             switch ($this->logconf['log_type']) {
                 case 'file':
                     // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
                     if ($this->logconf['on'][$prefix] ?? false) {
-                        $this->enqueueLog("[$pre] $message", $pre, $timestamp);
+                        $this->enqueueLog("[ $ip ] $message", $pre, $timestamp);
                     }
                     break;
                 case 'server':
                     // 如果配置为直接写入服务器日志，则直接写入
                     if ($this->logconf['on'][$prefix] ?? false) {
-                        $this->logToServer("[$pre] $message");
+                        $this->logToServer("[$pre] [ $ip ] $message");
                     }
                     break;
                 case 'database':
                     // 如果配置为记录到数据库且当前日志类型在配置中启用，则将日志加入队列
                     if ($this->logconf['on'][$prefix] ?? false) {
-                        $this->enqueueLog("$message", $pre, $timestamp);
+                        $this->enqueueLog("$message", $pre . $ip, $timestamp);
                     }
                     break;
                 default:
                     // 如果配置为其他类型，则直接写入服务器日志
-                    $this->logToServer("[$pre] $message");
+                    $this->logToServer("[$pre] [$ip] $message");
                     break;
             }
         } else {
@@ -93,10 +96,11 @@ class LoggerService
     {
         if ($this->logconf['on']['log']) {
             $pre = "__" . strtoupper($prefix) . "__";
+            $ip = $this->ip();
             $timestamp = $this->getMicrotime();
             // 如果配置为使用文件记录日志且当前日志类型在配置中启用，则将日志加入队列
             if ($this->logconf['on'][$prefix] ?? false) {
-                $this->enqueueLog("[$pre] $message", $pre, $timestamp);
+                $this->enqueueLog("[$pre] [$ip] $message", $pre, $timestamp);
             }
         } else {
             if ($this->logconf['on']['report']) {
