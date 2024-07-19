@@ -1,6 +1,7 @@
 <?php
 
 namespace Imccc\Snail\Core;
+use Imccc\Snail\Container;
 
 class Dispatcher
 {
@@ -10,7 +11,7 @@ class Dispatcher
     protected $routes;
     protected $logprefix = ['dispatcher', 'info', 'error'];
 
-    public function __construct(Contrainer $container)
+    public function __construct(Container $container)
     {
         $this->container = $container;
         $this->logger = $container->resolve('LoggerService');
