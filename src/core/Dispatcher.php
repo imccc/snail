@@ -1,7 +1,7 @@
 <?php
 
 namespace Imccc\Snail\Core;
-use Imccc\Snail\Container;
+use Imccc\Snail\Core\Container;
 
 class Dispatcher
 {
