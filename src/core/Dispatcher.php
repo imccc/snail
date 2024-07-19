@@ -5,7 +5,16 @@ namespace Imccc\Snail\Core;
 class Dispatcher
 {
     protected $middleware = [];
+    protected $container;
+    protected $logger;
+    protected $routes;
+    protected $logprefix = ['dispatcher', 'info', 'error'];
 
+    public function __construct(Contrainer $container)
+    {
+        $this->container = $container;
+        $this->logger = $container->resolve('LoggerService');
+    }
     public function addMiddleware(callable $middleware)
     {
         $this->middleware[] = $middleware;
@@ -14,6 +23,8 @@ class Dispatcher
     public function dispatch($uri, $method, Router $router)
     {
         $route = $router->resolve($uri, $method);
+        $this->logger->log(self::class . ":" .__FUNCTION__ . " : " . print_r($route, true),$this->logprefix[0]);
+
         if (!$route) {
             http_response_code(404);
             echo "404 Not Found";

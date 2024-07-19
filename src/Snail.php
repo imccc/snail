@@ -55,7 +55,7 @@ class Snail
         $this->router->loadRoutes($routes);
 
         // 初始化分发器
-        $dispatcher = new Dispatcher();
+        $dispatcher = new Dispatcher($this->container);
 
         // 添加全局中间件
         $dispatcher->addMiddleware(function ($params, $next) {
