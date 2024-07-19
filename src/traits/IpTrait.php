@@ -1,5 +1,5 @@
 <?php
-
+namespace Imccc\Snail\Traits;
 /**
  * IP特性
  *

@@ -14,7 +14,6 @@ class LoggerService
     private $container; // 容器
     private $tableName;
 
-    use IpTrait;
     public function __construct(Container $container)
     {
         $this->container = $container;
@@ -26,6 +25,8 @@ class LoggerService
         // 注册一个脚本结束时的回调，用于处理日志队列中剩余的日志
         register_shutdown_function([$this, 'flushLogs']);
     }
+
+    use IpTrait;
 
     /**
      * 根据配置记录日志
@@ -69,6 +70,8 @@ class LoggerService
             }
         }
     }
+
+
 
     /**
      * 清理日志信息
