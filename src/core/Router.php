@@ -1,9 +1,4 @@
 <?php
-/**
- * 路由类
- * 
- * @author Imccc
- */
 namespace Imccc\Snail\Core;
 
 class Router
@@ -13,11 +8,6 @@ class Router
     protected $group = [];
     protected $routeConfig = '';
 
-    /**
-     * 加载路由配置
-     * 
-     * @param array $routesConfig 路由配置数组
-     */
     public function loadRoutes(array $routesConfig)
     {
         $this->routeConfig = $routesConfig;
@@ -26,7 +16,6 @@ class Router
         $routeConfig = $routesConfig['routeMap'];
 
         foreach ($routeConfig as $route) {
-            // 检查是否是路由组
             if (isset($route['group'])) {
                 $this->loadGroup($route['group']);
             } else {
@@ -35,32 +24,21 @@ class Router
         }
     }
 
-    /**
-     * 加载路由组
-     * 
-     * @param array $group 路由组数组
-     */
     protected function loadGroup(array $group)
     {
-        $prefix = $group['prefix'] ?? ''; // 路由组前缀
-        $namespace = $group['namespace'] ?? $this->routeConfig['defaultNamespace']; // 路由组命名空间
-        $middleware = $group['middleware'] ?? []; // 路由组中间件
+        $prefix = $group['prefix'] ?? '';
+        $namespace = $group['namespace'] ?? $this->routeConfig['defaultNamespace'];
+        $middleware = $group['middleware'] ?? [];
 
         foreach ($group['routes'] as $route) {
-            // 为每个路由添加前缀和中间件
             $route['rule'] = $prefix . $route['rule'];
             $route['middleware'] = array_merge($middleware, $route['middleware'] ?? []);
             $route['namespace'] = $namespace;
-            $route['group'] = $group['name'] ?? $this->routeConfig['defaultGroup']; // 设置路由组名称
+            $route['group'] = $group['name'] ?? $this->routeConfig['defaultGroup'];
             $this->addRoute($route);
         }
     }
 
-    /**
-     * 添加单个路由
-     * 
-     * @param array $route 路由数组
-     */
     protected function addRoute(array $route)
     {
         if (is_callable($route['route'])) {
@@ -70,54 +48,54 @@ class Router
             list($controller, $action) = explode('@', $route['route']);
         }
 
-        $this->routes[] = [
-            'uri' => $route['rule'], // 路由URI
-            'group' => $route['group'] ?? $this->routeConfig['defaultGroup'], // 路由组
-            'namespace' => $route['namespace'] ?? $this->routeConfig['defaultNamespace'], // 路由命名空间
-            'controller' => $controller, // 控制器名称
-            'action' => $action, // 动作名称
-            'method' => strtolower($route['method']), // 请求方法，统一为小写
-            'middleware' => $route['middleware'] ?? [], // 路由中间件
-        ];
+        $methods = is_array($route['method']) ? $route['method'] : explode(',', $route['method']);
+        foreach ($methods as $method) {
+            $this->routes[] = [
+                'uri' => $route['rule'],
+                'group' => $route['group'] ?? $this->routeConfig['defaultGroup'],
+                'namespace' => $route['namespace'] ?? $this->routeConfig['defaultNamespace'],
+                'controller' => $controller,
+                'action' => $action,
+                'method' => strtolower(trim($method)),
+                'middleware' => $route['middleware'] ?? [],
+            ];
+        }
     }
 
-    /**
-     * 解析请求URI和方法以找到匹配的路由
-     * 
-     * @param string $uri 请求的URI
-     * @param string $method 请求的方法
-     * @return array|null 匹配的路由信息或null
-     */
     public function resolve($uri, $method)
     {
-        $method = strtolower($method); // 将请求方法统一为小写
+        $method = strtolower($method);
+
+        // 分离 URI 和查询参数
+        $queryString = '';
+        if (strpos($uri, '?') !== false) {
+            list($uri, $queryString) = explode('?', $uri, 2);
+        }
 
         foreach ($this->routes as $route) {
-            // 处理正则表达式参数
             $pattern = preg_replace('/\{(\w+):([^}]+)\}/', '(?<$1>$2)', $route['uri']);
-            // 处理非正则表达式参数
             $pattern = preg_replace('/\{(\w+)\}/', '(?<$1>[^/]+)', $pattern);
-            // 创建匹配整个URI的正则表达式模式
             $pattern = "#^" . $pattern . "$#i";
 
-            // 检查URI是否与路由模式匹配
             if ($route['method'] === $method && preg_match($pattern, $uri, $matches)) {
                 $params = [];
                 if ($this->keyvalue) {
-                    // 提取键值对参数
                     $segments = explode('/', trim($uri, '/'));
                     $params = $this->parseParams(array_slice($segments, count(explode('/', trim($route['uri'], '/')))));
                 } else {
                     foreach ($matches as $key => $value) {
                         if (is_string($key)) {
-                            $params[$key] = $value; // 提取命名参数
+                            $params[$key] = $value;
                         }
                     }
                 }
-               
-                // 处理闭包路由
+
+                // 解析查询参数
+                parse_str($queryString, $queryParams);
+                $params = array_merge($params, $queryParams);
+
                 if (is_callable($route['action'])) {
-                    return [
+                    $routerArray = [
                         'uri' => $route['uri'],
                         'group' => $route['group'],
                         'namespace' => null,
@@ -127,10 +105,10 @@ class Router
                         'method' => $route['method'],
                         'middleware' => $route['middleware'],
                     ];
+                    return $routerArray;
                 }
 
-                // 处理控制器路由
-                return [
+                $routerArray = [
                     'uri' => $route['uri'],
                     'group' => $route['group'],
                     'namespace' => $route['namespace'],
@@ -140,10 +118,11 @@ class Router
                     'method' => $route['method'],
                     'middleware' => $route['middleware'],
                 ];
+
+                return $routerArray;
             }
         }
 
-        // 尝试按照标准RESTful地址解析
         $segments = explode('/', trim($uri, '/'));
         if (count($segments) >= 3) {
             $group = ucfirst($segments[0]);
@@ -156,7 +135,11 @@ class Router
                 if (method_exists($controller, $action)) {
                     $params = $this->keyvalue ? $this->parseParams(array_slice($segments, 3)) : array_slice($segments, 3);
 
-                    return [
+                    // 解析查询参数
+                    parse_str($queryString, $queryParams);
+                    $params = array_merge($params, $queryParams);
+
+                    $routerArray = [
                         'uri' => $uri,
                         'group' => $group,
                         'namespace' => "App\\$group\\Controller",
@@ -166,21 +149,15 @@ class Router
                         'method' => $method,
                         'middleware' => [],
                     ];
+
+                    return $routerArray;
                 }
             }
         }
 
-        // 如果找不到匹配的路由，则返回null
         return null;
     }
 
-    /**
-     * 获取 RESTful 方法名
-     * 
-     * @param string $method HTTP 方法
-     * @param array $segments URI 分段
-     * @return string 对应的控制器方法名
-     */
     protected function getRestfulMethod($method, $segments)
     {
         $method = strtolower($method);
@@ -199,12 +176,6 @@ class Router
         }
     }
 
-    /**
-     * 解析 URI 分段为键值对参数
-     * 
-     * @param array $segments URI 分段
-     * @return array 键值对参数
-     */
     protected function parseParams(array $segments)
     {
         $params = [];

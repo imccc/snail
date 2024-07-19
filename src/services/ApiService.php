@@ -22,7 +22,7 @@ class ApiService
         $this->config = $this->container->resolve('ConfigService')->get('api');
         if ($this->config['outformat']) {
             $this->format = $this->config['outformat'];
-        }else{
+        } else {
             $this->format = $this->getOutputFormat();
         }
     }
@@ -36,46 +36,8 @@ class ApiService
     public function format($data): string
     {
         $this->setResponseHeaders();
-
-        $result = is_array($data) ? $this->success($data) : $this->error($data);
-
-        $jsuu = $this->getJsuu();
-        $output = null;
-
-        switch ($this->format) {
-            case 'json':
-                if ($jsuu) {
-                    $output = json_encode($result, JSON_UNESCAPED_UNICODE);
-                } else {
-                    $output = json_encode($result);
-                }
-                break;
-            case 'xml':
-                $output = $this->xmlhelper($result);
-                break;
-            case 'yaml':
-                if ($jsuu) {
-                    $output = yaml_emit($data, YAML_UTF8_ENCODING);
-                } else {
-                    $output = yaml_emit($result);
-                }
-
-                break;
-            case 'jsonp':
-                $callback = $this->getJsonpCallback();
-                if ($jsuu) {
-                    $output = $callback . '(' . json_encode($result, JSON_UNESCAPED_UNICODE) . ');';
-                } else {
-                    $output = $callback . '(' . json_encode($result) . ');';
-                }
-                break;
-            default:
-                // 不支持的格式，返回 406 Not Acceptable
-                http_response_code(406);
-                exit('Not Acceptable');
-        }
- 
-        return $output;
+        $result = $this->prepareResult($data);
+        return $this->generateOutput($result);
     }
 
     /**
@@ -142,7 +104,7 @@ class ApiService
      */
     protected function getJsuu(): bool
     {
-        return (bool)($_SERVER['HTTP_X_JSON_UNESCAPED_UNICODE'] ?? false);
+        return (bool) ($_SERVER['HTTP_X_JSON_UNESCAPED_UNICODE'] ?? false);
     }
 
     /**
@@ -202,14 +164,14 @@ class ApiService
     }
 
     /**
-     * 输出成功数据
+     * 响应数据
      *
-     * @param mixed $data 要输出的数据
-     * @param string $message 输出消息
-     * @param int $code 输出状态码
-     * @return array 输出数据
+     * @param array $data 要输出的数据
+     * @param int $code 状态码
+     * @param string $message 状态信息
+     * @return array 响应数据
      */
-    public function success($data = [], string $message = 'Success', int $code = 200): array
+    public function result($data = [], $code = 200, $message = 'success')
     {
         return [
             'code' => $code,
@@ -219,19 +181,61 @@ class ApiService
     }
 
     /**
-     * 输出错误数据
+     * 准备响应结果
      *
-     * @param string $message 输出消息
-     * @param int $code 输出状态码
-     * @param mixed $data 要输出的数据
-     * @return array 输出数据
+     * @param mixed $data
+     * @return array
      */
-    public function error($data = [], string $message = 'Error', int $code = 500): array
+    protected function prepareResult($data): array
     {
-        return [
-            'code' => $code,
-            'message' => $message,
-            'data' => $data,
-        ];
+        if (is_array($data) && isset($data['code'], $data['message'], $data['data'])) {
+            return $data;
+        }
+
+        if (is_string($data)) {
+            return $this->result([], $data);
+        }
+
+        if (is_integer($data)) {
+            return $this->result($data);
+        }
+
+        $code = $data['code'] ?? 200;
+        $message = $data['message'] ?? 'Success';
+        $data = $data['data'] ?? $data;
+        return $this->result($data, $code, $message);
+    }
+
+    /**
+     * 生成输出内容
+     *
+     * @param array $result
+     * @return string
+     */
+    protected function generateOutput(array $result): string
+    {
+        $jsuu = $this->getJsuu();
+        $output = null;
+
+        switch ($this->format) {
+            case 'json':
+                $output = json_encode($result, $jsuu ? JSON_UNESCAPED_UNICODE : 0);
+                break;
+            case 'xml':
+                $output = $this->xmlhelper($result);
+                break;
+            case 'yaml':
+                $output = yaml_emit($result, $jsuu ? YAML_UTF8_ENCODING : 0);
+                break;
+            case 'jsonp':
+                $callback = $this->getJsonpCallback();
+                $output = $callback . '(' . json_encode($result, $jsuu ? JSON_UNESCAPED_UNICODE : 0) . ');';
+                break;
+            default:
+                http_response_code(406);
+                exit('Not Acceptable');
+        }
+
+        return $output;
     }
 }

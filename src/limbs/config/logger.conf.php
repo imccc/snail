@@ -3,24 +3,27 @@
 return [
     'on' => [
         // 总开关
-        'debug' => false, //调试总开关，如果为false则关闭所有
+        'debug' => true, //调试总开关，如果为false则关闭所有
         'log' => true, // 日志总开关，如果为false则关闭所有
-        'report' => true, // 错误报告总开关，如果为false则关闭所有错误报告
+        'report' => true, // 错误报告总开关，如果为false则关闭所有
+
         // 分级日志
         'def' => true,
         'info' => true,
         'warning' => true,
         'error' => true,
         // 模块日志
+        'welcome' =>true,
+        'debugLog' =>true,
         'http' => true,
-        'route' => true,
-        'dispatch' => true,
+        'router' => true,
+        'dispatcher' => true,
         'middleware' => true,
         'controller' => true,
-        'config' => true,
         'view' => true,
         'model' => true,
         'database' => true,
+        'config' =>true,
         // 服务日志
         'sql' => true,
         'sqlerr' => true,
@@ -31,7 +34,7 @@ return [
         'request' => true,
         'response' => true,
         'engine' => true,
-        'template' => true,
+        'template'=>true,
         // 其它自定义调试信息开关，可自行增加
     ],
     'log_file_path' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/logs', // 日志文件路径

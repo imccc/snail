@@ -24,13 +24,14 @@ class Dispatcher
     public function dispatch($uri, $method, Router $router)
     {
         $route = $router->resolve($uri, $method);
-        $this->logger->log(self::class . ":" .__FUNCTION__ . " : " . print_r($route, true),$this->logprefix[0]);
 
         if (!$route) {
+            $this->logger->log(__METHOD__." : ". $method . " ". print_r($route, true),$this->logprefix[2]);
             http_response_code(404);
             echo "404 Not Found";
             return;
         }
+        $this->logger->log(__METHOD__." : ". $method . " ". print_r($route, true),$this->logprefix[0]);
 
         $method = $route['method'];
         $namespace = $route['namespace'];
