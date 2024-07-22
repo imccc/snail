@@ -34,28 +34,27 @@ class Debug
      * @param $e
      * @param $info
      */
-    public function errorOutput($e = 'unknow', $info = '', $tpl = '')
+    public static function errorOutput($e = 'unknow', $info = '', $tpl = '')
     {
         if ($tpl == '') {
-            $tpl = '<html><head><title>%s</title></head><body><h1>%s</h1><div>The great AI creates a new world!<br>By: Snail Boot</div></body></html>';
+            $tpl = '<html><head><title>%s</title></head><body style="margin:20vh; padding:10vh; border:1px dotted #333"><h1>%s</h1><br><b>%s</b><br><br><div>The great AI creates a new world!<br>By: Snail Boot</div></body></html>';
         }
-        $this->logger->log(__METHOD__ . " : [" . $e . "]" . $info, $this->logprefix[2]);
         switch ($e) {
             case '404':
                 http_response_code(404);
-                $html = sprintf($tpl, $e . " Not Found.", $info);
+                $html = sprintf($tpl, $e, $e . " Not Found.", $info);
                 break;
             case '403':
                 http_response_code(403);
-                $html = sprintf($tpl, $e . " Forbidden.", $info);
+                $html = sprintf($tpl, $e, $e . " Forbidden.", $info);
                 break;
             case '500':
                 http_response_code(500);
-                $html = sprintf($tpl, $e . " Internal Server Error.", $info);
+                $html = sprintf($tpl, $e, $e . " Internal Server Error.", $info);
                 break;
             default:
                 http_response_code(500);
-                $html = sprintf($tpl, "Unknow Internal Server Error.", $info);
+                $html = sprintf($tpl, $e, "Unknow Internal Server Error.", $info);
         }
         echo $html;
     }

@@ -32,7 +32,7 @@ class Dispatcher
         $route = $router->resolve($uri, $method);
 
         if (!$route) {
-            Debug::errorOutput("404", "404 Not Found: Route not found");
+            Debug::errorOutput("404", "Route not found",$this->tpl);
             return;
         }
         $this->logger->log(__METHOD__ . " : " . $method . " " . print_r($route, true), $this->logprefix[0]);
