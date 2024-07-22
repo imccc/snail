@@ -30,6 +30,37 @@ class Debug
     }
 
     /**
+     * 使用模板处理出错信息
+     * @param $e
+     * @param $info
+     */
+    public function errorOutput($e = 'unknow', $info = '', $tpl = '')
+    {
+        if ($tpl == '') {
+            $tpl = '<html><head><title>%s</title></head><body><h1>%s</h1><div>The great AI creates a new world!<br>By: Snail Boot</div></body></html>';
+        }
+        $this->logger->log(__METHOD__ . " : [" . $e . "]" . $info, $this->logprefix[2]);
+        switch ($e) {
+            case '404':
+                http_response_code(404);
+                $html = sprintf($tpl, $e . " Not Found.", $info);
+                break;
+            case '403':
+                http_response_code(403);
+                $html = sprintf($tpl, $e . " Forbidden.", $info);
+                break;
+            case '500':
+                http_response_code(500);
+                $html = sprintf($tpl, $e . " Internal Server Error.", $info);
+                break;
+            default:
+                http_response_code(500);
+                $html = sprintf($tpl, "Unknow Internal Server Error.", $info);
+        }
+        echo $html;
+    }
+
+    /**
      * 调试输出
      * @param mixed $data
      * @param bool $style
@@ -51,7 +82,7 @@ class Debug
                 border-radius: 5px;
                 margin-bottom: 10px;
             }
-            
+
             hr {
                 border: none;
                 border-top: 1px solid #000; /* 你可以根据需要调整颜色 */
@@ -112,7 +143,7 @@ class Debug
         }
 
         ob_end_clean();
-       
+
         $output .= '<h3 class="debug-header">Debug BackTrace:</h3>';
 
         if ($echo) {
@@ -135,8 +166,8 @@ class Debug
         $trace = debug_backtrace();
         echo '<pre>';
         foreach ($trace as $line) {
-           echo "Line: {$line['line']}  at File: {$line['file']}<br>";
-           echo "Class: {$line['class']}  Function: {$line['function']} <br><hr>";
+            echo "Line: {$line['line']}  at File: {$line['file']}<br>";
+            echo "Class: {$line['class']}  Function: {$line['function']} <br><hr>";
         }
         echo '</pre>';
     }

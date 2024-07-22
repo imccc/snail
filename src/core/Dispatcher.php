@@ -1,7 +1,9 @@
 <?php
 
 namespace Imccc\Snail\Core;
+
 use Imccc\Snail\Core\Container;
+use Imccc\Snail\Core\Debug;
 
 class Dispatcher
 {
@@ -18,7 +20,7 @@ class Dispatcher
         $this->container = $container;
         $this->logger = $container->resolve('LoggerService');
         $this->config = $container->resolve('ConfigService');
-        $this->tpl  = $this->config->get('def.tpl');
+        $this->tpl = $this->config->get('def.tpl');
     }
     public function addMiddleware(callable $middleware)
     {
@@ -30,13 +32,10 @@ class Dispatcher
         $route = $router->resolve($uri, $method);
 
         if (!$route) {
-            $this->logger->log(__METHOD__." : ". $method . " ". print_r($route, true),$this->logprefix[2]);
-            http_response_code(404);
-            $html = sprintf($this->tpl, '404', '404 Not Found');
-            echo $html;
+            Debug::errorOutput("404", "404 Not Found: Route not found");
             return;
         }
-        $this->logger->log(__METHOD__." : ". $method . " ". print_r($route, true),$this->logprefix[0]);
+        $this->logger->log(__METHOD__ . " : " . $method . " " . print_r($route, true), $this->logprefix[0]);
 
         $method = $route['method'];
         $namespace = $route['namespace'];
@@ -57,14 +56,10 @@ class Dispatcher
                     if (method_exists($controllerInstance, $action)) {
                         echo call_user_func_array([$controllerInstance, $action], $params);
                     } else {
-                        http_response_code(404);
-                        $thml = sprintf($this->tpl, "404 Not Found", "404 Not Found: Method {$action} not found in controller {$controller}");
-                        echo $thml;
+                        Debug::errorOutput("404", "404 Not Found: Method {$action} not found in controller {$controller}");
                     }
                 } else {
-                    http_response_code(404);
-                    $thml = sprintf($this->tpl, "404 Not Found", "404 Not Found: Controller {$controller} not found");
-                    echo $thml;
+                    Debug::errorOutput("404", "404 Not Found: Controller {$controller} not found");
                 }
             }
         };
@@ -77,4 +72,6 @@ class Dispatcher
 
         $middlewareChain($params);
     }
+
+  
 }
