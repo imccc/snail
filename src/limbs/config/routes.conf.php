@@ -2,9 +2,16 @@
 
 return [
     'keyValue' => false, // 是否使用键值对形式的参数
+    'guiseExtend' => 'html|do|snail|act|py|c|java|go', //文件后缀伪装
     'defaultGroup' => 'index', // 默认路由组
     'defaultNamespace' => 'App\Index\Controller',
     'routeMap' => [
+        // 验证码
+        [
+            'rule' => '/captcha/{timestamp}', // 路由规则 使用示例：/captcha/0.1234567890
+            'route' => 'Captcha@index', // 控制器@方法
+            'method' => 'GET', // 请求方法
+        ],
         // 普通路由定义
         [
             'rule' => '/user/{id}', // 路由规则

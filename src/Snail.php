@@ -32,7 +32,8 @@ class Snail
         }
         // 注册全局异常处理函数
         // set_error_handler(['Imccc\Snail\Core\Debug', 'handleException']);
-
+        header('Server: Snail');
+        header('X-Powered-By: Snail ET');
         session_start();
         $this->initializeContainer();
         $this->run();

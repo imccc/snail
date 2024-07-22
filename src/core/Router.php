@@ -7,6 +7,13 @@ class Router
     protected $keyvalue = false;
     protected $group = [];
     protected $routeConfig = '';
+    protected $routeMap = [];
+    protected $guiseExtend;
+    // protected $patterns = [
+    //     ':any' => '[^/]+',
+    //     ':num' => '[0-9]+',
+    //     ':all' => '.*',
+    // ];
 
     public function loadRoutes(array $routesConfig)
     {
@@ -14,7 +21,7 @@ class Router
 
         $this->keyvalue = $routesConfig['keyValue'];
         $routeConfig = $routesConfig['routeMap'];
-
+        $this->guiseExtend = $routesConfig['guiseExtend'];
         foreach ($routeConfig as $route) {
             if (isset($route['group'])) {
                 $this->loadGroup($route['group']);
@@ -72,8 +79,14 @@ class Router
             list($uri, $queryString) = explode('?', $uri, 2);
         }
 
+        $uri = preg_replace('/\.(' . $this->guiseExtend . ')$/', '', $uri);
+
         foreach ($this->routes as $route) {
-            $pattern = preg_replace('/\{(\w+):([^}]+)\}/', '(?<$1>$2)', $route['uri']);
+            $pattern = $route['uri'];
+            // foreach ($this->patterns as $key => $value) {
+            //     $pattern = str_replace($key, $value, $pattern);
+            // }
+            $pattern = preg_replace('/\{(\w+):([^}]+)\}/', '(?<$1>$2)', $pattern);
             $pattern = preg_replace('/\{(\w+)\}/', '(?<$1>[^/]+)', $pattern);
             $pattern = "#^" . $pattern . "$#i";
 

@@ -12,7 +12,8 @@
         "classmap": [],
         "psr-4": {
             "Imccc\\Snail\\": "src/",
-            "Imccc\\Snail\\Services\\": "src/services/"
+            "Imccc\\Snail\\Services\\": "src/services/",
+            "Imccc\\Snail\\Helpers\\": "src/helpers/"
         }
     },
     "authors": [
