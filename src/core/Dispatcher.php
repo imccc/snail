@@ -7,14 +7,18 @@ class Dispatcher
 {
     protected $middleware = [];
     protected $container;
+    protected $config;
     protected $logger;
     protected $routes;
     protected $logprefix = ['dispatcher', 'info', 'error'];
+    protected $tpl;
 
     public function __construct(Container $container)
     {
         $this->container = $container;
         $this->logger = $container->resolve('LoggerService');
+        $this->config = $container->resolve('ConfigService');
+        $this->tpl  = $this->config->get('def.tpl');
     }
     public function addMiddleware(callable $middleware)
     {
@@ -28,7 +32,8 @@ class Dispatcher
         if (!$route) {
             $this->logger->log(__METHOD__." : ". $method . " ". print_r($route, true),$this->logprefix[2]);
             http_response_code(404);
-            echo "404 Not Found";
+            $html = sprintf($this->tpl, '404', '404 Not Found');
+            echo $html;
             return;
         }
         $this->logger->log(__METHOD__." : ". $method . " ". print_r($route, true),$this->logprefix[0]);
@@ -53,11 +58,13 @@ class Dispatcher
                         echo call_user_func_array([$controllerInstance, $action], $params);
                     } else {
                         http_response_code(404);
-                        echo "404 Not Found: Method {$action} not found in controller {$controller}";
+                        $thml = sprintf($this->tpl, "404 Not Found", "404 Not Found: Method {$action} not found in controller {$controller}");
+                        echo $thml;
                     }
                 } else {
                     http_response_code(404);
-                    echo "404 Not Found: Controller {$controller} not found";
+                    $thml = sprintf($this->tpl, "404 Not Found", "404 Not Found: Controller {$controller} not found");
+                    echo $thml;
                 }
             }
         };
