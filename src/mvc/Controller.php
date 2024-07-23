@@ -38,7 +38,6 @@ class Controller implements ControllerInterface
         $this->container = Container::getInstance();
         $this->logger = $this->container->resolve('LoggerService');
         $this->config = $this->container->resolve('ConfigService');
-        $this->logger->log(self::class . ' Controller init: ' . print_r($routes, true), $this->logprefix[2]);
     }
 
     /**

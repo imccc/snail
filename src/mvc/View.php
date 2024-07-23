@@ -14,9 +14,6 @@ class View implements ViewInterface
     protected $logprefix = ['view', 'error', 'debug'];
     protected $tplconf;
     protected $tplservice;
-    protected $templatePath;
-    protected $templateTags;
-    protected $_deftpl;
     protected $_data = [];
     public function __construct(Container $container)
     {
@@ -27,6 +24,8 @@ class View implements ViewInterface
         $this->tplconf = $this->config->get('template');
         $this->_deftpl = $this->tplconf['default'] ?? 'index';
         $this->tplservice = $container->resolve('TemplateService');
+
+        require_once $this->tplconf['static'] . '/fun.php';
     }
 
     /**
@@ -55,7 +54,6 @@ class View implements ViewInterface
     {
         extract($this->_data);
         $tpl = $tplpath . $routes['action'];
-        $this->logger->log(self::class . ' View render fullpath: ' . $tpl , $this->logprefix[2]);
         return $this->tplservice->render($tpl, $this->_data);
     }
 
