@@ -24,8 +24,6 @@ class View implements ViewInterface
         $this->tplconf = $this->config->get('template');
         $this->_deftpl = $this->tplconf['default'] ?? 'index';
         $this->tplservice = $container->resolve('TemplateService');
-
-        require_once $this->tplconf['static'] . '/fun.php';
     }
 
     /**

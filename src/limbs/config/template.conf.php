@@ -3,7 +3,7 @@ return [
     'engine' => 'sail', // 引擎名称 snail twig
     'cache' => false, // 是否开启缓存
     'path' => APP_PATH . '/{$group}/view/{$controller}/', // 模板路径规则
-    'static' => dirname($_SERVER['DOCUMENT_ROOT']) . '/static/', // 静态资源路径
+    'static' => dirname($_SERVER['DOCUMENT_ROOT']) . '/Static/', // 静态资源路径
     'library' => [
         '__JQUERY__' => 'jquery/jquery.min.js',
         '__BOOTSTRAP_JS' => 'bootstrap/js/bootstrap.min.js',
