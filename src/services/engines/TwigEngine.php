@@ -2,11 +2,14 @@
 
 namespace Imccc\Snail\Services\Engines;
 
+use Imccc\Snail\Core\Service;
 use Imccc\Snail\Core\Container;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Imccc\Snail\Core\UrlBuilder;
+use Twig\TwigFunction;
 
-class TwigEngine
+class TwigEngine extends Service
 {
     protected $twig;
     protected $container;
@@ -14,18 +17,36 @@ class TwigEngine
     protected $config;
     protected $logger;
     protected $templateConfig;
+    protected $urlBuilder;
 
-    public function __construct(Container $container)
+    public function __construct(Container $container, UrlBuilder $urlBuilder)
     {
-        $this->container = $container;
+        parent::__construct($container);
         $this->config = $container->resolve('ConfigService');
         $this->logger = $container->resolve('LoggerService');
         $this->templateConfig = $this->config->get('template');
+        $this->urlBuilder = $urlBuilder;
 
         // 初始化 Twig 环境
-        $loader = new FilesystemLoader(); // 初始化空的 Twig 加载器
+        $loader = new FilesystemLoader($this->templateConfig['twig']['template_path'] ?? []); // 预先设置模板路径
         $twigConfig = $this->templateConfig['twig']['options'] ?? [];
         $this->twig = new Environment($loader, $twigConfig);
+
+        // 注册 URL 生成函数
+        $this->registerUrlFunction();
+    }
+
+    /**
+     * 注册 URL 生成函数
+     *
+     * @return void
+     */
+    protected function registerUrlFunction()
+    {
+        $urlFunction = new TwigFunction('url', function ($route, $params = [], $suffix = '', $domain = false, $method = 'GET') {
+            return $this->urlBuilder->url($route, $params, $suffix, $domain, $method);
+        });
+        $this->twig->addFunction($urlFunction);
     }
 
     /**
@@ -38,13 +59,12 @@ class TwigEngine
      */
     public function render(string $tpl, array $data = []): string
     {
-        
         $tpl .= $this->templateConfig['twig']['ext'];
         try {
             // 获取模板目录和文件名
             $templateDir = dirname($tpl);
             $templateFile = basename($tpl);
-            $this->logger->log(self::class ." : [". __FUNCTION__ . '] : Template file: ' . $tpl, $this->logprefix[0]);
+            $this->logger->log(self::class . " : [" . __FUNCTION__ . '] : Template file: ' . $tpl, $this->logprefix[0]);
 
             // 动态设置 Twig 加载路径
             $this->twig->getLoader()->addPath($templateDir);

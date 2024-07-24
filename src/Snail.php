@@ -24,22 +24,20 @@ class Snail
     protected $logger; // 日志服务
     protected $logprefix = ['debug', 'info', 'error', 'snail'];
     protected $container;
+    protected $url;
 
     public function __construct()
     {
         if (version_compare(PHP_VERSION, USE_PHP_VERSION, '<')) {
             die('PHP version must be greater than or equal to ' . USE_PHP_VERSION);
         }
-        // 注册全局异常处理函数
-        // set_error_handler(['Imccc\Snail\Core\Debug', 'handleException']);
+        // 设置服务器信息
         header('Server: Snail');
-        header('X-Powered-By: Snail ET');
+        header('X-Powered-By: Snail Boot');
+        header('X-Application: Snail ET');
         session_start();
         $this->initializeContainer();
         $this->run();
-        // register_shutdown_function(function () {
-        //     self::debug();
-        // });
     }
 
     /**
@@ -100,8 +98,13 @@ class Snail
         // 日志服务
         $this->logger = $this->container->resolve('LoggerService');
 
+        // URL服务
+         $this->url = $this->container->resolve('UrlService');
+
         // 日志配置
         $this->logconf = $this->config->get('logger.on');
+
+   
 
         // 系统配置 用define主要是为了全局使用，不然在应用中直接加载就可以了
         define('SNAIL_DEBUG', $this->logconf);
