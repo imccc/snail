@@ -12,6 +12,7 @@ class Dispatcher
     protected $config;
     protected $logger;
     protected $routes;
+    protected $router;
     protected $logprefix = ['dispatcher', 'info', 'error'];
     protected $tpl;
 
@@ -20,6 +21,7 @@ class Dispatcher
         $this->container = $container;
         $this->logger = $container->resolve('LoggerService');
         $this->config = $container->resolve('ConfigService');
+        $this->router = $container->resolve('RouterService');
         $this->tpl = $this->config->get('def.tpl');
     }
     public function addMiddleware(callable $middleware)
@@ -27,9 +29,9 @@ class Dispatcher
         $this->middleware[] = $middleware;
     }
 
-    public function dispatch($uri, $method, Router $router)
+    public function dispatch($uri, $method)
     {
-        $route = $router->resolve($uri, $method);
+        $route = $this->router->resolve($uri, $method);
 
         if (!$route) {
             Debug::errorOutput("404", "Route not found",$this->tpl);
