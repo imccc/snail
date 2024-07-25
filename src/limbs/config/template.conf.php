@@ -20,6 +20,7 @@ return [
         'options' => [
             'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/twig_cache', // Twig 缓存路径
             // 其他 Twig 配置选项
+            'auto_reload' => true, // 自动重新加载修改过的模板
         ],
     ],
     'snail' => [

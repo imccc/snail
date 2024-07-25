@@ -1,16 +1,19 @@
 <?php
 namespace Imccc\Snail\Services;
 
-class UrlService extends Service
+use Imccc\Snail\Core\Container;
+use Imccc\Snail\Core\Router;
+
+class UrlService
 {
     protected $router;
     protected $baseUrl;
 
-    public function __construct($container, string $baseUrl, Router $router)
+    public function __construct(Container $container)
     {
-        parent::__construct($container);
-        $this->baseUrl = rtrim($baseUrl, '/') . '/';
-        $this->router = $router;
+        $this->container = $container;
+        $this->router = new Router();
+        $this->baseUrl = $this->getDomain();
     }
 
     public function url(string $route, array $routeParams = [], string $suffix = '', $domain = false, string $method = 'GET'): ?string

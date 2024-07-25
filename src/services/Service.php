@@ -6,7 +6,7 @@ use Imccc\Snail\Core\Container;
 class Service
 {
     protected $container; // 服务容器
-    public function __construct(Container $container , $a = null, $b = null, $c = null)
+    public function __construct(Container $container)
     {
         $this->container = $container;
     }
