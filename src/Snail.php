@@ -13,15 +13,14 @@ define('USE_PHP_VERSION', '7.2.5');
 use Imccc\Snail\Core\Container;
 use Imccc\Snail\Core\Dispatcher;
 use Imccc\Snail\Core\Router;
-use Imccc\Snail\Core\Debug;
 
 class Snail
 {
-    protected $router;
     protected $config; // 配置服务
     protected $conf; // snail配置
     protected $logconf; // 日志配置
     protected $logger; // 日志服务
+    protected $router; // 路由服务
     protected $logprefix = ['debug', 'info', 'error', 'snail'];
     protected $container;
     protected $url;
@@ -41,18 +40,48 @@ class Snail
     }
 
     /**
+     * 初始化服务容器并注册服务
+     */
+    protected function initializeContainer()
+    {
+        $this->container = Container::getInstance();
+
+        // 配置服务
+        $this->config = $this->container->resolve('ConfigService');
+
+        // 日志服务
+        $this->logger = $this->container->resolve('LoggerService');
+
+        // 路由服务
+        $this->router = $this->container->resolve('RouterService');
+
+        // URL服务
+        $this->url = $this->container->resolve('UrlService');
+
+        // 日志配置
+        $this->logconf = $this->config->get('logger.on');
+
+        // 系统配置 用define主要是为了全局使用，不然在应用中直接加载就可以了
+        define('SNAIL_DEBUG', $this->logconf);
+
+        if (SNAIL_DEBUG['report']) {
+            error_reporting(E_ALL); //报告所有错误
+        } else {
+            error_reporting(0); //关闭所有错误报告
+        }
+        if (SNAIL_DEBUG['debug'] && SNAIL_DEBUG['service']) {
+            $this->getServices(); // 获取所有已经注册的服务
+        }
+    }
+
+    /**
      * 运行入口
      */
     // Application.php 中的 run 方法
     public function run()
     {
         // 初始化路由
-        $this->router = new Router();
         $routes = $this->config->get('routes');
-
-        // 加载路由信息
-        $this->router->loadRoutes($routes);
-
         // 初始化分发器
         $dispatcher = new Dispatcher($this->container);
 
@@ -83,40 +112,6 @@ class Snail
 
         // 分发请求
         $dispatcher->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'], $this->router);
-    }
-
-    /**
-     * 初始化服务容器并注册服务
-     */
-    protected function initializeContainer()
-    {
-        $this->container = Container::getInstance();
-
-        // 配置服务
-        $this->config = $this->container->resolve('ConfigService');
-
-        // 日志服务
-        $this->logger = $this->container->resolve('LoggerService');
-
-        // URL服务
-         $this->url = $this->container->resolve('UrlService');
-
-        // 日志配置
-        $this->logconf = $this->config->get('logger.on');
-
-   
-
-        // 系统配置 用define主要是为了全局使用，不然在应用中直接加载就可以了
-        define('SNAIL_DEBUG', $this->logconf);
-
-        if (SNAIL_DEBUG['report']) {
-            error_reporting(E_ALL); //报告所有错误
-        } else {
-            error_reporting(0); //关闭所有错误报告
-        }
-        if (SNAIL_DEBUG['debug'] && SNAIL_DEBUG['service']) {
-            $this->getServices(); // 获取所有已经注册的服务
-        }
     }
 
     /**

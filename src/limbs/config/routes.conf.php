@@ -2,9 +2,13 @@
 
 return [
     'keyValue' => false, // 是否使用键值对形式的参数
-    'guiseExtend' => 'html|do|snail|act|py|c|java|go', //文件后缀伪装
-    'defaultGroup' => 'index', // 默认路由组
-    'defaultNamespace' => 'App\Index\Controller',
+    'setup' => [
+        'guiseExtend' => 'html|do|snail|act|py|c|java|go', //文件后缀伪装
+        'application' => 'App', // 应用目录名称
+        'controller' => 'Controller', // 控制器目录名称
+        'defaultNamespace' => 'App\Index\Controller', // 默认命名空间
+        'defaultGroup' => 'index', // 默认路由组
+    ],
     'routeMap' => [
         // 验证码
         [
@@ -56,8 +60,8 @@ return [
                         'route' => 'App\Admin\Controller\SettingsController@index',
                         'method' => 'GET',
                     ],
-                ]
-            ]
+                ],
+            ],
         ],
         // 分组路由示例 2: API 分组
         [
@@ -78,9 +82,9 @@ return [
                         'rule' => '/users/{id}',
                         'route' => 'App\API\Controller\UserController@show',
                         'method' => 'GET',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ],
     ],
 ];

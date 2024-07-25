@@ -1,10 +1,10 @@
 <?php
 
-namespace Imccc\Snail\Core;
+namespace Imccc\Snail\Services;
 
 use Imccc\Snail\Core\Container;
 
-class Router
+class RouterService
 {
     protected $container;
     protected $config;

@@ -1,22 +1,24 @@
 <?php
 return [
-    'engine' => 'sail', // 引擎名称 snail twig
+    'engine' => 'twig', // 引擎名称 snail twig
     'cache' => false, // 是否开启缓存
     'path' => APP_PATH . '/{$group}/view/{$controller}/', // 模板路径规则
-    'static' => dirname($_SERVER['DOCUMENT_ROOT']) . '/Static/', // 静态资源路径
+    'static' =>  '/Static/', // 静态资源路径
+
     'library' => [
-        '__JQUERY__' => 'jquery/jquery.min.js',
-        '__BOOTSTRAP_JS' => 'bootstrap/js/bootstrap.min.js',
-        '__BOOTSTRAP_CSS' => 'bootstrap/css/bootstrap.min.css',
-        '__BOOTSTRAP_THEME_CSS' => 'bootstrap/css/bootstrap-theme.min.css',
-        '__BOOTSTRAP_THEME_JS' => 'bootstrap/js/bootstrap.min.js',
-        '__FONTAWESOME__' => 'font-awesome/css/font-awesome.min.css',
+        '__JQUERY__' => 'jquery/jquery-3.7.1.min.js',
+        '__BOOTSTRAP_JS__' => 'bootstrap/js/bootstrap.min.js',
+        '__BOOTSTRAP_CSS__' => 'bootstrap/css/bootstrap.min.css',
+        '__BOOTSTRAP_THEME_CSS__' => 'bootstrap/css/bootstrap-theme.min.css',
+        '__BOOTSTRAP_THEME_JS__' => 'bootstrap/js/bootstrap.min.js',
+        '__FONTAWESOME__' => 'fontawesome/css/fontawesome.min.css',
         '__ANIMATE__' => 'animate/animate.min.css',
-        '__WOW__' => 'wow/dist/wow.min.js',
+        '__WOW__' => 'wow/wow.min.js',
     ],
     'default' => 'index',
     'twig' => [
         'ext' => '.twig',
+        'pubbase' => APP_PATH . '/_twig/', // Twig 基础模板路径
         'options' => [
             'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/twig_cache', // Twig 缓存路径
             // 其他 Twig 配置选项
