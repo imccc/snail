@@ -24,7 +24,7 @@ class TwigEngine
         $this->logger = $container->resolve('LoggerService');
         $this->templateConfig = $this->config->get('template');
         $this->urlService = $this->container->resolve('UrlService');
-        $this->pubbase = $this->templateConfig['twig']['pubbase'];
+        $this->pubbase = $this->templateConfig['twig']['base'];
 
         // 初始化 Twig 环境
         $loader = new FilesystemLoader(); // 初始化空的 Twig 加载器

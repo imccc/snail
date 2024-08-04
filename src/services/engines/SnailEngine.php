@@ -3,283 +3,264 @@
 namespace Imccc\Snail\Services\Engines;
 
 use Imccc\Snail\Core\Container;
+use RuntimeException;
 
-/**
- * SnailEngine类负责模板渲染。
- * 它使用依赖注入来获取配置、缓存和日志服务，并处理模板继承、块替换和变量替换。
- */
 class SnailEngine
 {
-    // 依赖注入容器
     protected $container;
-    // 配置服务
     protected $config;
-    // 缓存服务
-    protected $cache;
-    // 日志服务
     protected $logger;
-    // 日志前缀，用于不同类型的日志记录
-    protected $logprefix = ['template', 'error', 'debug'];
-    // 模板配置
+    protected $cache;
     protected $templateConfig;
-    // 模板块集合
-    protected $blocks = [];
-    // 模板路径
     protected $templatePath;
-    // 模板标签
     protected $templateTags;
+    protected $blocks = [];
+    protected $currentBlock;
+    protected $blockStack = [];
+    protected $cacheEnabled;
+    protected $functions = [];
+    protected $parentTemplate;
+    protected $basePath;
+    protected $loggerprefix = ['engine', 'debug', 'error'];
 
-    /**
-     * 构造函数初始化容器，并从容器中解析配置、缓存和日志服务。
-     * 它还初始化模板配置和路径。
-     *
-     * @param Container $container 依赖注入容器
-     */
     public function __construct(Container $container)
     {
         $this->container = $container;
-        $this->config = $container->resolve('ConfigService');
-        $this->cache = $container->resolve('CacheService');
-        $this->logger = $container->resolve('LoggerService');
-
+        $this->config = $this->container->resolve('ConfigService');
+        $this->cache = $this->container->resolve('CacheService');
+        $this->logger = $this->container->resolve('LoggerService');
         $this->templateConfig = $this->config->get('template');
         $this->templatePath = $this->templateConfig['path'];
+        $this->basePath = $this->templateConfig['snail']['base'];
         $this->templateTags = $this->templateConfig['snail']['tags'];
+        $this->cacheEnabled = $this->templateConfig['cache'];
     }
 
-    /**
-     * 渲染模板。
-     * 如果启用了缓存，它将尝试从缓存中获取内容；否则，它将解析模板并缓存结果。
-     * 如果模板路径未在数据数组中提供，则抛出异常。
-     *
-     * @param string $tpl 模板文件名
-     * @param array $data 渲染模板时使用的数据
-     * @return string 渲染后的模板内容
-     * @throws \Exception 如果模板路径未提供或模板文件不存在
-     */
-    public function render($tpl, $data = [])
+    public function render($template, $data = [])
     {
-        if (!isset($data['tplpath'])) {
-            throw new \Exception("Template path (tplpath) not provided in data array.");
-        }
+        $this->logger->log('Rendering template: ' . $template, $this->loggerprefix[0]);
 
-        $tplPath = $tpl . $this->templateConfig['snail']['ext'];
-        $this->log(self::class ." :: [". __FUNCTION__ . '] : Template render: ' . $tplPath, $this->logprefix[2]);
+        $templatePath = $this->getTemplatePath($template);
 
-        if (!file_exists($tplPath)) {
-            throw new \Exception("Template file not found: $tplPath");
-        }
-
-        if ($this->templateConfig['cache']) {
-            $cacheKey = md5($tplPath);
-            $content = $this->cache->get($cacheKey);
-
-            if (!$content) {
-                $content = $this->parse($tplPath, $data);
-                $this->cache->set($cacheKey, $content);
-            }
+        if ($this->cacheEnabled && $cachedContent = $this->cache->get($templatePath)) {
+            $this->logger->log('Using cached content for template: ' . $templatePath, $this->loggerprefix[0]);
+            $compiledTemplate = $cachedContent;
         } else {
-            $content = $this->parse($tplPath, $data);
-        }
-
-        $this->log(self::class ." :: [". __FUNCTION__ . '] : Template Render Success: ' . $content, $this->logprefix[0]);
-
-        $output = $this->includeTemplateContent($content, $data);
-
-        return $output;
-    }
-
-    /**
-     * 解析模板。
-     * 这包括加载模板文件、处理模板继承、替换变量和标签，以及解析模板块。
-     *
-     * @param string $tplPath 模板文件路径
-     * @param array $data 渲染模板时使用的数据
-     * @return string 解析后的模板内容
-     */
-    protected function parse(string $tplPath, array $data): string
-    {
-        $content = $this->loadTemplate($tplPath);
-        $content = $this->parseTemplateInheritance($content, dirname($tplPath));
-        $content = $this->replaceVariables($content, $data);
-        $content = $this->replaceTags($content);
-        $content = $this->parseTemplateBlocks($content);
-
-        return $content; // 使用 trim 函数消除前后空白
-    }
-
-    /**
-     * 加载模板文件内容。
-     * 如果文件不存在，抛出异常。
-     *
-     * @param string $tplPath 模板文件路径
-     * @return string 模板文件内容
-     * @throws \Exception 如果模板文件不存在
-     */
-    protected function loadTemplate(string $tplPath): string
-    {
-        if (!file_exists($tplPath)) {
-            throw new \Exception("Template file not found: $tplPath");
-        }
-        return file_get_contents($tplPath);
-    }
-
-    /**
-     * 处理模板继承。
-     * 通过递归查找并替换父模板，直到没有继承关系为止。
-     *
-     * @param string $content 模板内容
-     * @param string $tplDir 模板目录
-     * @return string 继承后的模板内容
-     */
-    protected function parseTemplateInheritance(string $content, string $tplDir): string
-    {
-        $content = preg_replace_callback('/{{\s*extend\s+"([^"]+)"\s*}}/', function ($matches) use ($tplDir) {
-            $parentTemplatePath = $tplDir . '/' . $matches[1];
-            $parentTemplate = $this->loadTemplate($parentTemplatePath);
-            $parentTemplate = $this->parseTemplateInheritance($parentTemplate, dirname($parentTemplatePath));
-            $this->extractBlocks($parentTemplate);
-            return $parentTemplate;
-        }, $content);
-
-        $this->extractBlocks($content);
-
-        return $content;
-    }
-
-    /**
-     * 提取模板中的块。
-     * 将块内容存储在$blocks属性中，以便后续的块替换。
-     *
-     * @param string &$content 模板内容
-     */
-    protected function extractBlocks(string &$content): void
-    {
-        preg_match_all('/{{\s*block\s+(\w+)\s*}}(.*?){{\s*block_end\s*}}/s', $content, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $blockName = $match[1];
-            if (!isset($this->blocks[$blockName])) {
-                $this->blocks[$blockName] = $match[2];
-            }
-            $content = str_replace($match[0], $this->blocks[$blockName], $content);
-            $this->blocks = [];
-        }
-    }
-
-    /**
-     * 替换模板中的变量。
-     * 根据$data数组中的值，使用htmlspecialchars对字符串变量进行转义，对数组变量使用json_encode。
-     *
-     * @param string $content 模板内容
-     * @param array $data 渲染模板时使用的数据
-     * @return string 替换后的模板内容
-     */
-    protected function replaceVariables(string $content, array $data): string
-    {
-        foreach ($data as $key => $value) {
-            $pattern = '/{{\s*' . preg_quote($key, '/') . '\s*}}/';
-            if (is_string($value)) {
-                $content = preg_replace($pattern, htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $content);
-            } elseif (is_array($value)) {
-                $content = preg_replace($pattern, json_encode($value), $content);
-            } else {
-                $content = preg_replace($pattern, (string) $value, $content);
+            $this->logger->log('Compiling template: ' . $templatePath, $this->loggerprefix[0]);
+            $compiledTemplate = $this->compile(file_get_contents($templatePath));
+            if ($this->cacheEnabled) {
+                $this->cache->set($templatePath, $compiledTemplate);
             }
         }
 
-        return $content;
-    }
+        if ($this->parentTemplate) {
+            $this->logger->log('Parent template found: ' . $this->parentTemplate, $this->loggerprefix[0]);
 
-    /**
-     * 替换模板中的标签。
-     * 使用配置中的标签替换映射来替换模板中的标签。
-     *
-     * @param string $content 模板内容
-     * @return string 替换后的模板内容
-     */
-    protected function replaceTags(string $content): string
-    {
-        foreach ($this->templateTags as $tag => $replacement) {
-            $pattern = '#' . str_replace('%%', '(.+?)', preg_quote($tag, '#')) . '#imsU';
-            $content = preg_replace($pattern, $replacement, $content);
+            $parentTemplatePath = $this->getTemplatePath($this->parentTemplate);
+            $parentContent = file_get_contents($parentTemplatePath);
+            $compiledParent = $this->compile($parentContent);
+            $compiledTemplate = $this->mergeTemplates($compiledParent, $compiledTemplate);
         }
 
-        return $content;
-    }
+        $compiledTemplate = $this->replaceStaticResources($compiledTemplate);
+        $compiledTemplate = $this->removeBlockTags($compiledTemplate);
 
-    /**
-     * 解析模板块。
-     * 如果块不存在，则返回空字符串。
-     *
-     * @param string $content 模板内容
-     * @return string 解析后的模板内容
-     */
-    protected function parseTemplateBlocks(string $content): string
-    {
-        $content = preg_replace_callback('/{{\s*block\s+(\w+)\s*}}(.*?){{\s*block_end\s*}}/s', function ($matches) {
-            $blockName = $matches[1];
-            return isset($this->blocks[$blockName]) ? $this->blocks[$blockName] : '';
-        }, $content);
+        $this->logger->log('Compiled Template: ' . $compiledTemplate, $this->loggerprefix[0]);
+        $tempFile = $this->saveToTempFile($compiledTemplate);
 
-    
-        return $content;
-    }
-    
-    
-    /**
-     * 包含模板内容到一个临时文件中，并通过extract函数将数据数组中的变量导入到作用域中，
-     * 然后包括这个临时文件来渲染模板。这允许使用PHP原生语法来渲染模板。
-     *
-     * @param string $content 模板内容
-     * @param array $data 渲染模板时使用的数据
-     * @return string 渲染后的模板内容
-     */
-    protected function includeTemplateContent(string $content, array $data): string
-    {
-        $tempFileWithoutExtension = tempnam($this->getTempDir(), 'tpl_');
-        $tempFile = $tempFileWithoutExtension . '.php';
-        file_put_contents($tempFile, $content);
-    
-        ob_start();
-        extract($data, EXTR_SKIP);
+        extract($data);
+        $engine = $this;
+
         include $tempFile;
-        $output = ob_get_clean();
-    
-        unlink($tempFileWithoutExtension);
         unlink($tempFile);
-    
-        return trim($output); // 使用 trim 函数消除前后空白
     }
-    
 
-    /**
-     * 获取临时目录路径。
-     * 如果临时目录不存在，则创建它。
-     *
-     * @return string 临时目录路径
-     */
-    protected function getTempDir(): string
+    protected function compile($content)
+    {
+        $this->logger->log('Compiling Template: ' . $content, $this->loggerprefix[0]);
+        $compileContent = $this->parseTags($content);
+        $this->logger->log('Compiled Template: ' . $compileContent, $this->loggerprefix[0]);
+        return $compileContent;
+    }
+
+    protected function parseTags($content)
+    {
+        $tags = $this->templateTags;
+        foreach ($tags as $tag => $replacement) {
+            $pattern = $this->createPattern($tag);
+            $content = preg_replace_callback($pattern, function ($matches) use ($replacement, $tag) {
+                if (is_string($replacement)) {
+                    return $this->replaceCallback($matches, $replacement);
+                } elseif ($replacement instanceof \Closure) {
+                    return call_user_func($replacement, $matches);
+                } else {
+                    throw new \RuntimeException("Replacement must be a string or a Closure. Given type: " . gettype($replacement));
+                }
+            }, $content);
+        }
+
+        $content = preg_replace_callback('/\{\{\s*(\$[a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/', function ($matches) {
+            return '<?php echo ' . $matches[1] . '; ?>';
+        }, $content);
+
+        $content = preg_replace_callback('/\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*\([^\}]*)\s*\}\}/', function ($matches) {
+            return '<?php echo ' . $matches[1] . '; ?>';
+        }, $content);
+
+        $content = $this->processBlocks($content);
+
+        $content = preg_replace_callback('/{{\s*extend\s+"([^"]+)"\s*}}/', function ($matches) {
+            $this->parentTemplate = $matches[1];
+            return '';
+        }, $content);
+
+        return $content;
+    }
+
+    protected function createPattern($tag)
+    {
+        $pattern = preg_quote($tag, '/');
+        $pattern = str_replace(['%%'], ['(.+?)'], $pattern);
+        return '/' . $pattern . '/';
+    }
+
+    protected function replaceCallback($matches, $replacement)
+    {
+        if (!is_string($replacement)) {
+            throw new \RuntimeException("Replacement must be a string. Given type: " . gettype($replacement));
+        }
+
+        for ($i = 1; $i < count($matches); $i++) {
+            $replacement = str_replace('\\' . $i, $matches[$i], $replacement);
+        }
+        return $replacement;
+    }
+
+    protected function getTemplatePath($template)
+    {
+        if (strpos($template, '/') !== false) {
+            return $template . $this->templateConfig['snail']['ext'];
+        } else {
+            return $this->basePath . $template;
+        }
+    }
+
+    protected function saveToTempFile($content)
     {
         $tempDir = $this->templateConfig['snail']['tmp'];
-
         if (!is_dir($tempDir)) {
-            mkdir($tempDir, 0777, true);
+            if (!mkdir($tempDir, 0755, true)) {
+                throw new RuntimeException("Failed to create temporary directory '$tempDir'.");
+            }
         }
 
-        return $tempDir;
+        $tempFile = tempnam($tempDir, 'snail_');
+        if (!$tempFile || !file_put_contents($tempFile, $content)) {
+            throw new RuntimeException("Failed to save temporary file '$tempFile'.");
+        }
+
+        return $tempFile;
     }
 
-    /**
-     * 记录日志。
-     * 如果设置了日志服务，则使用指定的级别记录日志。
-     *
-     * @param string $message 日志消息
-     * @param string $level 日志级别
-     */
-    protected function log($message, $level = 'info')
+    protected function processBlocks($content)
     {
-        if ($this->logger) {
-            $this->logger->log($level, $message);
+        $pattern = '/{{\s*block\s+("?\'?)(\w+)\1\s*}}(.*?){{\s*\/block\s*}}/s';
+        $blocks = [];
+
+        $content = preg_replace_callback($pattern, function ($matches) use (&$blocks) {
+            $blockName = $matches[2];
+            $blockContent = $matches[3];
+            $blocks[$blockName] = $blockContent;
+            return '[[BLOCK_' . $blockName . '_START]]' . '[[BLOCK_END]]';
+        }, $content);
+
+        $this->blocks = array_merge($this->blocks, $blocks);
+
+        return $content;
+    }
+
+    protected function mergeTemplates($parentContent, $childContent)
+    {
+        // 提取父模板和子模板中的块
+        $parentBlocks = $this->extractBlocks($parentContent);
+        $childBlocks = $this->extractBlocks($childContent);
+
+        // 合并子模板块到父模板块
+        $mergedBlocks = array_merge($parentBlocks, $childBlocks);
+
+        // 替换父模板中的块标签，使用子模板中的块内容
+        foreach ($parentBlocks as $blockName => $blockContent) {
+            $pattern = '/\[\[BLOCK_' . preg_quote($blockName, '/') . '_START\]\](.*?)\[\[BLOCK_END\]\]/s';
+            if (isset($childBlocks[$blockName])) {
+                // 替换为子模板块内容
+                $parentContent = preg_replace($pattern, $childBlocks[$blockName], $parentContent);
+            } else {
+                // 保持父模板块内容（未被子模板覆盖）
+                $parentContent = preg_replace($pattern, $blockContent, $parentContent);
+            }
         }
+
+        // 查找 <body> 标签位置
+        $bodyPos = strpos($parentContent, '</body>');
+
+        // 将子模板中未在父模板中定义的块内容追加到 <body> 标签前
+        $additionalBlocks = array_diff_key($childBlocks, $parentBlocks);
+        $additionalContent = implode("\n", $additionalBlocks);
+        $parentContent = substr_replace($parentContent, $additionalContent, $bodyPos, 0);
+
+        return $parentContent;
+    }
+
+    protected function extractBlocks($content)
+    {
+        $blocks = [];
+        $pattern = '/\[\[BLOCK_(\w+)_START\]\](.*?)\[\[BLOCK_END\]\]/s';
+
+        preg_replace_callback($pattern, function ($matches) use (&$blocks) {
+            $blockName = $matches[1];
+            $blockContent = $matches[2];
+            $blocks[$blockName] = $blockContent;
+        }, $content);
+
+        return $blocks;
+    }
+
+    protected function replaceStaticResources($content)
+    {
+        if (isset($this->templateConfig['library']) && isset($this->templateConfig['static'])) {
+            $library = $this->templateConfig['library'];
+            $staticPath = $this->templateConfig['static'];
+
+            foreach ($library as $key => $path) {
+                $content = str_replace($key, $staticPath . $path, $content);
+            }
+        } else {
+            $this->logger->log('Static or library paths not defined in configuration.', $this->loggerprefix[0]);
+        }
+
+        return $content;
+    }
+
+    protected function removeBlockTags($content)
+    {
+        // Patterns to match BLOCK tags and block tags with or without quotes
+        $pattern = '/\[\[BLOCK_(\w+)_START\]\](.*?)\[\[BLOCK_END\]\]/s';
+        $patternWithQuotes = '/\{\{\s*block\s+(["\']?)(\w+)\1\s*\}\}(.*?)\{\{\s*\/block\s*\}\}/s';
+
+        // Handle blocks with BLOCK tags first
+        $content = preg_replace_callback($pattern, function ($matches) {
+            $blockName = $matches[1];
+            $blockContent = isset($this->blocks[$blockName]) ? $this->blocks[$blockName] : $matches[2];
+            return $blockContent;
+        }, $content);
+
+        // Handle blocks with block tags (with or without quotes)
+        $content = preg_replace_callback($patternWithQuotes, function ($matches) {
+            $blockName = $matches[2];
+            $blockContent = isset($this->blocks[$blockName]) ? $this->blocks[$blockName] : $matches[3];
+            return $blockContent;
+        }, $content);
+
+        return $content;
     }
 }

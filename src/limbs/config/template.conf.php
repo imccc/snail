@@ -1,9 +1,9 @@
 <?php
 return [
-    'engine' => 'twig', // 引擎名称 snail twig
+    'engine' => 'snail', // 引擎名称 snail twig
     'cache' => false, // 是否开启缓存
-    'path' => APP_PATH . '/{$group}/view/{$controller}/', // 模板路径规则
-    'static' =>  '/Static/', // 静态资源路径
+    'path' => APP_PATH . '/{$group}/View/{$controller}/', // 模板路径规则
+    'static' => '/Static/', // 静态资源路径
 
     'library' => [
         '__JQUERY__' => 'jquery/jquery-3.7.1.min.js',
@@ -18,7 +18,7 @@ return [
     'default' => 'index',
     'twig' => [
         'ext' => '.twig',
-        'pubbase' => APP_PATH . '/_twig/', // Twig 基础模板路径
+        'base' => APP_PATH . '/_base/_twig/', // Twig 基础模板路径
         'options' => [
             'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/twig_cache', // Twig 缓存路径
             // 其他 Twig 配置选项
@@ -27,6 +27,7 @@ return [
     ],
     'snail' => [
         'ext' => '.tpl',
+        'base' => APP_PATH . '/_base/_snail/', // snail 基础模板路径
         'tmp' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/temp', // snail 临时路径
         'cache' => dirname($_SERVER['DOCUMENT_ROOT']) . '/runtime/snail_cache', // snail 缓存路径
         'tags' => [
@@ -41,6 +42,10 @@ return [
             "{{ /for }}" => '<?php endfor; ?>', // endfor标签
             "{{ while %% }}" => '<?php while(\1): ?>', // while标签
             "{{ /while }}" => '<?php endwhile; ?>', // endwhile标签
+            "{{ switch %% }}" => '<?php switch(\1): ?>', // switch标签
+            "{{ case %% }}" => '<?php case \1: ?>', // case标签
+            "{{ default }}" => '<?php default: ?>', // default标签
+            "{{ endswitch }}" => '<?php endswitch; ?>', // endswitch标签
             "{{ continue }}" => '<?php continue; ?>', // continue标签
             "{{ break }}" => '<?php break; ?>', // break标签
             "{{ upper %% }}" => '<?php echo strtoupper(\1); ?>', // 大写标签
@@ -48,7 +53,7 @@ return [
             "{{ html %% }}" => '<?php echo htmlspecialchars(\1); ?>', // html标签
             "{{ html_decode %% }}" => '<?php echo htmlspecialchars_decode(\1); ?>', // html_decode标签
             "{{ html_entity_decode %% }}" => '<?php echo html_entity_decode(\1); ?>', // html_entity_decode标签
-            "{{ html_entity_encode %% }}" => '<?php echo html_entity_encode(\1); ?>', // html_entity_encode标签
+            "{{ html_entity_encode %% }}" => '<?php echo htmlentities(\1); ?>', // html_entity_encode标签
             "{{ nl2br %% }}" => '<?php echo nl2br(\1); ?>', // nl2br标签
             "{{ trim %% }}" => '<?php echo trim(\1); ?>', // trim标签
             "{{ trim_left %% }}" => '<?php echo ltrim(\1); ?>', // trim_left标签
@@ -82,11 +87,8 @@ return [
             "{{ %% (%%) }}" => '<?php \1(\2); ?>', // PHP函数标签
             "{{ file %% }}" => '<?php include "\1"; ?>', // 引入文件标签
             "{{ get_file %% }}" => '<?php echo file_get_contents("\1"); ?>', // 读取文件内容标签
-            "{{ extend %% }}" => '<?php extend("\1"); ?>', // 继承模板标签
-            "{{ block %% }}" => '<?php block("\1"); ?>', // 块开始标签
-            "{{ block_end }}" => '<?php endblock(); ?>', // 块结束标签
-            "{{ block_else }}" => '<?php elseblock(); ?>', // 块else标签
-            "{{ block_else_end }}" => '<?php endelseblock(); ?>', // 块else结束标签
+            "{{ block %% }}" => '[[BLOCK_\1_START]]',
+            "{{ /block }}" => '[[BLOCK_END]]',
         ],
     ],
 ];
