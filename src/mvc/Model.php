@@ -60,9 +60,7 @@ class Model implements ModelInterface
      */
     public function log($msg)
     {
-        if (SNAIL_DEBUG['debug'] && SNAIL_DEBUG['model']) {
-            $this->logger->log($msg, $this->logprefix[0]);
-        }
+        $this->logger->log($msg, $this->logprefix[0]);
     }
     /**
      * 设置是否启用软删除。

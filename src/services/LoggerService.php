@@ -64,14 +64,11 @@ class LoggerService
                     $this->logToServer("[$pre] [$ip] $message");
                     break;
             }
-        } else {
-            if ($this->logconf['on']['report']) {
-                throw new Exception('LoggerService: Logger Configure file "log" is not true.');
-            }
+        }
+        if (!$this->logconf['on']['report']) {
+            throw new Exception('LoggerService: Logger Configure file "log" is not true.');
         }
     }
-
-
 
     /**
      * 清理日志信息
@@ -106,7 +103,7 @@ class LoggerService
                 $this->enqueueLog("[$pre] [$ip] $message", $pre, $timestamp);
             }
         } else {
-            if ($this->logconf['on']['report']) {
+            if (!$this->logconf['on']['report']) {
                 throw new Exception('LoggerService: Logger Configure file "log" is not true on.');
             }
         }

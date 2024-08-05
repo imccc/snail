@@ -27,9 +27,9 @@ return [
             'host' => 'localhost',
             'dbname' => 'test',
             'user' => 'root',
-            'password' => 'root',
+            'password' => 'admin',
             'charset' => 'utf8',
-            'port' => '3306',
+            'port' => '1443',
             'prefix' => 'snail_',
             'options' => [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

@@ -80,8 +80,7 @@ class View implements ViewInterface
         extract($data);
 
         // 构造视图文件路径
-        $viewFile = $tplpath . "page/" . $routes['action'];
-        var_dump($viewFile);die;
+        $viewFile = $this->_deftpl . "/" . $this->_engine . "/" . $this->_deftpl;
         if (file_exists($viewFile)) {
             ob_start();
             include $viewFile;

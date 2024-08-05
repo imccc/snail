@@ -4,7 +4,6 @@ return [
     'cache' => false, // 是否开启缓存
     'path' => APP_PATH . '/{$group}/View/{$controller}/', // 模板路径规则
     'static' => '/Static/', // 静态资源路径
-
     'library' => [
         '__JQUERY__' => 'jquery/jquery-3.7.1.min.js',
         '__BOOTSTRAP_JS__' => 'bootstrap/js/bootstrap.min.js',
@@ -16,6 +15,11 @@ return [
         '__WOW__' => 'wow/wow.min.js',
     ],
     'default' => 'index',
+    'view' => [
+        'base' => APP_PATH . '/_base/_view/', // view基础模板路径
+        'page' => 'page/',
+        'ext' => '.html'
+    ],
     'twig' => [
         'ext' => '.twig',
         'base' => APP_PATH . '/_base/_twig/', // Twig 基础模板路径

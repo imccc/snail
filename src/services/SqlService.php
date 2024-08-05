@@ -7,8 +7,7 @@
  * @author Imccc
  * @copyright Copyright (c) 2024 Imccc.
  * @license MIT
- * @link https://github.com/imcccphp/snail
- *
+ * @link https://github.com/imccc/snail
  */
 
 namespace Imccc\Snail\Services;
@@ -65,7 +64,7 @@ class SqlService
         try {
             $this->pdo = new PDO($dsn, $dsnConfig['user'], $dsnConfig['password'], $options);
         } catch (PDOException $e) {
-           throw new Exception("Connect to database failed! Error: " . $e->getMessage());
+            throw new Exception("Connect to database failed! Error: " . $e->getMessage());
         }
     }
 
@@ -418,6 +417,28 @@ class SqlService
     }
 
     /**
+     * 设置保存点
+     *
+     * @param string $name 保存点名称
+     */
+    public function savepoint($name)
+    {
+        $this->pdo->exec("SAVEPOINT $name");
+        return $this;
+    }
+
+    /**
+     * 回滚到保存点
+     *
+     * @param string $name 保存点名称
+     */
+    public function rollbackToSavepoint($name)
+    {
+        $this->pdo->exec("ROLLBACK TO SAVEPOINT $name");
+        return $this;
+    }
+
+    /**
      * 绑定参数到预处理语句
      *
      * @param PDOStatement $stmt 预处理语句对象
@@ -642,6 +663,49 @@ class SqlService
             return true;
         } catch (PDOException $e) {
             throw new Exception("Alter Table Error: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 创建索引
+     *
+     * @param string $table 表名
+     * @param string $indexName 索引名
+     * @param array $columns 列名数组
+     * @param bool $unique 是否唯一索引
+     * @return bool 是否成功
+     * @throws Exception 如果创建索引失败，则抛出异常
+     */
+    public function createIndex($table, $indexName, $columns, $unique = false)
+    {
+        $indexType = $unique ? "UNIQUE" : "INDEX";
+        $sql = "CREATE $indexType $indexName ON $table (" . implode(', ', $columns) . ")";
+        $this->log('Create Index: [' . $sql . ']');
+        try {
+            $this->pdo->exec($sql);
+            return true;
+        } catch (PDOException $e) {
+            throw new Exception("Create Index Error: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 删除索引
+     *
+     * @param string $table 表名
+     * @param string $indexName 索引名
+     * @return bool 是否成功
+     * @throws Exception 如果删除索引失败，则抛出异常
+     */
+    public function dropIndex($table, $indexName)
+    {
+        $sql = "DROP INDEX $indexName ON $table";
+        $this->log('Drop Index: [' . $sql . ']');
+        try {
+            $this->pdo->exec($sql);
+            return true;
+        } catch (PDOException $e) {
+            throw new Exception("Drop Index Error: " . $e->getMessage());
         }
     }
 
