@@ -1,0 +1,25 @@
+{
+    "name": "imccc/snail",
+    "description": "Snail Framework",
+    "type": "library",
+    "require": {
+        "php": ">=7.2.5",
+        "twig/twig": "^3.8"
+    },
+    "license": "Apache-2.0",
+    "autoload": {
+        "files": [],
+        "classmap": [],
+        "psr-4": {
+            "Imccc\\Snail\\": "src/",
+            "Imccc\\Snail\\Services\\": "src/services/",
+            "Imccc\\Snail\\Helpers\\": "src/helpers/"
+        }
+    },
+    "authors": [
+        {
+            "name": "sam",
+            "email": "sam@imccc.cc"
+        }
+    ]
+}

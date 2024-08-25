@@ -1,0 +1,38 @@
+# RESTful Client 测试文件
+@baseUrl = http://snail.local
+
+## 普通请求
+### -----------------------------
+GET  {{baseUrl}}/about HTTP/1.1
+###
+POST  {{baseUrl}}/about HTTP/1.1
+### -----------------------------
+GET {{baseUrl}}/welcome HTTP/1.1
+###
+POST {{baseUrl}}/welcome HTTP/1.1
+
+
+
+## API 测试
+### ----------------------------
+GET {{baseUrl}}/api/users HTTP/1.1
+Accept: application/xml; charset=utf-8
+headers:
+  X-json-unescaped-unicode: 1
+
+### ----------------------------
+GET {{baseUrl}}/api/users/sam HTTP/1.1
+Accept: application/xml; charset=utf-8
+headers:
+  X-json-unescaped-unicode: 1
+
+### -----------------------------
+POST {{baseUrl}}/api/post HTTP/1.1
+Accept: application/; charset=utf-8
+Content-Type: application/x-www-form-urlencodedheaders:
+  X-json-unescaped-unicode: 1
+
+name=foo&password=bar
+
+### -----------------------------
+GET  {{baseUrl}}/api/js/abc/sam HTTP/1.1
